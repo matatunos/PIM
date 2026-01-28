@@ -283,13 +283,6 @@ if (isset($_SESSION['temp_user_id']) && !$require_2fa) {
                 <div class="auth-footer">
                     <p>¿No tienes cuenta? <a href="register.php">Regístrate aquí</a></p>
                 </div>
-                
-                <div class="demo-info">
-                    <small>
-                        <i class="fas fa-info-circle"></i>
-                        Demo: usuario <strong>admin</strong> / contraseña <strong>password</strong>
-                    </small>
-                </div>
             <?php endif; ?>
         </div>
     </div>

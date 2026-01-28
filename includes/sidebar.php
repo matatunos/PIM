@@ -65,6 +65,10 @@
                 <i class="fas fa-history"></i>
                 Logs de Acceso
             </a>
+            <a href="/app/admin/configuracion.php" class="nav-link <?= strpos($_SERVER['PHP_SELF'], '/admin/configuracion') !== false ? 'active' : '' ?>">
+                <i class="fas fa-cogs"></i>
+                Configuración
+            </a>
         </div>
         <?php endif; ?>
     </nav>

@@ -1,36 +1,70 @@
 <?php
 require_once '../../config/config.php';
+require_once '../../includes/antibot.php';
 
 if (isset($_SESSION['user_id'])) {
     redirect('/index.php');
 }
 
+// Verificar si el registro está habilitado
+$stmt = $pdo->prepare('SELECT valor FROM config_sitio WHERE clave = ?');
+$stmt->execute(['registration_enabled']);
+$config = $stmt->fetch();
+$registration_enabled = $config && $config['valor'] === '1';
+
 $error = '';
 $success = '';
+$antibot_config = getAntibotConfig($pdo);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (!$registration_enabled && $_SERVER['REQUEST_METHOD'] !== 'GET') {
+    $error = 'El registro de nuevos usuarios está deshabilitado por el administrador';
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $registration_enabled) {
     $username = trim($_POST['username'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $nombre_completo = trim($_POST['nombre_completo'] ?? '');
     $password = $_POST['password'] ?? '';
     $password_confirm = $_POST['password_confirm'] ?? '';
     
-    if (empty($username) || empty($email) || empty($password)) {
+    // Verificar honeypot (campo oculto)
+    if (!validateHoneypot()) {
+        logAttempt('register_bot', $pdo);
+        $error = 'Validación fallida. Intenta de nuevo.';
+    }
+    // Verificar rate limit
+    elseif (isRateLimited('register', $pdo)) {
+        $max_attempts = (int)($antibot_config['rate_limit_attempts'] ?? 5);
+        $error = "Demasiados intentos de registro. Intenta más tarde. (Máximo $max_attempts intentos por hora)";
+    }
+    // Validaciones normales
+    elseif (empty($username) || empty($email) || empty($password)) {
+        logAttempt('register', $pdo);
         $error = 'Por favor completa todos los campos obligatorios';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        logAttempt('register', $pdo);
         $error = 'Email inválido';
     } elseif (strlen($username) < 3) {
+        logAttempt('register', $pdo);
         $error = 'El usuario debe tener al menos 3 caracteres';
     } elseif (strlen($password) < 6) {
+        logAttempt('register', $pdo);
         $error = 'La contraseña debe tener al menos 6 caracteres';
     } elseif ($password !== $password_confirm) {
+        logAttempt('register', $pdo);
         $error = 'Las contraseñas no coinciden';
+    }
+    // Verificar reCAPTCHA si está habilitado
+    elseif ($antibot_config['recaptcha_enabled'] === '1' && !validateRecaptcha($_POST['g-recaptcha-token'] ?? '', $pdo)) {
+        logAttempt('register', $pdo);
+        $error = 'Verificación de reCAPTCHA fallida. Intenta de nuevo.';
     } else {
         try {
             $stmt = $pdo->prepare('SELECT id FROM usuarios WHERE username = ? OR email = ?');
             $stmt->execute([$username, $email]);
             
             if ($stmt->fetch()) {
+                logAttempt('register', $pdo);
                 $error = 'El usuario o email ya están registrados';
             } else {
                 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
@@ -48,10 +82,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header('Refresh: 2; url=/index.php');
             }
         } catch (PDOException $e) {
+            logAttempt('register', $pdo);
             $error = 'Error al crear la cuenta. Intenta de nuevo.';
         }
     }
-}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -62,19 +96,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="icon" type="image/png" href="/assets/img/favicon.png">
     <link rel="stylesheet" href="/assets/css/styles.css">
     <link rel="stylesheet" href="/assets/fonts/fontawesome/css/all.min.css">
+    <?php if ($antibot_config && $antibot_config['recaptcha_enabled'] === '1'): ?>
+    <script src="https://www.google.com/recaptcha/api.js"></script>
+    <?php endif; ?>
 </head>
 <body class="auth-page">
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-header">
-                <div class="auth-logo">
-                    <i class="fas fa-clipboard-list"></i>
-                </div>
-                <h1>Crear Cuenta</h1>
-                <p>Únete y organiza tu vida</p>
+                <img src="/assets/img/logo-64.png" alt="PIM Logo" style="width: 80px; height: 80px; margin-bottom: var(--spacing-md);">
+                <h1><?= $registration_enabled ? 'Crear Cuenta' : 'Registro Deshabilitado' ?></h1>
+                <p><?= $registration_enabled ? 'Únete y organiza tu vida' : 'El registro de nuevos usuarios está actualmente deshabilitado' ?></p>
             </div>
             
-            <?php if ($error): ?>
+            <?php if (!$registration_enabled): ?>
+                <div class="alert alert-error">
+                    <i class="fas fa-ban"></i>
+                    El registro de nuevos usuarios está deshabilitado por el administrador. 
+                    <a href="/app/auth/login.php" style="color: inherit; text-decoration: underline;">Volver a inicio de sesión</a>
+                </div>
+            <?php elseif ($error): ?>
                 <div class="alert alert-error">
                     <i class="fas fa-exclamation-circle"></i>
                     <?= htmlspecialchars($error) ?>
@@ -88,7 +129,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php endif; ?>
             
+            <?php if ($registration_enabled): ?>
             <form method="POST" class="auth-form">
+                <!-- Honeypot field (invisible para humanos, visible para bots) -->
+                <input type="text" name="website" style="display: none; position: absolute; left: -9999px;" tabindex="-1" autocomplete="off" value="">
+                
                 <div class="form-group">
                     <label for="username"><i class="fas fa-user"></i> Usuario *</label>
                     <input type="text" id="username" name="username" required autofocus placeholder="Elige un usuario" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>">
@@ -114,16 +159,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="password" id="password_confirm" name="password_confirm" required placeholder="Repite tu contraseña">
                 </div>
                 
+                <!-- reCAPTCHA v3 (invisible) -->
+                <?php if ($antibot_config && $antibot_config['recaptcha_enabled'] === '1'): ?>
+                <input type="hidden" name="g-recaptcha-token" id="g-recaptcha-token">
+                <?php endif; ?>
+                
                 <button type="submit" class="btn btn-primary btn-block">
                     <i class="fas fa-user-plus"></i>
                     Crear Cuenta
                 </button>
             </form>
+            <?php endif; ?>
             
             <div class="auth-footer">
                 <p>¿Ya tienes cuenta? <a href="login.php">Inicia sesión aquí</a></p>
             </div>
         </div>
     </div>
+    
+    <?php if ($antibot_config && $antibot_config['recaptcha_enabled'] === '1'): ?>
+    <script>
+        function handleRecaptchaSubmit(token) {
+            document.getElementById('g-recaptcha-token').value = token;
+        }
+        
+        // Ejecutar reCAPTCHA cuando se carga la página o antes de enviar el formulario
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('.auth-form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (!document.getElementById('g-recaptcha-token').value) {
+                        e.preventDefault();
+                        grecaptcha.execute('<?= htmlspecialchars($antibot_config['recaptcha_site_key'] ?? '') ?>', {action: 'register'})
+                            .then(function(token) {
+                                document.getElementById('g-recaptcha-token').value = token;
+                                form.submit();
+                            });
+                    }
+                });
+            }
+        });
+    </script>
+    <?php endif; ?>
 </body>
 </html>
