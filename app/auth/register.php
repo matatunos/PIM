@@ -86,6 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $registration_enabled) {
             $error = 'Error al crear la cuenta. Intenta de nuevo.';
         }
     }
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -109,66 +110,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $registration_enabled) {
                 <p><?= $registration_enabled ? 'Únete y organiza tu vida' : 'El registro de nuevos usuarios está actualmente deshabilitado' ?></p>
             </div>
             
+            
             <?php if (!$registration_enabled): ?>
                 <div class="alert alert-error">
                     <i class="fas fa-ban"></i>
                     El registro de nuevos usuarios está deshabilitado por el administrador. 
                     <a href="/app/auth/login.php" style="color: inherit; text-decoration: underline;">Volver a inicio de sesión</a>
                 </div>
-            <?php elseif ($error): ?>
-                <div class="alert alert-error">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <?= htmlspecialchars($error) ?>
-                </div>
-            <?php endif; ?>
-            
-            <?php if ($success): ?>
-                <div class="alert alert-success">
-                    <i class="fas fa-check-circle"></i>
-                    <?= htmlspecialchars($success) ?>
-                </div>
-            <?php endif; ?>
-            
-            <?php if ($registration_enabled): ?>
-            <form method="POST" class="auth-form">
-                <!-- Honeypot field (invisible para humanos, visible para bots) -->
-                <input type="text" name="website" style="display: none; position: absolute; left: -9999px;" tabindex="-1" autocomplete="off" value="">
-                
-                <div class="form-group">
-                    <label for="username"><i class="fas fa-user"></i> Usuario *</label>
-                    <input type="text" id="username" name="username" required autofocus placeholder="Elige un usuario" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>">
-                </div>
-                
-                <div class="form-group">
-                    <label for="email"><i class="fas fa-envelope"></i> Email *</label>
-                    <input type="email" id="email" name="email" required placeholder="tu@email.com" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
-                </div>
-                
-                <div class="form-group">
-                    <label for="nombre_completo"><i class="fas fa-id-card"></i> Nombre Completo</label>
-                    <input type="text" id="nombre_completo" name="nombre_completo" placeholder="Tu nombre completo (opcional)" value="<?= htmlspecialchars($_POST['nombre_completo'] ?? '') ?>">
-                </div>
-                
-                <div class="form-group">
-                    <label for="password"><i class="fas fa-lock"></i> Contraseña *</label>
-                    <input type="password" id="password" name="password" required placeholder="Mínimo 6 caracteres">
-                </div>
-                
-                <div class="form-group">
-                    <label for="password_confirm"><i class="fas fa-lock"></i> Confirmar Contraseña *</label>
-                    <input type="password" id="password_confirm" name="password_confirm" required placeholder="Repite tu contraseña">
-                </div>
-                
-                <!-- reCAPTCHA v3 (invisible) -->
-                <?php if ($antibot_config && $antibot_config['recaptcha_enabled'] === '1'): ?>
-                <input type="hidden" name="g-recaptcha-token" id="g-recaptcha-token">
+            <?php else: ?>
+                <?php if ($error): ?>
+                    <div class="alert alert-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <?= htmlspecialchars($error) ?>
+                    </div>
                 <?php endif; ?>
                 
-                <button type="submit" class="btn btn-primary btn-block">
-                    <i class="fas fa-user-plus"></i>
-                    Crear Cuenta
-                </button>
-            </form>
+                <?php if ($success): ?>
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i>
+                        <?= htmlspecialchars($success) ?>
+                    </div>
+                <?php endif; ?>
+                
+                <form method="POST" class="auth-form">
+                    <!-- Honeypot field (invisible para humanos, visible para bots) -->
+                    <input type="text" name="website" style="display: none; position: absolute; left: -9999px;" tabindex="-1" autocomplete="off" value="">
+                    
+                    <div class="form-group">
+                        <label for="username"><i class="fas fa-user"></i> Usuario *</label>
+                        <input type="text" id="username" name="username" required autofocus placeholder="Elige un usuario" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email"><i class="fas fa-envelope"></i> Email *</label>
+                        <input type="email" id="email" name="email" required placeholder="tu@email.com" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="nombre_completo"><i class="fas fa-id-card"></i> Nombre Completo</label>
+                        <input type="text" id="nombre_completo" name="nombre_completo" placeholder="Tu nombre completo (opcional)" value="<?= htmlspecialchars($_POST['nombre_completo'] ?? '') ?>">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password"><i class="fas fa-lock"></i> Contraseña *</label>
+                        <input type="password" id="password" name="password" required placeholder="Mínimo 6 caracteres">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password_confirm"><i class="fas fa-lock"></i> Confirmar Contraseña *</label>
+                        <input type="password" id="password_confirm" name="password_confirm" required placeholder="Repite tu contraseña">
+                    </div>
+                    
+                    <!-- reCAPTCHA v3 (invisible) -->
+                    <?php if ($antibot_config && $antibot_config['recaptcha_enabled'] === '1'): ?>
+                    <input type="hidden" name="g-recaptcha-token" id="g-recaptcha-token">
+                    <?php endif; ?>
+                    
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fas fa-user-plus"></i>
+                        Crear Cuenta
+                    </button>
+                </form>
             <?php endif; ?>
             
             <div class="auth-footer">

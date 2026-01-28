@@ -10,7 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
 
     // Validar token de sesión o autenticación
-    session_start();
     if (!isset($_SESSION['user_id'])) {
         http_response_code(401);
         echo json_encode(['error' => 'No autenticado']);
@@ -99,7 +98,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'get_categories') {
     header('Content-Type: application/json');
     
-    session_start();
     if (!isset($_SESSION['user_id'])) {
         http_response_code(401);
         echo json_encode(['error' => 'No autenticado']);
@@ -132,7 +130,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     
     $data = json_decode(file_get_contents('php://input'), true);
     
-    session_start();
     if (!isset($_SESSION['user_id'])) {
         http_response_code(401);
         echo json_encode(['error' => 'No autenticado']);
@@ -200,7 +197,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     
     $data = json_decode(file_get_contents('php://input'), true);
     
-    session_start();
     if (!isset($_SESSION['user_id'])) {
         http_response_code(401);
         echo json_encode(['error' => 'No autenticado']);
