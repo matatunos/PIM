@@ -147,6 +147,7 @@ if (isset($_SESSION['temp_user_id']) && !$require_2fa) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $require_2fa ? 'Verificación 2FA' : 'Iniciar Sesión' ?> - PIM</title>
+    <link rel="icon" type="image/png" href="/assets/img/favicon.png">
     <link rel="stylesheet" href="/assets/css/styles.css">
     <link rel="stylesheet" href="/assets/fonts/fontawesome/css/all.min.css">
 </head>
@@ -154,9 +155,7 @@ if (isset($_SESSION['temp_user_id']) && !$require_2fa) {
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-header">
-                <div class="auth-logo">
-                    <i class="fas fa-<?= $require_2fa ? 'shield-alt' : 'clipboard-list' ?>"></i>
-                </div>
+                <img src="/assets/img/logo-64.png" alt="PIM Logo" style="width: 80px; height: 80px; margin-bottom: var(--spacing-md);">
                 <h1><?= $require_2fa ? 'Verificación de Dos Factores' : 'Bienvenido a PIM' ?></h1>
                 <p><?= $require_2fa ? 'Ingresa el código de tu app de autenticación' : 'Tu gestor personal de información' ?></p>
             </div>

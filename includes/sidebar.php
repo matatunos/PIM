@@ -1,9 +1,7 @@
 <aside class="sidebar">
     <div class="sidebar-header">
         <a href="/index.php" class="sidebar-logo">
-            <div class="sidebar-logo-icon">
-                <i class="fas fa-clipboard-list"></i>
-            </div>
+            <img src="/assets/img/logo-48.png" alt="PIM Logo" class="sidebar-logo-icon" style="width: 40px; height: 40px;">
             <div class="sidebar-logo-text">
                 <h1>PIM</h1>
                 <p>Gestor Personal</p>
