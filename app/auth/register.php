@@ -27,38 +27,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $registration_enabled) {
     $password = $_POST['password'] ?? '';
     $password_confirm = $_POST['password_confirm'] ?? '';
     
+    // DEBUG: Log todas las variables
+    error_log("REGISTER DEBUG: username=$username, email=$email, password_len=" . strlen($password));
+    error_log("REGISTER DEBUG: POST data: " . json_encode($_POST));
+    
     // Verificar honeypot (campo oculto)
     if (!validateHoneypot()) {
         logAttempt('register_bot', $pdo);
         $error = 'Validación fallida. Intenta de nuevo.';
+        error_log("REGISTER DEBUG: Honeypot detectado como bot");
     }
     // Verificar rate limit
     elseif (isRateLimited('register', $pdo)) {
         $max_attempts = (int)($antibot_config['rate_limit_attempts'] ?? 5);
         $error = "Demasiados intentos de registro. Intenta más tarde. (Máximo $max_attempts intentos por hora)";
+        error_log("REGISTER DEBUG: Rate limit excedido");
     }
     // Validaciones normales
     elseif (empty($username) || empty($email) || empty($password)) {
         logAttempt('register', $pdo);
         $error = 'Por favor completa todos los campos obligatorios';
+        error_log("REGISTER DEBUG: Campos obligatorios vacíos");
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         logAttempt('register', $pdo);
         $error = 'Email inválido';
+        error_log("REGISTER DEBUG: Email inválido: $email");
     } elseif (strlen($username) < 3) {
         logAttempt('register', $pdo);
         $error = 'El usuario debe tener al menos 3 caracteres';
+        error_log("REGISTER DEBUG: Username muy corto");
     } elseif (strlen($password) < 6) {
         logAttempt('register', $pdo);
         $error = 'La contraseña debe tener al menos 6 caracteres';
+        error_log("REGISTER DEBUG: Password muy corta");
     } elseif ($password !== $password_confirm) {
         logAttempt('register', $pdo);
         $error = 'Las contraseñas no coinciden';
+        error_log("REGISTER DEBUG: Contraseñas no coinciden");
     }
     // Verificar reCAPTCHA si está habilitado
     elseif ($antibot_config['recaptcha_enabled'] === '1' && !validateRecaptcha($_POST['g-recaptcha-token'] ?? '', $pdo)) {
         logAttempt('register', $pdo);
         $error = 'Verificación de reCAPTCHA fallida. Intenta de nuevo.';
+        error_log("REGISTER DEBUG: reCAPTCHA fallido");
+
     } else {
+        error_log("REGISTER DEBUG: Pasó todas las validaciones, intentando crear usuario");
         try {
             $stmt = $pdo->prepare('SELECT id FROM usuarios WHERE username = ? OR email = ?');
             $stmt->execute([$username, $email]);
@@ -66,12 +80,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $registration_enabled) {
             if ($stmt->fetch()) {
                 logAttempt('register', $pdo);
                 $error = 'El usuario o email ya están registrados';
+                error_log("REGISTER DEBUG: Usuario/email ya existen");
             } else {
+                error_log("REGISTER DEBUG: Usuario/email no existen, creando...");
                 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
                 $stmt = $pdo->prepare('INSERT INTO usuarios (username, email, nombre_completo, password) VALUES (?, ?, ?, ?)');
                 $stmt->execute([$username, $email, $nombre_completo, $hashed_password]);
                 
                 $success = 'Cuenta creada exitosamente. Redirigiendo...';
+                error_log("REGISTER DEBUG: Usuario creado exitosamente: $username");
                 
                 $user_id = $pdo->lastInsertId();
                 $_SESSION['user_id'] = $user_id;
@@ -84,6 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $registration_enabled) {
         } catch (PDOException $e) {
             logAttempt('register', $pdo);
             $error = 'Error al crear la cuenta. Intenta de nuevo.';
+            error_log("REGISTER DEBUG: Error PDO: " . $e->getMessage());
         }
     }
 }
