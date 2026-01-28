@@ -543,7 +543,9 @@ foreach ($links as $link) {
                 
                 <div class="form-group">
                     <label for="editar_categoria">Categoría</label>
-                    <input type="text" id="editar_categoria" value="General" list="categorias-existentes" placeholder="General">
+                    <select id="editar_categoria" style="padding: 0.5rem; border: 2px solid var(--gray-200); border-radius: var(--radius-md); width: 100%;">
+                        <option value="General">General</option>
+                    </select>
                 </div>
                 
                 <div class="form-group">
@@ -622,6 +624,14 @@ foreach ($links as $link) {
     </div>
     
     <script>
+        // Array de categorías disponibles
+        const categoriasDisponibles = [
+            <?php foreach ($categorias as $cat): ?>
+                '<?= htmlspecialchars(addslashes($cat)) ?>',
+            <?php endforeach; ?>
+        ];
+        console.log('Categorías disponibles:', categoriasDisponibles);
+        
         // Drop Zone
         const dropZone = document.getElementById('dropZone');
         
@@ -750,9 +760,27 @@ foreach ($links as $link) {
             document.getElementById('editar_titulo').value = link.titulo;
             document.getElementById('editar_url').value = link.url;
             document.getElementById('editar_descripcion').value = link.descripcion || '';
-            document.getElementById('editar_categoria').value = link.categoria;
             document.getElementById('editar_icono_seleccionado').value = link.icono;
             document.getElementById('editar_color_seleccionado').value = link.color;
+            
+            // Cargar categorías con AJAX
+            fetch('/api/links.php?action=get_categories')
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.getElementById('editar_categoria');
+                    if (select && data.categorias) {
+                        select.innerHTML = '';
+                        data.categorias.forEach(cat => {
+                            const option = document.createElement('option');
+                            option.value = cat;
+                            option.textContent = cat;
+                            select.appendChild(option);
+                        });
+                        // Seleccionar la categoría actual
+                        select.value = link.categoria;
+                    }
+                })
+                .catch(error => console.error('Error cargando categorías:', error));
             
             // Reset selections
             document.querySelectorAll('#modalEditar .color-option').forEach(el => {
