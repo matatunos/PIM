@@ -5,6 +5,56 @@ require_once '../../includes/auth_check.php';
 $usuario_id = $_SESSION['user_id'];
 $mensaje = '';
 
+// AJAX: Extraer título de URL
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'obtener_titulo') {
+    header('Content-Type: application/json');
+    $url = trim($_POST['url'] ?? '');
+    
+    if (empty($url)) {
+        echo json_encode(['error' => 'URL vacía']);
+        exit;
+    }
+    
+    // Validar URL
+    if (!filter_var($url, FILTER_VALIDATE_URL)) {
+        echo json_encode(['error' => 'URL inválida']);
+        exit;
+    }
+    
+    try {
+        // Obtener contenido de la URL con timeout
+        $contexto = stream_context_create([
+            'http' => [
+                'timeout' => 5,
+                'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            ]
+        ]);
+        
+        $html = @file_get_contents($url, false, $contexto);
+        
+        if ($html === false) {
+            echo json_encode(['error' => 'No se pudo acceder a la URL']);
+            exit;
+        }
+        
+        // Extraer título
+        $titulo = '';
+        if (preg_match('/<title[^>]*>(.*?)<\/title>/i', $html, $matches)) {
+            $titulo = trim(html_entity_decode(strip_tags($matches[1])));
+        }
+        
+        // Si no hay título, intentar obtener el nombre de dominio
+        if (empty($titulo)) {
+            $titulo = parse_url($url, PHP_URL_HOST) ?? $url;
+        }
+        
+        echo json_encode(['titulo' => $titulo]);
+    } catch (Exception $e) {
+        echo json_encode(['error' => 'Error al obtener el título']);
+    }
+    exit;
+}
+
 // Crear link
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'crear') {
     $titulo = trim($_POST['titulo'] ?? '');
@@ -73,10 +123,18 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $links = $stmt->fetchAll();
 
-// Obtener categorías
-$stmt = $pdo->prepare('SELECT DISTINCT categoria FROM links WHERE usuario_id = ? ORDER BY categoria');
+// Obtener categorías de la tabla link_categorias
+$stmt = $pdo->prepare('SELECT nombre FROM link_categorias WHERE usuario_id = ? ORDER BY orden, nombre');
 $stmt->execute([$usuario_id]);
-$categorias = $stmt->fetchAll(PDO::FETCH_COLUMN);
+$categorias_db = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+// También obtener categorías de links existentes (por compatibilidad)
+$stmt = $pdo->prepare('SELECT DISTINCT categoria FROM links WHERE usuario_id = ? AND categoria NOT IN (SELECT nombre FROM link_categorias WHERE usuario_id = ?) ORDER BY categoria');
+$stmt->execute([$usuario_id, $usuario_id]);
+$categorias_links = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+// Combinar ambas listas
+$categorias = array_unique(array_merge($categorias_db, $categorias_links));
 
 // Agrupar links por categoría
 $links_por_categoria = [];
@@ -252,6 +310,41 @@ foreach ($links as $link) {
             background: var(--primary);
             color: white;
         }
+        .drop-zone {
+            border: 3px dashed var(--primary);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-2xl);
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            background: rgba(168, 218, 220, 0.05);
+            margin-bottom: var(--spacing-2xl);
+        }
+        .drop-zone:hover {
+            background: rgba(168, 218, 220, 0.1);
+            border-color: var(--primary-dark);
+        }
+        .drop-zone.dragover {
+            background: rgba(168, 218, 220, 0.2);
+            border-color: var(--primary-dark);
+            transform: scale(1.01);
+        }
+        .drop-zone i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: var(--spacing-md);
+            display: block;
+        }
+        .drop-zone-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+        }
+        .drop-zone-hint {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
     </style>
 </head>
 <body>
@@ -272,6 +365,9 @@ foreach ($links as $link) {
                             </option>
                         <?php endforeach; ?>
                     </select>
+                    <button onclick="document.getElementById('modalCategorias').classList.add('active')" class="btn btn-ghost" title="Gestionar categorías">
+                        <i class="fas fa-folder-plus"></i>
+                    </button>
                     <button onclick="document.getElementById('modalNuevo').classList.add('active')" class="btn btn-primary">
                         <i class="fas fa-plus"></i>
                         Nuevo Link
@@ -283,6 +379,13 @@ foreach ($links as $link) {
                 <?php if ($mensaje): ?>
                     <div class="alert alert-success"><?= htmlspecialchars($mensaje) ?></div>
                 <?php endif; ?>
+                
+                <!-- Drop Zone -->
+                <div id="dropZone" class="drop-zone">
+                    <i class="fas fa-link"></i>
+                    <div class="drop-zone-text">Arrastra una URL aquí</div>
+                    <div class="drop-zone-hint">Arrastra desde la barra de direcciones o un enlace web</div>
+                </div>
                 
                 <?php if (empty($links)): ?>
                     <div class="card">
@@ -309,6 +412,9 @@ foreach ($links as $link) {
                                         <?php endif; ?>
                                         
                                         <div class="link-actions" onclick="event.stopPropagation();">
+                                            <button type="button" class="btn btn-ghost btn-icon btn-sm" onclick="editarLink(<?= htmlspecialchars(json_encode($link)) ?>)" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
                                             <a href="?fav=<?= $link['id'] ?>" class="btn btn-ghost btn-icon btn-sm" title="Favorito">
                                                 <i class="fas fa-star"></i>
                                             </a>
@@ -412,7 +518,211 @@ foreach ($links as $link) {
         </div>
     </div>
     
+    <!-- Modal Editar Link -->
+    <div id="modalEditar" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: var(--spacing-lg);"><i class="fas fa-edit"></i> Editar Link</h2>
+            <div class="form">
+                <input type="hidden" id="editar_icono_seleccionado" value="fa-link">
+                <input type="hidden" id="editar_color_seleccionado" value="#a8dadc">
+                
+                <div class="form-group">
+                    <label for="editar_titulo">Título *</label>
+                    <input type="text" id="editar_titulo" required autofocus placeholder="Mi Sitio Web">
+                </div>
+                
+                <div class="form-group">
+                    <label for="editar_url">URL *</label>
+                    <input type="url" id="editar_url" required placeholder="https://ejemplo.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="editar_descripcion">Descripción</label>
+                    <textarea id="editar_descripcion" rows="2" placeholder="Breve descripción del sitio"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editar_categoria">Categoría</label>
+                    <input type="text" id="editar_categoria" value="General" list="categorias-existentes" placeholder="General">
+                </div>
+                
+                <div class="form-group">
+                    <label>Color</label>
+                    <div class="color-picker">
+                        <?php $colores = ['#a8dadc', '#ffc6d3', '#d4c5f9', '#c7f0db', '#ffe5d9', '#ffb5a7', '#cce2ff', '#fff9e6']; ?>
+                        <?php foreach ($colores as $color): ?>
+                            <div class="color-option" 
+                                 data-color="<?= $color ?>"
+                                 style="background: <?= $color ?>;" 
+                                 onclick="document.getElementById('editar_color_seleccionado').value='<?= $color ?>'; document.querySelectorAll('#modalEditar .color-option').forEach(el => el.classList.remove('selected')); this.classList.add('selected')"></div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Icono</label>
+                    <div class="icon-picker">
+                        <?php $iconos = ['fa-link', 'fa-globe', 'fa-home', 'fa-envelope', 'fa-shopping-cart', 'fa-github', 'fa-twitter', 'fa-facebook', 'fa-youtube', 'fa-instagram', 'fa-linkedin', 'fa-server', 'fa-database', 'fa-code', 'fa-book', 'fa-music', 'fa-video', 'fa-image', 'fa-file', 'fa-cloud']; ?>
+                        <?php foreach ($iconos as $i => $icono): ?>
+                            <div class="icon-option" onclick="document.getElementById('editar_icono_seleccionado').value='<?= $icono ?>'; document.querySelectorAll('#modalEditar .icon-option').forEach(el => el.classList.remove('selected')); this.classList.add('selected')">
+                                <i class="fas <?= $icono ?>"></i>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: var(--spacing-md); margin-top: var(--spacing-xl);">
+                    <button type="button" class="btn btn-primary" style="flex: 1;" onclick="guardarEdicion()">
+                        <i class="fas fa-check"></i>
+                        Guardar Cambios
+                    </button>
+                    <button type="button" class="btn btn-ghost" onclick="document.getElementById('modalEditar').classList.remove('active')">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Gestionar Categorías -->
+    <div id="modalCategorias" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <h2 style="margin-bottom: var(--spacing-lg);"><i class="fas fa-folder"></i> Gestionar Categorías</h2>
+            
+            <div class="form-group">
+                <label for="nueva_categoria">Nueva Categoría</label>
+                <div style="display: flex; gap: var(--spacing-md);">
+                    <input type="text" id="nueva_categoria" placeholder="Ej: Trabajo, Compras, etc." style="flex: 1;">
+                    <button onclick="crearCategoria()" class="btn btn-primary" style="white-space: nowrap;">
+                        <i class="fas fa-plus"></i> Crear
+                    </button>
+                </div>
+            </div>
+            
+            <div style="margin-top: var(--spacing-xl); border-top: 1px solid var(--gray-200); padding-top: var(--spacing-lg);">
+                <h3 style="margin-bottom: var(--spacing-md); color: var(--text-secondary);">Categorías Existentes</h3>
+                <div id="listaCategorias" style="display: flex; flex-direction: column; gap: var(--spacing-sm); max-height: 300px; overflow-y: auto;">
+                    <?php foreach ($categorias as $cat): ?>
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md);">
+                            <span><i class="fas fa-folder" style="color: var(--primary); margin-right: var(--spacing-sm);"></i><?= htmlspecialchars($cat) ?></span>
+                            <button onclick="eliminarCategoria('<?= htmlspecialchars(addslashes($cat)) ?>')" class="btn btn-danger btn-icon btn-sm" title="Eliminar categoría">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: var(--spacing-md); margin-top: var(--spacing-xl);">
+                <button type="button" class="btn btn-ghost" style="flex: 1;" onclick="document.getElementById('modalCategorias').classList.remove('active')">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+    
     <script>
+        // Drop Zone
+        const dropZone = document.getElementById('dropZone');
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.add('dragover');
+        });
+        
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('dragover');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('dragover');
+            
+            const url = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('text/uri-list');
+            
+            if (url && isValidUrl(url)) {
+                obtenerTituloYAbrir(url);
+            } else {
+                alert('Por favor, arrastra una URL válida');
+            }
+        });
+        
+        dropZone.addEventListener('click', () => {
+            const url = prompt('Ingresa la URL:');
+            if (url && isValidUrl(url)) {
+                obtenerTituloYAbrir(url);
+            }
+        });
+        
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+        
+        function obtenerTituloYAbrir(url) {
+            // Mostrar loading
+            dropZone.innerHTML = '<i class="fas fa-spinner fa-spin"></i><div class="drop-zone-text">Obteniendo información...</div>';
+            dropZone.style.pointerEvents = 'none';
+            
+            const formData = new FormData();
+            formData.append('action', 'obtener_titulo');
+            formData.append('url', url);
+            
+            fetch(window.location.pathname, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Restaurar drop zone
+                dropZone.innerHTML = '<i class="fas fa-link"></i><div class="drop-zone-text">Arrastra una URL aquí</div><div class="drop-zone-hint">Arrastra desde la barra de direcciones o un enlace web</div>';
+                dropZone.style.pointerEvents = 'auto';
+                
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+                
+                // Llenar formulario y abrir modal
+                document.getElementById('titulo').value = data.titulo || '';
+                document.getElementById('url').value = url;
+                document.getElementById('descripcion').value = '';
+                document.getElementById('categoria').value = 'General';
+                document.getElementById('icono_seleccionado').value = 'fa-link';
+                document.getElementById('color_seleccionado').value = '#a8dadc';
+                
+                // Reset color e icon selection
+                document.querySelectorAll('.color-option').forEach((el, i) => {
+                    if (i === 0) el.classList.add('selected');
+                    else el.classList.remove('selected');
+                });
+                document.querySelectorAll('.icon-option').forEach((el, i) => {
+                    if (i === 0) el.classList.add('selected');
+                    else el.classList.remove('selected');
+                });
+                
+                // Abrir modal
+                document.getElementById('modalNuevo').classList.add('active');
+                document.getElementById('descripcion').focus();
+            })
+            .catch(error => {
+                // Restaurar drop zone
+                dropZone.innerHTML = '<i class="fas fa-link"></i><div class="drop-zone-text">Arrastra una URL aquí</div><div class="drop-zone-hint">Arrastra desde la barra de direcciones o un enlace web</div>';
+                dropZone.style.pointerEvents = 'auto';
+                
+                console.error('Error:', error);
+                alert('Error al obtener el título de la página');
+            });
+        }
+        
         document.getElementById('modalNuevo').addEventListener('click', function(e) {
             if (e.target === this) this.classList.remove('active');
         });
@@ -428,6 +738,181 @@ foreach ($links as $link) {
             document.querySelectorAll('.icon-option').forEach(el => el.classList.remove('selected'));
             event.target.closest('.icon-option').classList.add('selected');
         }
+        
+        // Editar link
+        let linkEnEdicion = null;
+        
+        function editarLink(link) {
+            linkEnEdicion = link;
+            const modal = document.getElementById('modalEditar');
+            
+            // Llenar formulario
+            document.getElementById('editar_titulo').value = link.titulo;
+            document.getElementById('editar_url').value = link.url;
+            document.getElementById('editar_descripcion').value = link.descripcion || '';
+            document.getElementById('editar_categoria').value = link.categoria;
+            document.getElementById('editar_icono_seleccionado').value = link.icono;
+            document.getElementById('editar_color_seleccionado').value = link.color;
+            
+            // Reset selections
+            document.querySelectorAll('#modalEditar .color-option').forEach(el => {
+                el.classList.toggle('selected', el.style.background === link.color || el.getAttribute('data-color') === link.color);
+            });
+            document.querySelectorAll('#modalEditar .icon-option').forEach((el, i) => {
+                const iconClass = el.querySelector('i').className.split(' ').pop();
+                el.classList.toggle('selected', iconClass === link.icono.replace('fa-', ''));
+            });
+            
+            modal.classList.add('active');
+        }
+        
+        function guardarEdicion() {
+            const titulo = document.getElementById('editar_titulo').value.trim();
+            const url = document.getElementById('editar_url').value.trim();
+            const descripcion = document.getElementById('editar_descripcion').value.trim();
+            const categoria = document.getElementById('editar_categoria').value.trim();
+            const icono = document.getElementById('editar_icono_seleccionado').value;
+            const color = document.getElementById('editar_color_seleccionado').value;
+            
+            if (!titulo) {
+                alert('El título es requerido');
+                return;
+            }
+            
+            if (!url) {
+                alert('La URL es requerida');
+                return;
+            }
+            
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+            
+            fetch('/api/links.php', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: linkEnEdicion.id,
+                    titulo,
+                    url,
+                    descripcion,
+                    categoria,
+                    icono,
+                    color
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Link actualizado exitosamente');
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Error desconocido'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al guardar los cambios');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> Guardar Cambios';
+            });
+        }
+        
+        document.getElementById('modalEditar').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('active');
+        });
+        
+        // Funciones de Categorías
+        function crearCategoria() {
+            const nombre = document.getElementById('nueva_categoria').value.trim();
+            
+            if (!nombre) {
+                alert('Por favor ingresa un nombre para la categoría');
+                return;
+            }
+            
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            fetch('/api/links.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'crear_categoria',
+                    nombre: nombre
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('nueva_categoria').value = '';
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Error desconocido'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al crear la categoría');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-plus"></i> Crear';
+            });
+        }
+        
+        function eliminarCategoria(nombre) {
+            if (!confirm('¿Eliminar la categoría "' + nombre + '"? Los links en esta categoría se moverán a "General"')) {
+                return;
+            }
+            
+            const btn = event.target.closest('button');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            fetch('/api/links.php', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'eliminar_categoria',
+                    nombre: nombre
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Error desconocido'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al eliminar la categoría');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-trash"></i>';
+            });
+        }
+        
+        document.getElementById('modalCategorias').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('active');
+        });
+        
+        // Enter en input de categoría
+        document.getElementById('nueva_categoria')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') crearCategoria();
+        });
     </script>
 </body>
 </html>

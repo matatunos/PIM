@@ -72,8 +72,8 @@
     </nav>
     
     <div class="sidebar-footer">
-        <a href="/app/auth/logout.php" style="text-decoration: none;">
-            <div class="user-profile">
+        <div class="user-profile-menu" id="userProfileMenu">
+            <div class="user-profile" id="userProfileToggle">
                 <div class="user-avatar">
                     <?= strtoupper(substr($_SESSION['username'] ?? 'U', 0, 2)) ?>
                 </div>
@@ -81,8 +81,167 @@
                     <div class="user-name"><?= htmlspecialchars($_SESSION['nombre_completo'] ?? $_SESSION['username'] ?? 'Usuario') ?></div>
                     <div class="user-role"><?= htmlspecialchars($_SESSION['rol'] ?? 'user') ?></div>
                 </div>
-                <i class="fas fa-sign-out-alt" style="color: var(--text-secondary);"></i>
+                <i class="fas fa-chevron-up" style="color: var(--text-secondary); transition: all 0.3s ease;"></i>
             </div>
-        </a>
+            
+            <div class="user-dropdown" id="userDropdown">
+                <div class="dropdown-item" onclick="window.location.href='/app/perfil/2fa.php'">
+                    <i class="fas fa-user-cog"></i>
+                    <span>Mi Perfil</span>
+                </div>
+                <div class="dropdown-item" id="changePasswordBtn">
+                    <i class="fas fa-key"></i>
+                    <span>Cambiar Contraseña</span>
+                </div>
+                <div class="dropdown-item" id="downloadExtensionBtn">
+                    <i class="fas fa-download"></i>
+                    <span>Descargar Extensión Chrome</span>
+                </div>
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-item dropdown-logout" onclick="window.location.href='/app/auth/logout.php'">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Cerrar Sesión</span>
+                </div>
+            </div>
+        </div>
     </div>
 </aside>
+
+<script>
+    // User Profile Menu Toggle
+    document.addEventListener('DOMContentLoaded', function() {
+        const profileToggle = document.getElementById('userProfileToggle');
+        const dropdown = document.getElementById('userDropdown');
+        const profileMenu = document.getElementById('userProfileMenu');
+        const changePasswordBtn = document.getElementById('changePasswordBtn');
+        const downloadExtensionBtn = document.getElementById('downloadExtensionBtn');
+        
+        if (!profileToggle || !dropdown) return;
+        
+        // Toggle dropdown
+        profileToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            profileToggle.classList.toggle('active');
+            dropdown.classList.toggle('active');
+        });
+        
+        // Close dropdown when clicking elsewhere
+        document.addEventListener('click', function(e) {
+            if (!profileMenu.contains(e.target)) {
+                profileToggle.classList.remove('active');
+                dropdown.classList.remove('active');
+            }
+        });
+        
+        // Change password button
+        if (changePasswordBtn) {
+            changePasswordBtn.addEventListener('click', function() {
+                window.location.href = '/app/perfil/cambiar-contrasena.php';
+            });
+        }
+        
+        // Download extension button
+        if (downloadExtensionBtn) {
+            downloadExtensionBtn.addEventListener('click', function() {
+                // Crear un blob con la extensión
+                const extensionPath = '/chrome-extension';
+                
+                // Crear un modal de descarga
+                const modal = document.createElement('div');
+                modal.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0,0,0,0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 2000;
+                `;
+                
+                const content = document.createElement('div');
+                content.style.cssText = `
+                    background: white;
+                    padding: 2rem;
+                    border-radius: 8px;
+                    max-width: 500px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                `;
+                
+                content.innerHTML = `
+                    <h3 style="margin-bottom: 1rem; color: #2c3e50;">📥 Descargar Extensión Chrome</h3>
+                    <p style="margin-bottom: 1rem; color: #7f8c8d; line-height: 1.6;">
+                        Para descargar la extensión de PIM:
+                    </p>
+                    <ol style="margin-bottom: 1.5rem; color: #2c3e50; padding-left: 1.5rem;">
+                        <li style="margin-bottom: 0.5rem;">Descarga el archivo ZIP con la extensión</li>
+                        <li style="margin-bottom: 0.5rem;">Abre <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">chrome://extensions/</code></li>
+                        <li style="margin-bottom: 0.5rem;">Activa "Modo de desarrollador"</li>
+                        <li style="margin-bottom: 0.5rem;">Click en "Cargar extensión sin empaquetar"</li>
+                        <li>Selecciona la carpeta de la extensión</li>
+                    </ol>
+                    <div style="display: flex; gap: 1rem;">
+                        <button id="downloadZipBtn" style="
+                            flex: 1;
+                            padding: 0.75rem;
+                            background: #a8dadc;
+                            color: white;
+                            border: none;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            font-size: 0.95rem;
+                            transition: all 0.3s ease;
+                        " onmouseover="this.style.background='#80cfd4'" onmouseout="this.style.background='#a8dadc'">
+                            <i class="fas fa-download"></i> Descargar ZIP
+                        </button>
+                        <button id="closeModalBtn" style="
+                            flex: 1;
+                            padding: 0.75rem;
+                            background: #ecf0f1;
+                            color: #2c3e50;
+                            border: none;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            font-size: 0.95rem;
+                            transition: all 0.3s ease;
+                        " onmouseover="this.style.background='#d5dbdb'" onmouseout="this.style.background='#ecf0f1'">
+                            Cerrar
+                        </button>
+                    </div>
+                `;
+                
+                modal.appendChild(content);
+                document.body.appendChild(modal);
+                
+                document.getElementById('closeModalBtn').addEventListener('click', function() {
+                    modal.remove();
+                });
+                
+                document.getElementById('downloadZipBtn').addEventListener('click', function() {
+                    // Crear descarga del ZIP
+                    const link = document.createElement('a');
+                    link.href = '/api/download-extension.php';
+                    link.download = 'pim-chrome-extension.zip';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    setTimeout(() => {
+                        modal.remove();
+                    }, 500);
+                });
+                
+                // Cerrar al hacer click fuera
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.remove();
+                    }
+                });
+            });
+        }
+    });
+</script>

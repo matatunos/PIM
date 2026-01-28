@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIM - Guardar Link</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="popup-container">
+        <!-- Vista de configuración -->
+        <div id="configView" class="view">
+            <div class="settings-header">
+                <h3><i class="icon-gear"></i> Configurar PIM</h3>
+            </div>
+            <div class="settings-form">
+                <div class="form-group">
+                    <label for="pimUrl">URL de tu PIM:</label>
+                    <input type="url" id="pimUrl" placeholder="https://tu-pim.com" required>
+                    <small>Ej: https://ejemplo.com/PIM</small>
+                </div>
+                <button id="saveConfigBtn" class="btn btn-primary btn-block">
+                    <i class="icon-check"></i> Guardar Configuración
+                </button>
+            </div>
+        </div>
+
+        <!-- Vista de guardado de link -->
+        <div id="saveView" class="view hidden">
+            <div class="popup-header">
+                <h3><i class="icon-link"></i> Guardar Link</h3>
+                <button id="configBtn" class="btn-settings" title="Configurar">
+                    <i class="icon-gear"></i>
+                </button>
+            </div>
+
+            <form id="linkForm" class="link-form">
+                <div class="form-group">
+                    <label for="titulo">Título *</label>
+                    <input type="text" id="titulo" name="titulo" required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label for="url">URL *</label>
+                    <input type="url" id="url" name="url" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="descripcion">Descripción</label>
+                    <textarea id="descripcion" name="descripcion" rows="2" placeholder="Opcional"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="categoria">Categoría</label>
+                    <input type="text" id="categoria" name="categoria" list="categoriasList" value="General">
+                    <datalist id="categoriasList"></datalist>
+                </div>
+
+                <div class="form-group">
+                    <label>Color</label>
+                    <div class="color-picker">
+                        <div class="color-option" style="background: #a8dadc;" data-color="#a8dadc"></div>
+                        <div class="color-option" style="background: #ffc6d3;" data-color="#ffc6d3"></div>
+                        <div class="color-option" style="background: #d4c5f9;" data-color="#d4c5f9"></div>
+                        <div class="color-option" style="background: #c7f0db;" data-color="#c7f0db"></div>
+                        <div class="color-option" style="background: #ffe5d9;" data-color="#ffe5d9"></div>
+                        <div class="color-option" style="background: #ffb5a7;" data-color="#ffb5a7"></div>
+                        <div class="color-option" style="background: #cce2ff;" data-color="#cce2ff"></div>
+                        <div class="color-option" style="background: #fff9e6;" data-color="#fff9e6"></div>
+                    </div>
+                    <input type="hidden" id="color" name="color" value="#a8dadc">
+                </div>
+
+                <div class="form-group">
+                    <label>Icono</label>
+                    <div class="icon-picker">
+                        <div class="icon-option selected" data-icon="fa-link">🔗</div>
+                        <div class="icon-option" data-icon="fa-globe">🌐</div>
+                        <div class="icon-option" data-icon="fa-home">🏠</div>
+                        <div class="icon-option" data-icon="fa-envelope">✉️</div>
+                        <div class="icon-option" data-icon="fa-shopping-cart">🛒</div>
+                        <div class="icon-option" data-icon="fa-github">💻</div>
+                        <div class="icon-option" data-icon="fa-twitter">𝕏</div>
+                        <div class="icon-option" data-icon="fa-youtube">▶️</div>
+                        <div class="icon-option" data-icon="fa-book">📚</div>
+                        <div class="icon-option" data-icon="fa-music">🎵</div>
+                    </div>
+                    <input type="hidden" id="icono" name="icono" value="fa-link">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="icon-check"></i> Guardar Link
+                </button>
+            </form>
+
+            <div id="loading" class="loading hidden">
+                <div class="spinner"></div>
+                <p>Guardando...</p>
+            </div>
+
+            <div id="success" class="success hidden">
+                <i class="icon-check-circle"></i>
+                <p>¡Link guardado exitosamente!</p>
+            </div>
+
+            <div id="error" class="error hidden">
+                <i class="icon-alert"></i>
+                <p id="errorMessage"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
