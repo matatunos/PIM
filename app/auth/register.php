@@ -132,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $registration_enabled) {
                     </div>
                 <?php endif; ?>
                 
-                <form method="POST" class="auth-form">
+                <form method="POST" class="auth-form" id="registerForm">
                     <!-- Honeypot field (invisible para humanos, visible para bots) -->
                     <input type="text" name="website" style="display: none; position: absolute; left: -9999px;" tabindex="-1" autocomplete="off" value="">
                     
@@ -179,29 +179,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $registration_enabled) {
         </div>
     </div>
     
-    <?php if ($antibot_config && $antibot_config['recaptcha_enabled'] === '1'): ?>
     <script>
-        function handleRecaptchaSubmit(token) {
-            document.getElementById('g-recaptcha-token').value = token;
-        }
-        
-        // Ejecutar reCAPTCHA cuando se carga la página o antes de enviar el formulario
         document.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('.auth-form');
+            const form = document.getElementById('registerForm') || document.querySelector('.auth-form');
+            
             if (form) {
+                console.log('Formulario encontrado:', form);
+                
                 form.addEventListener('submit', function(e) {
-                    if (!document.getElementById('g-recaptcha-token').value) {
+                    console.log('Submit event triggered');
+                    
+                    // Si reCAPTCHA está habilitado
+                    <?php if ($antibot_config && $antibot_config['recaptcha_enabled'] === '1'): ?>
+                    const tokenField = document.getElementById('g-recaptcha-token');
+                    const siteKey = '<?= htmlspecialchars($antibot_config['recaptcha_site_key'] ?? '') ?>';
+                    
+                    if (!tokenField.value && siteKey) {
+                        console.log('Ejecutando reCAPTCHA...');
                         e.preventDefault();
-                        grecaptcha.execute('<?= htmlspecialchars($antibot_config['recaptcha_site_key'] ?? '') ?>', {action: 'register'})
+                        
+                        grecaptcha.execute(siteKey, {action: 'register'})
                             .then(function(token) {
-                                document.getElementById('g-recaptcha-token').value = token;
+                                console.log('reCAPTCHA token recibido');
+                                tokenField.value = token;
                                 form.submit();
+                            })
+                            .catch(function(error) {
+                                console.error('Error reCAPTCHA:', error);
+                                alert('Error de verificación. Intenta de nuevo.');
                             });
+                    } else {
+                        console.log('Token ya existe o sin clave reCAPTCHA');
                     }
+                    <?php else: ?>
+                    console.log('reCAPTCHA deshabilitado, enviando formulario normalmente');
+                    <?php endif; ?>
                 });
+            } else {
+                console.error('Formulario no encontrado!');
             }
         });
     </script>
+    <?php if ($antibot_config && $antibot_config['recaptcha_enabled'] === '1'): ?>
+    <script src="https://www.google.com/recaptcha/api.js"></script>
     <?php endif; ?>
 </body>
 </html>
