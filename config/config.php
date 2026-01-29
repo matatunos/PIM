@@ -3,7 +3,7 @@
 session_start();
 
 // Versión de la aplicación
-define('PIM_VERSION', '2.1.0');
+define('PIM_VERSION', '2.2.0');
 
 // Zona horaria
 date_default_timezone_set('Europe/Madrid');
