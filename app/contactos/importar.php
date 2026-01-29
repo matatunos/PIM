@@ -204,9 +204,19 @@ $campos_disponibles = [
                 
                 <!-- PASO 1: Cargar archivo -->
                 <?php if ($paso === 1): ?>
-                <div class="card">
+                <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-lg); flex-wrap: wrap;">
+                    <button class="btn btn-primary" style="flex: 1; min-width: 200px;" onclick="cambiarTab('csv')">
+                        <i class="fas fa-table"></i> Importar CSV
+                    </button>
+                    <button class="btn btn-secondary" style="flex: 1; min-width: 200px;" onclick="cambiarTab('vcf')">
+                        <i class="fas fa-id-card"></i> Importar VCF (iCloud)
+                    </button>
+                </div>
+                
+                <!-- CSV -->
+                <div id="tab-csv" class="card" style="display: block;">
                     <div class="card-header">
-                        <h2 style="margin: 0;"><i class="fas fa-upload"></i> Paso 1: Cargar Archivo CSV</h2>
+                        <h2 style="margin: 0;"><i class="fas fa-upload"></i> Cargar Archivo CSV</h2>
                     </div>
                     <div class="card-body">
                         <p>Soporta archivos CSV de Google Contacts, iPhone u otros gestores de contactos.</p>
@@ -240,6 +250,161 @@ $campos_disponibles = [
                         </div>
                     </div>
                 </div>
+                
+                <!-- VCF -->
+                <div id="tab-vcf" class="card" style="display: none;">
+                    <div class="card-header">
+                        <h2 style="margin: 0;"><i class="fas fa-id-card"></i> Cargar Archivo VCF (iCloud)</h2>
+                    </div>
+                    <div class="card-body">
+                        <p>Importa contactos desde archivos VCF (vCard) de iCloud, Google Contacts u otros gestores.</p>
+                        
+                        <form id="form-vcf" enctype="multipart/form-data">
+                            <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-lg); border: 2px dashed var(--border-color); border-radius: var(--radius-md); text-align: center;">
+                                <label style="cursor: pointer;">
+                                    <input type="file" name="archivo_vcf" accept=".vcf,.vcard" required style="display: none;" onchange="document.getElementById('vcf-filename').textContent = this.files[0].name">
+                                    <i class="fas fa-cloud-upload-alt" style="font-size: 3em; color: var(--primary); margin-bottom: var(--spacing-md); display: block;"></i>
+                                    <p style="margin: 0;">Haz clic o arrastra un archivo VCF aquí</p>
+                                    <p id="vcf-filename" style="margin: var(--spacing-sm) 0 0 0; color: var(--text-secondary); font-size: 0.9em;">Ningún archivo seleccionado</p>
+                                </label>
+                            </div>
+                            
+                            <button type="button" class="btn btn-primary" style="width: 100%; margin-bottom: var(--spacing-md);" onclick="cargarVCF()">
+                                <i class="fas fa-arrow-right"></i> Procesando...
+                            </button>
+                            <div id="vcf-status" style="text-align: center; color: var(--text-secondary); margin-bottom: var(--spacing-lg);"></div>
+                        </form>
+                        
+                        <!-- Preview de VCF -->
+                        <div id="vcf-preview" style="display: none; margin-bottom: var(--spacing-lg);">
+                            <div class="card" style="background: #f0f8ff; border-left: 4px solid var(--success);">
+                                <div class="card-body">
+                                    <h4 style="margin-top: 0;"><i class="fas fa-check-circle"></i> Vista previa</h4>
+                                    <div id="vcf-preview-content"></div>
+                                    
+                                    <div style="display: flex; gap: var(--spacing-md); margin-top: var(--spacing-lg);">
+                                        <button class="btn btn-success" onclick="importarVCF()">
+                                            <i class="fas fa-download"></i> Importar <?= htmlspecialchars($contacto['nombre'] ?? '') ?>
+                                        </button>
+                                        <button class="btn btn-secondary" onclick="reiniciarVCF()">
+                                            <i class="fas fa-redo"></i> Otra archivo
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card" style="background: #f0f8ff; border-left: 4px solid var(--info);">
+                            <div class="card-body">
+                                <h4 style="margin-top: 0;"><i class="fas fa-info-circle"></i> ¿Cómo exportar desde iCloud?</h4>
+                                <ol style="margin: 0; padding-left: 20px;">
+                                    <li><strong>En iCloud.com:</strong> Ve a Contactos</li>
+                                    <li><strong>Selecciona contactos:</strong> Usa Cmd/Ctrl+A para todos o elige individuales</li>
+                                    <li><strong>Descarga:</strong> Haz clic en el ícono de engranaje → Exportar vCard</li>
+                                    <li><strong>Carga el archivo:</strong> Sube el .vcf aquí</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <script>
+                function cambiarTab(tab) {
+                    document.getElementById('tab-csv').style.display = tab === 'csv' ? 'block' : 'none';
+                    document.getElementById('tab-vcf').style.display = tab === 'vcf' ? 'block' : 'none';
+                    
+                    // Cambiar botones de pestaña
+                    document.querySelectorAll('.card > .card-header').forEach(h => {
+                        const btn = h.closest('.card').previousElementSibling;
+                        if (btn) btn.classList.toggle('btn-primary', tab === (h.textContent.includes('CSV') ? 'csv' : 'vcf'));
+                        if (btn) btn.classList.toggle('btn-secondary', tab !== (h.textContent.includes('CSV') ? 'csv' : 'vcf'));
+                    });
+                }
+                
+                function cargarVCF() {
+                    const fileInput = document.querySelector('input[name="archivo_vcf"]');
+                    const file = fileInput.files[0];
+                    
+                    if (!file) {
+                        alert('Por favor selecciona un archivo VCF');
+                        return;
+                    }
+                    
+                    const formData = new FormData();
+                    formData.append('archivo_vcf', file);
+                    
+                    document.getElementById('vcf-status').textContent = 'Procesando...';
+                    
+                    fetch('/api/procesar-vcf.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert('Error: ' + data.error);
+                            document.getElementById('vcf-status').textContent = '';
+                            return;
+                        }
+                        
+                        // Mostrar preview
+                        let previewHTML = '<p><strong>Se encontraron ' + data.total + ' contacto(s)</strong></p>';
+                        previewHTML += '<div style="max-height: 300px; overflow-y: auto;">';
+                        
+                        data.preview.forEach(c => {
+                            previewHTML += '<div style="padding: var(--spacing-md); border-bottom: 1px solid var(--border-color);">';
+                            previewHTML += '<strong>' + (c.nombre || 'Sin nombre') + '</strong>';
+                            if (c.email) previewHTML += ' - ' + c.email;
+                            if (c.telefono) previewHTML += ' - ' + c.telefono;
+                            previewHTML += '</div>';
+                        });
+                        
+                        previewHTML += '</div>';
+                        
+                        document.getElementById('vcf-preview-content').innerHTML = previewHTML;
+                        document.getElementById('vcf-preview').style.display = 'block';
+                        document.getElementById('vcf-status').textContent = '';
+                    })
+                    .catch(e => {
+                        alert('Error al procesar: ' + e.message);
+                        document.getElementById('vcf-status').textContent = '';
+                    });
+                }
+                
+                function importarVCF() {
+                    document.getElementById('vcf-status').textContent = 'Importando...';
+                    
+                    fetch('/api/procesar-vcf.php', {
+                        method: 'POST',
+                        body: new URLSearchParams({confirmar_vcf: '1'})
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert('Error: ' + data.error);
+                            return;
+                        }
+                        
+                        let mensaje = 'Importación completada:\n';
+                        mensaje += '✓ Importados: ' + data.importados + '\n';
+                        if (data.duplicados) mensaje += '⚠ Duplicados: ' + data.duplicados + '\n';
+                        if (data.errores) mensaje += '✗ Errores: ' + data.errores;
+                        
+                        alert(mensaje);
+                        window.location.href = '/app/contactos/index.php';
+                    })
+                    .catch(e => {
+                        alert('Error: ' + e.message);
+                    });
+                }
+                
+                function reiniciarVCF() {
+                    document.querySelector('input[name="archivo_vcf"]').value = '';
+                    document.getElementById('vcf-filename').textContent = 'Ningún archivo seleccionado';
+                    document.getElementById('vcf-preview').style.display = 'none';
+                    document.getElementById('vcf-status').textContent = '';
+                }
+                </script>
                 <?php endif; ?>
                 
                 <!-- PASO 2: Mapear columnas -->
