@@ -150,13 +150,16 @@ require_once "../../app/idiomas/{$lang}.php";
             box-shadow: var(--shadow-lg);
         }
         .stat-card.danger {
-            background: linear-gradient(135deg, var(--secondary), #ff9eb3);
+            background: linear-gradient(135deg, #f8a5c2, #f7d1dc);
         }
         .stat-card.warning {
-            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            background: linear-gradient(135deg, #fed9a8, #fff3cd);
         }
         .stat-card.success {
-            background: linear-gradient(135deg, var(--success), #a8dfc2);
+            background: linear-gradient(135deg, #a8dfc2, #d4f5e2);
+        }
+        .stat-card.info {
+            background: linear-gradient(135deg, var(--info), #d5c7f0);
         }
         .stat-number {
             font-size: 2.5rem;
@@ -233,8 +236,8 @@ require_once "../../app/idiomas/{$lang}.php";
             font-weight: 600;
             border-bottom: 1px solid var(--border-color);
         }
-        .card-header.bg-warning { background: #fbbf24; color: #1f2937; }
-        .card-header.bg-danger { background: #ef4444; color: white; }
+        .card-header.bg-warning { background: linear-gradient(135deg, #fed9a8, #fff3cd); color: #6b5b3d; }
+        .card-header.bg-danger { background: linear-gradient(135deg, #f8a5c2, #f7d1dc); color: #7d4a5a; }
         .card-body { padding: var(--spacing-lg); }
         .table { width: 100%; border-collapse: collapse; }
         .table th, .table td { padding: var(--spacing-sm) var(--spacing-md); text-align: left; border-bottom: 1px solid var(--border-color); }
@@ -355,7 +358,7 @@ require_once "../../app/idiomas/{$lang}.php";
                                             <?php foreach ($suspicious_ips as $sip): ?>
                                             <tr>
                                                 <td><code><?= h($sip['ip_address']) ?></code></td>
-                                                <td><span class="badge bg-danger"><?= $sip['count'] ?></span></td>
+                                                <td><span class="badge" style="background: #f8a5c2; color: #7d4a5a;"><?= $sip['count'] ?></span></td>
                                                 <td>
                                                     <form method="POST" class="d-inline">
                                                         <?= csrf_field() ?>

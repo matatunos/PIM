@@ -170,13 +170,13 @@ $top_usuarios = $stmt->fetchAll();
             opacity: 0.9;
         }
         .stats-card.secondary {
-            background: linear-gradient(135deg, var(--secondary), #ff9eb3);
+            background: linear-gradient(135deg, #a8dfc2, #d4f5e2);
         }
         .stats-card.info {
-            background: linear-gradient(135deg, var(--info), #bfaae5);
+            background: linear-gradient(135deg, #d5c7f0, #e8e0f5);
         }
         .stats-card.success {
-            background: linear-gradient(135deg, var(--success), #a8dfc2);
+            background: linear-gradient(135deg, #fed9a8, #fff3cd);
         }
     </style>
 </head>
@@ -195,19 +195,19 @@ $top_usuarios = $stmt->fetchAll();
             <div class="content-area">
                 <!-- Estadísticas -->
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
-                    <div class="stats-card" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);">
+                    <div class="stats-card">
                         <h3><?= $stats_hoy['total'] ?></h3>
                         <p>Acciones hoy</p>
                     </div>
-                    <div class="stats-card" style="background: linear-gradient(135deg, #17a2b8 0%, #0c5460 100%);">
+                    <div class="stats-card secondary">
                         <h3><?= $stats_hoy['exitosas'] ?? 0 ?></h3>
                         <p>Acciones exitosas</p>
                     </div>
-                    <div class="stats-card" style="background: linear-gradient(135deg, #dc3545 0%, #a71d2a 100%);">
+                    <div class="stats-card info">
                         <h3><?= ($stats_hoy['total'] - ($stats_hoy['exitosas'] ?? 0)) ?></h3>
                         <p>Acciones fallidas</p>
                     </div>
-                    <div class="stats-card" style="background: linear-gradient(135deg, #6f42c1 0%, #4a2a7c 100%);">
+                    <div class="stats-card success">
                         <h3><?= count($top_usuarios) ?></h3>
                         <p>Usuarios activos</p>
                     </div>
