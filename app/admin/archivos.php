@@ -10,31 +10,28 @@ if ($_SESSION['rol'] !== 'admin') {
 
 $mensaje = $error = '';
 
-// Borrar archivo
+// Borrar archivo (soft delete)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'borrar_archivo') {
     $archivo_id = (int)($_POST['archivo_id'] ?? 0);
     
     // Obtener archivo
-    $stmt = $pdo->prepare('SELECT id, ruta FROM archivos WHERE id = ?');
+    $stmt = $pdo->prepare('SELECT id, ruta, nombre_original, usuario_id FROM archivos WHERE id = ?');
     $stmt->execute([$archivo_id]);
     $archivo = $stmt->fetch();
     
     if ($archivo) {
-        // Borrar archivo del servidor
-        if (file_exists($archivo['ruta'])) {
-            unlink($archivo['ruta']);
-        }
-        
-        // Borrar de base de datos
-        $stmt = $pdo->prepare('DELETE FROM archivos WHERE id = ?');
+        // Soft delete: marcar como borrado
+        $stmt = $pdo->prepare('UPDATE archivos SET borrado_en = NOW() WHERE id = ?');
         $stmt->execute([$archivo_id]);
         
-        // Borrar vínculos
-        $pdo->exec('DELETE FROM archivo_nota WHERE archivo_id = ' . $archivo_id);
-        $pdo->exec('DELETE FROM archivo_tarea WHERE archivo_id = ' . $archivo_id);
-        $pdo->exec('DELETE FROM archivo_evento WHERE archivo_id = ' . $archivo_id);
+        // Registrar en papelera_logs
+        $stmt = $pdo->prepare('
+            INSERT INTO papelera_logs (usuario_id, tipo, item_id, nombre, borrado_en)
+            VALUES (?, ?, ?, ?, NOW())
+        ');
+        $stmt->execute([$archivo['usuario_id'], 'archivo', $archivo_id, $archivo['nombre_original']]);
         
-        $mensaje = 'Archivo borrado correctamente';
+        $mensaje = 'Archivo eliminado. Se encuentra en la papelera';
     } else {
         $error = 'Archivo no encontrado';
     }
@@ -46,10 +43,10 @@ $pagina = max(1, (int)($_GET['pagina'] ?? 1));
 $por_pagina = 20;
 $offset = ($pagina - 1) * $por_pagina;
 
-$sql_where = '';
+$sql_where = 'WHERE a.borrado_en IS NULL';
 $params = [];
 if (!empty($buscar)) {
-    $sql_where = 'WHERE (a.nombre_original LIKE ? OR u.username LIKE ?)';
+    $sql_where .= ' AND (a.nombre_original LIKE ? OR u.username LIKE ?)';
     $params = ['%' . $buscar . '%', '%' . $buscar . '%'];
 }
 
@@ -102,7 +99,7 @@ $max_size_actual = $cfg['archivo_max_size'] ?? '10';
 $extensiones_actual = $cfg['archivo_extensiones'] ?? 'jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,rar,7z,mp3,mp4,avi';
 
 // Estadísticas
-$stmt = $pdo->prepare('SELECT COUNT(*) as total, SUM(tamano) as espacio FROM archivos');
+$stmt = $pdo->prepare('SELECT COUNT(*) as total, SUM(tamano) as espacio FROM archivos WHERE borrado_en IS NULL');
 $stmt->execute();
 $stats = $stmt->fetch();
 
