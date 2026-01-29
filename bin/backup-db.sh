@@ -85,10 +85,9 @@ log "✓ Metadata creado"
 
 # 5. Crear ZIP final
 log "Creando archivo ZIP final..."
-cd /tmp
-if ! zip -r -q "$FINAL_ZIP" "$BACKUP_NAME"; then
+(cd /tmp && if ! zip -r -q "$FINAL_ZIP" "$BACKUP_NAME"; then
     error "Fallo al crear archivo ZIP"
-fi
+fi)
 log "✓ ZIP creado: $(basename $FINAL_ZIP)"
 
 # Obtener tamaño
