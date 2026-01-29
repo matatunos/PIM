@@ -898,6 +898,32 @@ body {
     opacity: 0.7;
 }
 
+/* Navbar menus visible en desktop */
+.navbar-menu {
+    display: flex;
+    gap: var(--spacing-lg);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar-right {
+    margin-left: auto;
+}
+
+.navbar-menu a {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+}
+
+.navbar-menu a:hover {
+    background: var(--bg-secondary);
+    color: var(--primary);
+}
+
 /* ==========================================
    Responsive
    ========================================== */
@@ -907,30 +933,9 @@ body {
         display: flex !important;
     }
     
-    .sidebar {
-        transform: translateX(-100%);
+    .navbar-menu {
+        display: none;
     }
-    
-    .sidebar.active {
-        transform: translateX(0);
-    }
-    
-    .main-content {
-        margin-left: 0;
-    }
-    
-    .search-box input {
-        width: 200px;
-    }
-    
-    .search-box input:focus {
-        width: 250px;
-    }
-    
-    .content-area {
-        padding: var(--spacing-lg);
-    }
-}
     
     .sidebar {
         transform: translateX(-100%);
