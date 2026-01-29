@@ -1,6 +1,7 @@
 <?php
 require_once '../../config/config.php';
 require_once '../../includes/auth_check.php';
+require_once '../../includes/audit_logger.php';
 
 // Solo administradores
 if ($_SESSION['rol'] !== 'admin') {
@@ -17,11 +18,22 @@ if (isset($_POST['action']) && $_POST['action'] === 'restaurar') {
     
     if (in_array($tipo, ['notas', 'tareas', 'eventos', 'contactos', 'archivos']) && $item_id > 0) {
         $table = $tipo;
+        
+        // Obtener nombre del item para auditoría
+        $stmt_info = $pdo->prepare('SELECT nombre FROM papelera_logs WHERE tipo = ? AND item_id = ? AND restaurado_en IS NULL LIMIT 1');
+        $stmt_info->execute([$tipo, $item_id]);
+        $item_info = $stmt_info->fetch();
+        $nombre_item = $item_info['nombre'] ?? 'Item';
+        
         $stmt = $pdo->prepare("UPDATE $table SET borrado_en = NULL WHERE id = ?");
         if ($stmt->execute([$item_id])) {
             // Registrar restauración
             $stmt = $pdo->prepare('UPDATE papelera_logs SET restaurado_en = NOW() WHERE tipo = ? AND item_id = ? AND restaurado_en IS NULL');
             $stmt->execute([$tipo, $item_id]);
+            
+            // Registrar en auditoría
+            logAction('restaurar', $tipo, 'Item restaurado de papelera: ' . $nombre_item, true);
+            
             $mensaje = "Item restaurado correctamente desde la papelera";
         } else {
             $error = "Error al restaurar el item";
@@ -36,11 +48,22 @@ if (isset($_POST['action']) && $_POST['action'] === 'borrar_permanente') {
     
     if (in_array($tipo, ['notas', 'tareas', 'eventos', 'contactos', 'archivos']) && $item_id > 0) {
         $table = $tipo;
+        
+        // Obtener nombre del item para auditoría
+        $stmt_info = $pdo->prepare('SELECT nombre FROM papelera_logs WHERE tipo = ? AND item_id = ? AND permanentemente_eliminado_en IS NULL LIMIT 1');
+        $stmt_info->execute([$tipo, $item_id]);
+        $item_info = $stmt_info->fetch();
+        $nombre_item = $item_info['nombre'] ?? 'Item';
+        
         $stmt = $pdo->prepare("DELETE FROM $table WHERE id = ? AND borrado_en IS NOT NULL");
         if ($stmt->execute([$item_id])) {
             // Registrar borrado permanente
             $stmt = $pdo->prepare('UPDATE papelera_logs SET permanentemente_eliminado_en = NOW() WHERE tipo = ? AND item_id = ? AND permanentemente_eliminado_en IS NULL');
             $stmt->execute([$tipo, $item_id]);
+            
+            // Registrar en auditoría
+            logAction('eliminar', $tipo, 'Item eliminado permanentemente de papelera: ' . $nombre_item, true);
+            
             $mensaje = "Item eliminado permanentemente de la papelera";
         } else {
             $error = "Error al eliminar el item";
