@@ -105,7 +105,7 @@
             </div>
             
             <div class="user-dropdown" id="userDropdown">
-                <a href="/app/perfil/index.php" class="dropdown-item" style="display: flex; align-items: center; gap: var(--spacing-md); padding: 0.75rem var(--spacing-md); text-decoration: none; color: var(--text-secondary); cursor: pointer; transition: all var(--transition-fast);" onclick="document.getElementById('userProfileToggle').classList.remove('active'); document.getElementById('userDropdown').classList.remove('active');">
+                <a href="/app/perfil/index.php" class="dropdown-item" style="display: flex; align-items: center; gap: var(--spacing-md); padding: 0.75rem var(--spacing-md); text-decoration: none; color: var(--text-secondary); cursor: pointer; transition: all var(--transition-fast);">
                     <i class="fas fa-user-cog"></i>
                     <span>Mi Perfil</span>
                 </a>
@@ -269,5 +269,14 @@
                 });
             });
         }
+        
+        // Cerrar dropdown al hacer clic en cualquier item
+        const dropdownItems = document.querySelectorAll('.user-dropdown .dropdown-item');
+        dropdownItems.forEach(item => {
+            item.addEventListener('click', function() {
+                profileToggle.classList.remove('active');
+                dropdown.classList.remove('active');
+            });
+        });
     });
 </script>
