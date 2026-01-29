@@ -460,6 +460,10 @@ $contactos = $stmt->fetchAll();
                     <h1 class="page-title"><i class="fas fa-address-book"></i> Contactos</h1>
                 </div>
                 <div class="top-bar-right">
+                    <a href="/api/exportar-contactos.php" class="btn btn-secondary" style="margin-right: var(--spacing-md);" download="contactos.vcf" title="Exportar contactos para iOS y Android">
+                        <i class="fas fa-file-export"></i>
+                        Exportar VCF
+                    </a>
                     <a href="importar.php" class="btn btn-secondary" style="margin-right: var(--spacing-md);">
                         <i class="fas fa-file-import"></i>
                         Importar CSV
