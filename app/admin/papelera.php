@@ -16,20 +16,23 @@ if (isset($_POST['action']) && $_POST['action'] === 'restaurar') {
     $tipo = $_POST['tipo'] ?? '';
     $item_id = (int)($_POST['item_id'] ?? 0);
     
+    // Normalizar 'archivo' a 'archivos'
+    if ($tipo === 'archivo') $tipo = 'archivos';
+    
     if (in_array($tipo, ['notas', 'tareas', 'eventos', 'contactos', 'archivos']) && $item_id > 0) {
         $table = $tipo;
         
-        // Obtener nombre del item para auditoría
-        $stmt_info = $pdo->prepare('SELECT nombre FROM papelera_logs WHERE tipo = ? AND item_id = ? AND restaurado_en IS NULL LIMIT 1');
-        $stmt_info->execute([$tipo, $item_id]);
+        // Obtener nombre del item para auditoría (buscar en papelera_logs con ambos tipos)
+        $stmt_info = $pdo->prepare('SELECT nombre FROM papelera_logs WHERE (tipo = ? OR tipo = ?) AND item_id = ? AND restaurado_en IS NULL LIMIT 1');
+        $stmt_info->execute([$tipo, ($tipo === 'archivos' ? 'archivo' : $tipo), $item_id]);
         $item_info = $stmt_info->fetch();
         $nombre_item = $item_info['nombre'] ?? 'Item';
         
         $stmt = $pdo->prepare("UPDATE $table SET borrado_en = NULL WHERE id = ?");
         if ($stmt->execute([$item_id])) {
-            // Registrar restauración
-            $stmt = $pdo->prepare('UPDATE papelera_logs SET restaurado_en = NOW() WHERE tipo = ? AND item_id = ? AND restaurado_en IS NULL');
-            $stmt->execute([$tipo, $item_id]);
+            // Registrar restauración (en ambos tipos posibles)
+            $stmt = $pdo->prepare('UPDATE papelera_logs SET restaurado_en = NOW() WHERE (tipo = ? OR tipo = ?) AND item_id = ? AND restaurado_en IS NULL');
+            $stmt->execute([$tipo, ($tipo === 'archivos' ? 'archivo' : $tipo), $item_id]);
             
             // Registrar en auditoría
             logAction('restaurar', $tipo, 'Item restaurado de papelera: ' . $nombre_item, true);
@@ -46,20 +49,23 @@ if (isset($_POST['action']) && $_POST['action'] === 'borrar_permanente') {
     $tipo = $_POST['tipo'] ?? '';
     $item_id = (int)($_POST['item_id'] ?? 0);
     
+    // Normalizar 'archivo' a 'archivos'
+    if ($tipo === 'archivo') $tipo = 'archivos';
+    
     if (in_array($tipo, ['notas', 'tareas', 'eventos', 'contactos', 'archivos']) && $item_id > 0) {
         $table = $tipo;
         
-        // Obtener nombre del item para auditoría
-        $stmt_info = $pdo->prepare('SELECT nombre FROM papelera_logs WHERE tipo = ? AND item_id = ? AND permanentemente_eliminado_en IS NULL LIMIT 1');
-        $stmt_info->execute([$tipo, $item_id]);
+        // Obtener nombre del item para auditoría (buscar en papelera_logs con ambos tipos)
+        $stmt_info = $pdo->prepare('SELECT nombre FROM papelera_logs WHERE (tipo = ? OR tipo = ?) AND item_id = ? AND permanentemente_eliminado_en IS NULL LIMIT 1');
+        $stmt_info->execute([$tipo, ($tipo === 'archivos' ? 'archivo' : $tipo), $item_id]);
         $item_info = $stmt_info->fetch();
         $nombre_item = $item_info['nombre'] ?? 'Item';
         
         $stmt = $pdo->prepare("DELETE FROM $table WHERE id = ? AND borrado_en IS NOT NULL");
         if ($stmt->execute([$item_id])) {
-            // Registrar borrado permanente
-            $stmt = $pdo->prepare('UPDATE papelera_logs SET permanentemente_eliminado_en = NOW() WHERE tipo = ? AND item_id = ? AND permanentemente_eliminado_en IS NULL');
-            $stmt->execute([$tipo, $item_id]);
+            // Registrar borrado permanente (en ambos tipos posibles)
+            $stmt = $pdo->prepare('UPDATE papelera_logs SET permanentemente_eliminado_en = NOW() WHERE (tipo = ? OR tipo = ?) AND item_id = ? AND permanentemente_eliminado_en IS NULL');
+            $stmt->execute([$tipo, ($tipo === 'archivos' ? 'archivo' : $tipo), $item_id]);
             
             // Registrar en auditoría
             logAction('eliminar', $tipo, 'Item eliminado permanentemente de papelera: ' . $nombre_item, true);
