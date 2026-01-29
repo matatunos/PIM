@@ -344,10 +344,6 @@ for ($i = 29; $i >= 0; $i--) {
                         <i class="fas fa-search"></i>
                         <input type="text" placeholder="Buscar...">
                     </div>
-                    <a href="/app/auth/logout.php" class="btn btn-ghost btn-sm">
-                        <i class="fas fa-sign-out-alt"></i>
-                        Salir
-                    </a>
                 </div>
             </div>
             
