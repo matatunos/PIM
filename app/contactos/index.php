@@ -215,6 +215,10 @@ $contactos = $stmt->fetchAll();
                     <h1 class="page-title"><i class="fas fa-address-book"></i> Contactos</h1>
                 </div>
                 <div class="top-bar-right">
+                    <a href="importar.php" class="btn btn-secondary" style="margin-right: var(--spacing-md);">
+                        <i class="fas fa-file-import"></i>
+                        Importar CSV
+                    </a>
                     <button onclick="abrirModalNuevo()" class="btn btn-primary">
                         <i class="fas fa-plus"></i>
                         Nuevo Contacto
