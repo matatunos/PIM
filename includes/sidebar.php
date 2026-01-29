@@ -113,7 +113,7 @@
                     <i class="fas fa-key"></i>
                     <span>Cambiar Contraseña</span>
                 </div>
-                <a href="/app/perfil/index.php#export" class="dropdown-item" style="display: flex; align-items: center; gap: var(--spacing-md); padding: 0.75rem var(--spacing-md); text-decoration: none; color: var(--text-secondary); cursor: pointer; transition: all var(--transition-fast);">
+                <a href="/app/perfil/index.php#export" class="dropdown-item" style="display: flex; align-items: center; gap: var(--spacing-md); padding: 0.75rem var(--spacing-md); text-decoration: none; color: var(--text-secondary); cursor: pointer; transition: all var(--transition-fast);" onclick="document.getElementById('userProfileToggle').classList.remove('active'); document.getElementById('userDropdown').classList.remove('active');">
                     <i class="fas fa-file-export"></i>
                     <span>Exportar mis datos</span>
                 </a>
