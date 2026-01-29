@@ -16,6 +16,35 @@ if (isset($_SESSION['user_id'])) {
 $error = '';
 $require_2fa = false;
 
+// ==========================================
+// Rate Limiting para prevenir fuerza bruta
+// ==========================================
+$ip = $_SERVER['REMOTE_ADDR'];
+$rate_limit_key = 'login_attempts_' . md5($ip);
+$max_attempts = 5;
+$lockout_time = 900; // 15 minutos
+
+// Verificar intentos previos
+if (!isset($_SESSION[$rate_limit_key])) {
+    $_SESSION[$rate_limit_key] = ['count' => 0, 'first_attempt' => time()];
+}
+
+$attempts = &$_SESSION[$rate_limit_key];
+
+// Resetear contador si ha pasado el tiempo de bloqueo
+if (time() - $attempts['first_attempt'] > $lockout_time) {
+    $attempts = ['count' => 0, 'first_attempt' => time()];
+}
+
+// Verificar si está bloqueado
+$is_blocked = $attempts['count'] >= $max_attempts;
+$remaining_time = $lockout_time - (time() - $attempts['first_attempt']);
+
+if ($is_blocked && $remaining_time > 0) {
+    $minutes = ceil($remaining_time / 60);
+    $error = "Demasiados intentos fallidos. Por favor espera $minutes minutos antes de intentar de nuevo.";
+}
+
 // Verificación de código 2FA
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify_2fa'])) {
     $code = trim($_POST['totp_code'] ?? '');
@@ -82,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify_2fa'])) {
 }
 
 // Login inicial (usuario y contraseña)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['verify_2fa'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['verify_2fa']) && !$is_blocked) {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
     
@@ -95,6 +124,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['verify_2fa'])) {
             $user = $stmt->fetch();
             
             if ($user && password_verify($password, $user['password'])) {
+                // Login exitoso - resetear contador de intentos
+                $attempts['count'] = 0;
+                
+                // Regenerar ID de sesión para prevenir session fixation
+                session_regenerate_id(true);
+                
                 // Verificar si tiene 2FA habilitado
                 if ($user['totp_enabled']) {
                     // Requerir código 2FA
@@ -123,7 +158,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['verify_2fa'])) {
                     redirect('/index.php');
                 }
             } else {
-                $error = 'Usuario o contraseña incorrectos';
+                // Login fallido - incrementar contador
+                $attempts['count']++;
+                $remaining = $max_attempts - $attempts['count'];
+                
+                if ($remaining > 0) {
+                    $error = "Usuario o contraseña incorrectos. Te quedan $remaining intentos.";
+                } else {
+                    $minutes = ceil($lockout_time / 60);
+                    $error = "Demasiados intentos fallidos. Cuenta bloqueada por $minutes minutos.";
+                }
                 
                 // Log fallido
                 if ($user) {
@@ -133,6 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['verify_2fa'])) {
             }
         } catch (PDOException $e) {
             $error = 'Error en el sistema. Intenta de nuevo.';
+            error_log('Login error: ' . $e->getMessage());
         }
     }
 }
