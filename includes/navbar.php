@@ -26,31 +26,13 @@
 </nav>
 
 <script>
-// Mostrar/ocultar hamburger según viewport
-function toggleHamburgerVisibility() {
-    const hamburger = document.getElementById('hamburger-menu');
-    if (!hamburger) return;
-    
-    if (window.innerWidth <= 768) {
-        hamburger.style.display = 'flex';
-    } else {
-        hamburger.style.display = 'none';
-        // Si está activo en desktop, cerrarlo
-        hamburger.classList.remove('active');
-        const sidebar = document.querySelector('.sidebar');
-        if (sidebar) sidebar.classList.remove('active');
-    }
-}
-
-// Ejecutar cuando cargue el navbar
+// Hamburger menu toggle - solo funcionalidad, sin tocar display
 document.addEventListener('DOMContentLoaded', function() {
-    toggleHamburgerVisibility();
-    
-    // Configurar click del hamburger
     const hamburger = document.getElementById('hamburger-menu');
     const sidebar = document.querySelector('.sidebar');
     
     if (hamburger && sidebar) {
+        // Click en hamburger
         hamburger.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -66,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Cerrar sidebar al hacer click en un link
+        // Cerrar sidebar al hacer click en un link del sidebar
         sidebar.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', function() {
                 if (window.innerWidth <= 768) {
@@ -77,8 +59,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-
-// Ejecutar al cambiar tamaño de ventana
-window.addEventListener('resize', toggleHamburgerVisibility);
 </script>
 
