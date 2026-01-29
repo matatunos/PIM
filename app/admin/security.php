@@ -177,20 +177,103 @@ require_once "../../app/idiomas/{$lang}.php";
         .log-table td {
             vertical-align: middle;
         }
+        .content-area {
+            padding: var(--spacing-xl);
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -10px;
+        }
+        .col-md-3, .col-md-6 {
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+        .col-md-3 { width: 25%; }
+        .col-md-6 { width: 50%; }
+        @media (max-width: 992px) {
+            .col-md-3, .col-md-6 { width: 50%; }
+        }
+        @media (max-width: 768px) {
+            .col-md-3, .col-md-6 { width: 100%; }
+        }
+        .mb-4 { margin-bottom: 1.5rem; }
+        .mb-3 { margin-bottom: 1rem; }
+        .mb-0 { margin-bottom: 0; }
+        .me-2 { margin-right: 0.5rem; }
+        .gap-2 { gap: 0.5rem; }
+        .d-flex { display: flex; }
+        .d-inline { display: inline; }
+        .justify-content-between { justify-content: space-between; }
+        .align-items-center { align-items: center; }
+        .text-muted { color: var(--text-secondary); }
+        .text-nowrap { white-space: nowrap; }
+        .text-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .text-center { text-align: center; }
+        .py-4 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+        .p-0 { padding: 0; }
+        .w-100 { width: 100%; }
+        .sticky-top { position: sticky; top: 0; z-index: 10; }
+        .bg-white { background: var(--bg-primary); }
+        .card {
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+        .card-header {
+            background: var(--bg-secondary);
+            padding: var(--spacing-md) var(--spacing-lg);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .card-header.bg-warning { background: #fbbf24; color: #1f2937; }
+        .card-header.bg-danger { background: #ef4444; color: white; }
+        .card-body { padding: var(--spacing-lg); }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th, .table td { padding: var(--spacing-sm) var(--spacing-md); text-align: left; border-bottom: 1px solid var(--border-color); }
+        .table-sm th, .table-sm td { padding: var(--spacing-xs) var(--spacing-sm); }
+        .table-hover tbody tr:hover { background: var(--bg-secondary); }
+        .table-responsive { overflow-x: auto; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+        .badge.bg-danger { background: #ef4444; color: white; }
+        .badge.bg-primary { background: var(--primary); color: white; }
+        .form-control, .form-select { 
+            padding: 6px 12px; 
+            border: 1px solid var(--border-color); 
+            border-radius: var(--radius-md); 
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        .form-control-sm, .form-select-sm { padding: 4px 8px; font-size: 0.875rem; }
+        .btn-sm { padding: 4px 8px; font-size: 0.875rem; }
+        .btn-outline-success { border: 1px solid #22c55e; color: #22c55e; background: transparent; }
+        .btn-outline-success:hover { background: #22c55e; color: white; }
+        .btn-outline-secondary { border: 1px solid var(--border-color); color: var(--text-secondary); background: transparent; }
+        .btn-outline-secondary:hover { background: var(--bg-secondary); }
+        .alert { padding: var(--spacing-md); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg); }
+        .alert-success { background: #dcfce7; color: #166534; }
+        .alert-danger { background: #fee2e2; color: #991b1b; }
+        .list-unstyled { list-style: none; padding: 0; margin: 0; }
+        .list-unstyled li { padding: var(--spacing-xs) 0; }
+        code { background: var(--bg-secondary); padding: 2px 6px; border-radius: 4px; font-family: monospace; }
     </style>
 </head>
 <body>
-    <?php include '../../includes/navbar.php'; ?>
-    
-    <div class="container-fluid">
-        <div class="row">
-            <?php include '../../includes/sidebar.php'; ?>
-            
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2><i class="fas fa-shield-alt me-2"></i>Panel de Seguridad</h2>
+    <div class="app-container">
+        <?php include '../../includes/sidebar.php'; ?>
+        
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="top-bar-left">
+                    <h1 class="page-title"><i class="fas fa-shield-alt"></i> Panel de Seguridad</h1>
+                </div>
+                <div class="top-bar-right">
                     <span class="badge bg-primary">v<?= PIM_VERSION ?></span>
                 </div>
+            </div>
+            
+            <div class="content-area">
                 
                 <?php if ($success): ?>
                     <div class="alert alert-success alert-dismissible fade show">
@@ -457,10 +540,10 @@ require_once "../../app/idiomas/{$lang}.php";
                         </div>
                     </div>
                 </div>
-            </main>
+            </div>
         </div>
     </div>
     
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/js/ajax-nav.js"></script>
 </body>
 </html>
