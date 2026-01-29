@@ -856,42 +856,46 @@ body {
    Hamburger Menu
    ========================================== */
 
-.hamburger-menu {
+#hamburger-menu {
     display: none;
-    flex-direction: column;
+    position: relative;
+    z-index: 2000;
+    width: auto;
+    height: auto;
+    min-width: 44px;
+    min-height: 44px;
     background: none;
     border: none;
     cursor: pointer;
     padding: 8px;
     gap: 6px;
     margin-right: 12px;
-    z-index: 1001;
-    position: relative;
+    flex-direction: column;
 }
 
-.hamburger-menu:hover {
-    opacity: 0.7;
-}
-
-.hamburger-menu span {
+#hamburger-menu span {
+    display: block;
     width: 24px;
     height: 3px;
     background-color: var(--text-primary);
     border-radius: 2px;
     transition: all var(--transition-fast);
-    display: block;
 }
 
-.hamburger-menu.active span:nth-child(1) {
+#hamburger-menu.active span:nth-child(1) {
     transform: rotate(45deg) translate(8px, 8px);
 }
 
-.hamburger-menu.active span:nth-child(2) {
+#hamburger-menu.active span:nth-child(2) {
     opacity: 0;
 }
 
-.hamburger-menu.active span:nth-child(3) {
+#hamburger-menu.active span:nth-child(3) {
     transform: rotate(-45deg) translate(7px, -7px);
+}
+
+#hamburger-menu:hover {
+    opacity: 0.7;
 }
 
 /* ==========================================
@@ -899,9 +903,34 @@ body {
    ========================================== */
 
 @media (max-width: 768px) {
-    .hamburger-menu {
+    #hamburger-menu {
         display: flex !important;
     }
+    
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+    
+    .search-box input {
+        width: 200px;
+    }
+    
+    .search-box input:focus {
+        width: 250px;
+    }
+    
+    .content-area {
+        padding: var(--spacing-lg);
+    }
+}
     
     .sidebar {
         transform: translateX(-100%);

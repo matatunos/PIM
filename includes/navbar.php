@@ -2,10 +2,10 @@
 <?php require_once __DIR__.'/lang.php'; ?>
 <nav class="navbar-glass">
   <div class="navbar-container">
-    <button id="hamburger-menu" class="hamburger-menu" title="Menú" style="display: none; flex-direction: column; background: none; border: none; cursor: pointer; padding: 8px; gap: 6px; margin-right: 12px;">
-      <span style="width: 24px; height: 3px; background-color: var(--text-primary); border-radius: 2px; display: block;"></span>
-      <span style="width: 24px; height: 3px; background-color: var(--text-primary); border-radius: 2px; display: block;"></span>
-      <span style="width: 24px; height: 3px; background-color: var(--text-primary); border-radius: 2px; display: block;"></span>
+    <button id="hamburger-menu" title="Menú">
+      <span></span>
+      <span></span>
+      <span></span>
     </button>
     <a href="/index.php" class="navbar-brand"><i class="fas fa-th-large"></i> PIM</a>
     <ul class="navbar-menu">
@@ -26,19 +26,59 @@
 </nav>
 
 <script>
-// Mostrar hamburger en mobile
-function mostrarHamburguerMobile() {
+// Mostrar/ocultar hamburger según viewport
+function toggleHamburgerVisibility() {
     const hamburger = document.getElementById('hamburger-menu');
+    if (!hamburger) return;
+    
     if (window.innerWidth <= 768) {
         hamburger.style.display = 'flex';
     } else {
         hamburger.style.display = 'none';
+        // Si está activo en desktop, cerrarlo
+        hamburger.classList.remove('active');
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) sidebar.classList.remove('active');
     }
 }
 
-// Ejecutar al cargar
-mostrarHamburguerMobile();
+// Ejecutar cuando cargue el navbar
+document.addEventListener('DOMContentLoaded', function() {
+    toggleHamburgerVisibility();
+    
+    // Configurar click del hamburger
+    const hamburger = document.getElementById('hamburger-menu');
+    const sidebar = document.querySelector('.sidebar');
+    
+    if (hamburger && sidebar) {
+        hamburger.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            hamburger.classList.toggle('active');
+            sidebar.classList.toggle('active');
+        });
+        
+        // Cerrar sidebar al hacer click fuera
+        document.addEventListener('click', function(e) {
+            if (!sidebar.contains(e.target) && !hamburger.contains(e.target)) {
+                hamburger.classList.remove('active');
+                sidebar.classList.remove('active');
+            }
+        });
+        
+        // Cerrar sidebar al hacer click en un link
+        sidebar.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    hamburger.classList.remove('active');
+                    sidebar.classList.remove('active');
+                }
+            });
+        });
+    }
+});
 
-// Ejecutar al cambiar tamaño
-window.addEventListener('resize', mostrarHamburguerMobile);
+// Ejecutar al cambiar tamaño de ventana
+window.addEventListener('resize', toggleHamburgerVisibility);
 </script>
+
