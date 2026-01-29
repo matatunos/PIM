@@ -2,6 +2,11 @@
 <?php require_once __DIR__.'/lang.php'; ?>
 <nav class="navbar-glass">
   <div class="navbar-container">
+    <button id="hamburger-menu" class="hamburger-menu" title="Menú">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
     <a href="/index.php" class="navbar-brand"><i class="fas fa-th-large"></i> PIM</a>
     <ul class="navbar-menu">
       <li><a href="#" data-module="contactos"><i class="fas fa-address-book"></i> <?= t('contactos') ?></a></li>

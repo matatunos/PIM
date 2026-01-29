@@ -333,6 +333,8 @@ for ($i = 29; $i >= 0; $i--) {
     </style>
     <!-- Toast Notifications Service -->
     <script src="/assets/js/notifications.js"></script>
+    <!-- Hamburger Menu -->
+    <script src="/assets/js/hamburger.js"></script>
 </head>
 <body>
     <div class="app-container">
