@@ -1,6 +1,7 @@
 <?php
 require_once '../../config/config.php';
 require_once '../../includes/auth_check.php';
+require_once '../../includes/audit_logger.php';
 
 $usuario_id = $_SESSION['user_id'];
 $mensaje = '';
@@ -15,6 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $stmt = $pdo->prepare('INSERT INTO notas (usuario_id, titulo, contenido, color) VALUES (?, ?, ?, ?)');
         $stmt->execute([$usuario_id, $titulo, $contenido, $color]);
         $nota_id = $pdo->lastInsertId();
+        
+        // Registrar en auditoría
+        logAction('crear', 'nota', 'Nota creada: ' . substr($titulo ?: $contenido, 0, 50), true);
         
         // Agregar etiquetas
         if (!empty($_POST['etiquetas'])) {

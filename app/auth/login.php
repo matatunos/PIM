@@ -1,6 +1,7 @@
 <?php
 require_once '../../config/config.php';
 require_once '../../includes/totp.php';
+require_once '../../includes/audit_logger.php';
 
 // Asegurar que la sesión está activa
 if (session_status() === PHP_SESSION_NONE) {

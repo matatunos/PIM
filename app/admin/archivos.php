@@ -1,6 +1,7 @@
 <?php
 require_once '../../config/config.php';
 require_once '../../includes/auth_check.php';
+require_once '../../includes/audit_logger.php';
 
 // Solo administradores
 if ($_SESSION['rol'] !== 'admin') {
@@ -27,6 +28,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         // Registrar en papelera_logs
         $stmt = $pdo->prepare('INSERT INTO papelera_logs (usuario_id, tipo, item_id, nombre) VALUES (?, ?, ?, ?)');
         $stmt->execute([$archivo['usuario_id'], 'archivos', $archivo_id, $archivo['nombre_original']]);
+        
+        // Registrar en auditoría
+        logAction('eliminar', 'archivo', 'Archivo eliminado: ' . $archivo['nombre_original'], true);
         
         $mensaje = 'Archivo eliminado. Se encuentra en la papelera';
     } else {

@@ -79,9 +79,9 @@
                 <i class="fas fa-folder-cog"></i>
                 Gestión de Archivos
             </a>
-            <a href="/app/admin/logs.php" class="nav-link <?= strpos($_SERVER['PHP_SELF'], '/admin/logs') !== false ? 'active' : '' ?>">
-                <i class="fas fa-history"></i>
-                Logs de Acceso
+            <a href="/app/admin/auditoria.php" class="nav-link <?= strpos($_SERVER['PHP_SELF'], '/admin/auditoria') !== false ? 'active' : '' ?>">
+                <i class="fas fa-shield-alt"></i>
+                Auditoría y Logs
             </a>
             <a href="/app/admin/configuracion.php" class="nav-link <?= strpos($_SERVER['PHP_SELF'], '/admin/configuracion') !== false ? 'active' : '' ?>">
                 <i class="fas fa-cogs"></i>
