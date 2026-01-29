@@ -98,15 +98,33 @@ for ($i = 29; $i >= 0; $i--) {
     <style>
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: var(--spacing-lg);
+            grid-template-columns: repeat(6, 1fr);
+            gap: var(--spacing-md);
             margin-bottom: var(--spacing-2xl);
+        }
+        
+        @media (max-width: 1400px) {
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
         
         .stat-card {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
-            padding: var(--spacing-xl);
+            padding: var(--spacing-lg);
             border-radius: var(--radius-lg);
             box-shadow: var(--shadow-md);
             transition: transform var(--transition-base);
@@ -131,33 +149,41 @@ for ($i = 29; $i >= 0; $i--) {
             background: linear-gradient(135deg, var(--success), #a8dfc2);
         }
         
+        .stat-card:nth-child(5) {
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+        }
+        
+        .stat-card:nth-child(6) {
+            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+        }
+        
         .stat-header {
             display: flex;
             align-items: center;
-            gap: var(--spacing-md);
-            margin-bottom: var(--spacing-md);
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-sm);
         }
         
         .stat-icon {
-            width: 48px;
-            height: 48px;
+            width: 40px;
+            height: 40px;
             background: rgba(255, 255, 255, 0.2);
             border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.25rem;
         }
         
         .stat-number {
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: 700;
             line-height: 1;
-            margin-bottom: var(--spacing-sm);
+            margin-bottom: var(--spacing-xs);
         }
         
         .stat-label {
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             opacity: 0.9;
         }
         
