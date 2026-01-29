@@ -26,6 +26,38 @@
 </nav>
 
 <script>
+// Emergency script to ensure hamburger is visible on mobile
+(function() {
+    function ensureHamburgerVisible() {
+        const hamburger = document.getElementById('hamburger-menu');
+        if (!hamburger) return;
+        
+        // Force visible on mobile (iPhone 13 Pro Max is 430px)
+        const isMobile = window.innerWidth <= 768;
+        
+        if (isMobile) {
+            // Force it to be visible
+            hamburger.style.setProperty('display', 'flex', 'important');
+            hamburger.style.setProperty('visibility', 'visible', 'important');
+            hamburger.style.setProperty('opacity', '1', 'important');
+            hamburger.style.setProperty('flex-direction', 'column', 'important');
+        }
+    }
+    
+    // Run immediately
+    ensureHamburgerVisible();
+    
+    // Run after DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', ensureHamburgerVisible);
+    }
+    
+    // Run on window load
+    window.addEventListener('load', ensureHamburgerVisible);
+})();
+</script>
+
+<script>
 // Setup hamburger menu functionality
 document.addEventListener('DOMContentLoaded', function() {
     const hamburger = document.getElementById('hamburger-menu');

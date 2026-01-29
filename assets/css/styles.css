@@ -857,30 +857,32 @@ body {
    ========================================== */
 
 #hamburger-menu {
-    position: relative;
-    z-index: 2000;
-    width: auto;
-    height: auto;
-    min-width: 44px;
-    min-height: 44px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 8px;
-    gap: 6px;
-    margin-right: 12px;
-    display: flex;
-    flex-direction: column;
+    position: relative !important;
+    z-index: 2000 !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    background: none !important;
+    border: none !important;
+    cursor: pointer !important;
+    padding: 8px !important;
+    gap: 6px !important;
+    margin-right: 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 #hamburger-menu span {
-    display: block;
-    width: 24px;
-    height: 3px;
-    background-color: var(--text-primary);
-    border-radius: 2px;
-    transition: all var(--transition-fast);
-    flex-shrink: 0;
+    display: block !important;
+    width: 24px !important;
+    height: 3px !important;
+    background-color: var(--text-primary) !important;
+    border-radius: 2px !important;
+    transition: all var(--transition-fast) !important;
+    flex-shrink: 0 !important;
 }
 
 #hamburger-menu.active span:nth-child(1) {
@@ -934,6 +936,13 @@ body {
         display: none !important;
     }
     
+    #hamburger-menu {
+        display: flex !important;
+        flex-direction: column !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
     .sidebar {
         transform: translateX(-100%);
     }
@@ -959,10 +968,11 @@ body {
     }
 }
 
-/* Desktop: hide hamburger */
+/* Desktop: explicitly hide hamburger */
 @media (min-width: 769px) {
     #hamburger-menu {
         display: none !important;
+        visibility: hidden !important;
     }
 }
         padding: var(--spacing-lg);
