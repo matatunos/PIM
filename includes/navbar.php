@@ -29,23 +29,42 @@
 // Función para actualizar visibilidad del hamburger
 function updateHamburgerVisibility() {
     const hamburger = document.getElementById('hamburger-menu');
-    const isMobile = window.innerWidth <= 768;
-    
     if (!hamburger) return;
+    
+    const isMobile = window.innerWidth <= 768;
+    console.log('Viewport width:', window.innerWidth, 'Mobile:', isMobile);
     
     if (isMobile) {
         hamburger.style.display = 'flex';
         hamburger.style.flexDirection = 'column';
+        hamburger.style.visibility = 'visible';
     } else {
         hamburger.style.display = 'none';
+        hamburger.style.visibility = 'hidden';
     }
 }
 
 // Ejecutar al cargar
-document.addEventListener('DOMContentLoaded', function() {
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', updateHamburgerVisibility);
+} else {
     updateHamburgerVisibility();
-    
-    // Configurar funcionalidad del hamburger
+}
+
+// Ejecutar después de que el layout esté completo
+window.addEventListener('load', updateHamburgerVisibility);
+
+// Actualizar cuando cambie el tamaño o orientación
+window.addEventListener('resize', updateHamburgerVisibility);
+window.addEventListener('orientationchange', updateHamburgerVisibility);
+
+// También ejecutar periódicamente por si acaso
+setTimeout(updateHamburgerVisibility, 100);
+setTimeout(updateHamburgerVisibility, 500);
+setTimeout(updateHamburgerVisibility, 1000);
+
+// Configurar funcionalidad del hamburger
+document.addEventListener('DOMContentLoaded', function() {
     const hamburger = document.getElementById('hamburger-menu');
     const sidebar = document.querySelector('.sidebar');
     
@@ -76,8 +95,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-
-// Actualizar cuando cambie el tamaño
-window.addEventListener('resize', updateHamburgerVisibility);
 </script>
 

@@ -863,12 +863,18 @@ body {
     height: auto;
     min-width: 44px;
     min-height: 44px;
+    min-height: 44px;
     background: none;
     border: none;
     cursor: pointer;
     padding: 8px;
     gap: 6px;
     margin-right: 12px;
+}
+
+#hamburger-menu[style*="display: flex"] {
+    display: flex !important;
+    flex-direction: column;
 }
 
 #hamburger-menu span {
@@ -878,6 +884,7 @@ body {
     background-color: var(--text-primary);
     border-radius: 2px;
     transition: all var(--transition-fast);
+    flex-shrink: 0;
 }
 
 #hamburger-menu.active span:nth-child(1) {
