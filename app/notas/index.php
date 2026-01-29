@@ -171,6 +171,7 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
     <title>Notas - PIM</title>
     <link rel="stylesheet" href="/assets/css/styles.css">
     <link rel="stylesheet" href="/assets/fonts/fontawesome/css/all.min.css">
+    <script src="/assets/js/marked.min.js"></script>
     <style>
         .notas-grid {
             display: grid;
@@ -182,15 +183,15 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
             background: var(--bg-primary);
             border-radius: var(--radius-lg);
             padding: var(--spacing-lg);
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
             transition: all var(--transition-base);
             border-left: 4px solid;
             position: relative;
             cursor: pointer;
         }
         .nota-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15), 0 3px 10px rgba(0, 0, 0, 0.1);
         }
         .nota-card.fijada {
             border-top: 2px solid var(--warning);
@@ -215,15 +216,165 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
             overflow: hidden;
             position: relative;
         }
-        .nota-contenido::after {
+        .nota-contenido.markdown-body::after {
             content: '';
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
-            height: 30px;
+            height: 40px;
             background: linear-gradient(transparent, var(--bg-primary));
+            pointer-events: none;
         }
+        /* Quitar gradiente en vista detalles */
+        .notas-container[data-view="detalles"] .nota-contenido.markdown-body::after {
+            display: none;
+        }
+        /* Estilos Markdown */
+        .nota-contenido.markdown-body h1, .nota-contenido.markdown-body h2, .nota-contenido.markdown-body h3 {
+            margin: 0.5em 0 0.3em;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.3em;
+        }
+        .nota-contenido.markdown-body h1 { font-size: 1.3em; }
+        .nota-contenido.markdown-body h2 { font-size: 1.15em; }
+        .nota-contenido.markdown-body h3 { font-size: 1.05em; border-bottom: none; }
+        .nota-contenido.markdown-body p { margin: 0.5em 0; }
+        .nota-contenido.markdown-body ul, .nota-contenido.markdown-body ol { 
+            margin: 0.5em 0; 
+            padding-left: 1.5em; 
+        }
+        .nota-contenido.markdown-body li { margin: 0.2em 0; }
+        .nota-contenido.markdown-body code {
+            background: var(--gray-100);
+            padding: 0.15em 0.4em;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+            color: var(--danger);
+        }
+        .nota-contenido.markdown-body pre {
+            background: var(--gray-100);
+            padding: 0.8em;
+            border-radius: var(--radius-md);
+            overflow-x: auto;
+            margin: 0.5em 0;
+        }
+        .nota-contenido.markdown-body pre code {
+            background: none;
+            padding: 0;
+            color: var(--text-primary);
+        }
+        .nota-contenido.markdown-body table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 0.5em 0;
+            font-size: 0.9em;
+        }
+        .nota-contenido.markdown-body th, .nota-contenido.markdown-body td {
+            border: 1px solid var(--border-color);
+            padding: 0.4em 0.6em;
+            text-align: left;
+        }
+        .nota-contenido.markdown-body th {
+            background: var(--gray-100);
+            font-weight: 600;
+        }
+        .nota-contenido.markdown-body blockquote {
+            border-left: 3px solid var(--primary);
+            margin: 0.5em 0;
+            padding: 0.3em 1em;
+            background: var(--gray-50);
+            color: var(--text-secondary);
+        }
+        .nota-contenido.markdown-body hr {
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 1em 0;
+        }
+        .nota-contenido.markdown-body a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .nota-contenido.markdown-body a:hover {
+            text-decoration: underline;
+        }
+        .nota-contenido.markdown-body strong { color: var(--text-primary); }
+        
+        /* Estilos para preview en modal */
+        #contenido-preview.markdown-body h1, #contenido-preview.markdown-body h2, #contenido-preview.markdown-body h3 {
+            margin: 0.5em 0 0.3em;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.3em;
+        }
+        #contenido-preview.markdown-body h1 { font-size: 1.4em; }
+        #contenido-preview.markdown-body h2 { font-size: 1.2em; }
+        #contenido-preview.markdown-body h3 { font-size: 1.1em; border-bottom: none; }
+        #contenido-preview.markdown-body p { margin: 0.5em 0; }
+        #contenido-preview.markdown-body ul, #contenido-preview.markdown-body ol { margin: 0.5em 0; padding-left: 1.5em; }
+        #contenido-preview.markdown-body li { margin: 0.3em 0; }
+        #contenido-preview.markdown-body code {
+            background: var(--gray-200);
+            padding: 0.15em 0.4em;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+            color: var(--danger);
+        }
+        #contenido-preview.markdown-body pre {
+            background: var(--gray-200);
+            padding: 0.8em;
+            border-radius: var(--radius-md);
+            overflow-x: auto;
+        }
+        #contenido-preview.markdown-body pre code { background: none; padding: 0; color: var(--text-primary); }
+        #contenido-preview.markdown-body table { border-collapse: collapse; width: 100%; margin: 0.5em 0; }
+        #contenido-preview.markdown-body th, #contenido-preview.markdown-body td { border: 1px solid var(--border-color); padding: 0.4em 0.6em; }
+        #contenido-preview.markdown-body th { background: var(--gray-200); font-weight: 600; }
+        #contenido-preview.markdown-body blockquote { border-left: 3px solid var(--primary); margin: 0.5em 0; padding: 0.3em 1em; background: var(--gray-100); }
+        #contenido-preview.markdown-body hr { border: none; border-top: 1px solid var(--border-color); margin: 1em 0; }
+        
+        /* Estilos para modal de lectura */
+        #ver-nota-contenido.markdown-body h1, #ver-nota-contenido.markdown-body h2, #ver-nota-contenido.markdown-body h3 {
+            margin: 0.5em 0 0.3em;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.3em;
+        }
+        #ver-nota-contenido.markdown-body h1 { font-size: 1.5em; }
+        #ver-nota-contenido.markdown-body h2 { font-size: 1.3em; }
+        #ver-nota-contenido.markdown-body h3 { font-size: 1.15em; border-bottom: none; }
+        #ver-nota-contenido.markdown-body p { margin: 0.6em 0; line-height: 1.6; }
+        #ver-nota-contenido.markdown-body ul, #ver-nota-contenido.markdown-body ol { margin: 0.5em 0; padding-left: 1.5em; }
+        #ver-nota-contenido.markdown-body li { margin: 0.3em 0; }
+        #ver-nota-contenido.markdown-body code {
+            background: var(--gray-200);
+            padding: 0.2em 0.5em;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+            color: var(--danger);
+        }
+        #ver-nota-contenido.markdown-body pre {
+            background: var(--gray-100);
+            padding: 1em;
+            border-radius: var(--radius-md);
+            overflow-x: auto;
+            margin: 0.8em 0;
+        }
+        #ver-nota-contenido.markdown-body pre code { background: none; padding: 0; color: var(--text-primary); }
+        #ver-nota-contenido.markdown-body table { border-collapse: collapse; width: 100%; margin: 0.8em 0; }
+        #ver-nota-contenido.markdown-body th, #ver-nota-contenido.markdown-body td { border: 1px solid var(--border-color); padding: 0.5em 0.8em; }
+        #ver-nota-contenido.markdown-body th { background: var(--gray-100); font-weight: 600; }
+        #ver-nota-contenido.markdown-body blockquote { border-left: 4px solid var(--primary); margin: 0.8em 0; padding: 0.5em 1em; background: var(--gray-50); font-style: italic; }
+        #ver-nota-contenido.markdown-body hr { border: none; border-top: 2px solid var(--border-color); margin: 1.5em 0; }
+        #ver-nota-contenido.markdown-body a { color: var(--primary); text-decoration: none; }
+        #ver-nota-contenido.markdown-body a:hover { text-decoration: underline; }
+        #ver-nota-contenido.markdown-body strong { color: var(--text-primary); }
+        #ver-nota-contenido.markdown-body img { max-width: 100%; border-radius: var(--radius-md); }
+        
         .nota-footer {
             display: flex;
             justify-content: space-between;
@@ -248,12 +399,17 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
         }
         .nota-actions {
             position: absolute;
-            top: var(--spacing-md);
-            right: var(--spacing-md);
+            top: var(--spacing-sm);
+            right: var(--spacing-sm);
             display: flex;
             gap: var(--spacing-xs);
             opacity: 0;
             transition: opacity var(--transition-base);
+            background: var(--bg-primary);
+            padding: var(--spacing-xs);
+            border-radius: var(--radius-md);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 10;
         }
         .nota-card:hover .nota-actions {
             opacity: 1;
@@ -567,6 +723,75 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
             const nota = notasData.find(n => n.id == id);
             if (!nota) return;
             
+            // Guardar ID de nota actual para poder editar después
+            window.currentNotaId = id;
+            
+            // Mostrar modal de lectura
+            document.getElementById('ver-nota-titulo').textContent = nota.titulo || 'Sin título';
+            document.getElementById('ver-nota-contenido').innerHTML = marked.parse(nota.contenido);
+            document.getElementById('ver-nota-contenido').style.borderLeftColor = nota.color;
+            document.getElementById('ver-nota-fecha').textContent = 'Actualizado: ' + (nota.actualizado_en || nota.creado_en);
+            
+            // Etiquetas
+            const etiquetasContainer = document.getElementById('ver-nota-etiquetas');
+            if (nota.etiquetas) {
+                etiquetasContainer.innerHTML = nota.etiquetas.split(', ').map(e => 
+                    '<span class="etiqueta-badge">' + e + '</span>'
+                ).join(' ');
+                etiquetasContainer.style.display = 'flex';
+                etiquetasContainer.style.gap = 'var(--spacing-xs)';
+                etiquetasContainer.style.flexWrap = 'wrap';
+            } else {
+                etiquetasContainer.innerHTML = '';
+                etiquetasContainer.style.display = 'none';
+            }
+            
+            // Links de acciones
+            document.getElementById('ver-nota-pin').href = '?pin=' + id;
+            document.getElementById('ver-nota-pin').innerHTML = nota.fijada ? '<i class="fas fa-thumbtack"></i> Desfija' : '<i class="fas fa-thumbtack"></i> Fijar';
+            document.getElementById('ver-nota-archive').href = '?archive=' + id;
+            document.getElementById('ver-nota-archive').innerHTML = nota.archivada ? '<i class="fas fa-box-open"></i> Restaurar' : '<i class="fas fa-archive"></i> Archivar';
+            
+            // Cargar archivos anexos
+            fetch('/api/archivos.php?action=notas&nota_id=' + id)
+                .then(r => r.json())
+                .then(data => {
+                    const container = document.getElementById('ver-nota-archivos');
+                    if (!data.success || data.archivos.length === 0) {
+                        container.innerHTML = '';
+                        container.style.display = 'none';
+                        return;
+                    }
+                    
+                    container.style.display = 'block';
+                    let html = '<h4 style="font-size: 0.9rem; margin-bottom: var(--spacing-sm);"><i class="fas fa-paperclip"></i> Archivos adjuntos</h4>';
+                    html += '<div style="display: flex; flex-wrap: wrap; gap: var(--spacing-sm);">';
+                    data.archivos.forEach(archivo => {
+                        html += '<a href="/api/archivos.php?action=descargar&archivo_id=' + archivo.id + '" class="btn btn-ghost btn-sm" download><i class="fas fa-download"></i> ' + archivo.nombre_original + '</a>';
+                    });
+                    html += '</div>';
+                    container.innerHTML = html;
+                });
+            
+            document.getElementById('modalVerNota').classList.add('active');
+        }
+        
+        function cerrarModalVer() {
+            document.getElementById('modalVerNota').classList.remove('active');
+            window.currentNotaId = null;
+        }
+        
+        function pasarAEdicion() {
+            const id = window.currentNotaId;
+            if (!id) return;
+            
+            const nota = notasData.find(n => n.id == id);
+            if (!nota) return;
+            
+            // Cerrar modal de lectura
+            cerrarModalVer();
+            
+            // Abrir modal de edición
             document.getElementById('modal-title').textContent = 'Editar Nota';
             document.getElementById('form-action').value = 'editar';
             document.getElementById('nota-id').value = nota.id;
@@ -606,12 +831,41 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
         
         function cerrarModal() {
             document.getElementById('modalNota').classList.remove('active');
+            // Reset preview state
+            togglePreview(false);
         }
         
         function selectColor(color) {
             document.getElementById('color_seleccionado').value = color;
             document.querySelectorAll('.color-option').forEach(el => el.classList.remove('selected'));
             event.target.classList.add('selected');
+        }
+        
+        function togglePreview(showPreview) {
+            const textarea = document.getElementById('contenido');
+            const preview = document.getElementById('contenido-preview');
+            const btnEditar = document.getElementById('btn-editar');
+            const btnPreview = document.getElementById('btn-preview');
+            
+            if (showPreview) {
+                textarea.style.display = 'none';
+                preview.style.display = 'block';
+                preview.innerHTML = marked.parse(textarea.value);
+                btnEditar.style.opacity = '0.5';
+                btnPreview.style.opacity = '1';
+            } else {
+                textarea.style.display = 'block';
+                preview.style.display = 'none';
+                btnEditar.style.opacity = '1';
+                btnPreview.style.opacity = '0.5';
+            }
+        }
+        
+        function updatePreview() {
+            const preview = document.getElementById('contenido-preview');
+            if (preview.style.display === 'block') {
+                preview.innerHTML = marked.parse(document.getElementById('contenido').value);
+            }
         }
         
         function mostrarArchivos(tipo, id, event) {
@@ -725,6 +979,38 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
             if (modalNota) {
                 modalNota.addEventListener('click', function(e) {
                     if (e.target === this) cerrarModal();
+                });
+            }
+            
+            const modalVerNota = document.getElementById('modalVerNota');
+            if (modalVerNota) {
+                modalVerNota.addEventListener('click', function(e) {
+                    if (e.target === this) cerrarModalVer();
+                });
+            }
+            
+            // Cerrar modales con ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if (document.getElementById('modalVerNota').classList.contains('active')) {
+                        cerrarModalVer();
+                    } else if (document.getElementById('modalNota').classList.contains('active')) {
+                        cerrarModal();
+                    }
+                }
+            });
+            
+            // Renderizar Markdown en todas las notas
+            if (typeof marked !== 'undefined') {
+                marked.setOptions({
+                    breaks: true,
+                    gfm: true
+                });
+                document.querySelectorAll('.nota-contenido.markdown-body').forEach(el => {
+                    const markdown = el.dataset.markdown;
+                    if (markdown) {
+                        el.innerHTML = marked.parse(markdown);
+                    }
                 });
             }
             
@@ -845,7 +1131,7 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
                                         <div class="nota-titulo"><?= htmlspecialchars($nota['titulo']) ?></div>
                                     <?php endif; ?>
                                     
-                                    <div class="nota-contenido">
+                                    <div class="nota-contenido markdown-body" data-markdown="<?= htmlspecialchars($nota['contenido']) ?>">
                                         <?= nl2br(htmlspecialchars($nota['contenido'])) ?>
                                     </div>
                                     
@@ -887,8 +1173,13 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
                 </div>
                 
                 <div class="form-group">
-                    <label for="contenido">Contenido *</label>
-                    <textarea id="contenido" name="contenido" rows="10" required placeholder="Escribe aquí..."></textarea>
+                    <label for="contenido">Contenido * <small style="color: var(--text-muted); font-weight: normal;">(soporta Markdown)</small></label>
+                    <div style="display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm);">
+                        <button type="button" class="btn btn-ghost btn-sm" id="btn-editar" onclick="togglePreview(false)" style="opacity: 1;"><i class="fas fa-edit"></i> Editar</button>
+                        <button type="button" class="btn btn-ghost btn-sm" id="btn-preview" onclick="togglePreview(true)"><i class="fas fa-eye"></i> Preview</button>
+                    </div>
+                    <textarea id="contenido" name="contenido" rows="10" required placeholder="Escribe aquí... Soporta **negrita**, *cursiva*, `código`, listas, tablas..." oninput="updatePreview()"></textarea>
+                    <div id="contenido-preview" class="markdown-body" style="display: none; min-height: 200px; max-height: 400px; overflow-y: auto; padding: var(--spacing-md); border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--bg-secondary);"></div>
                 </div>
                 
                 <div class="form-group">
@@ -923,6 +1214,40 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+    
+    <!-- Modal Ver Nota (Solo Lectura) -->
+    <div id="modalVerNota" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--spacing-lg);">
+                <h2 style="margin: 0; display: flex; align-items: center; gap: var(--spacing-sm);">
+                    <i class="fas fa-sticky-note" id="ver-nota-icon"></i>
+                    <span id="ver-nota-titulo">Nota</span>
+                </h2>
+                <div style="display: flex; gap: var(--spacing-sm);">
+                    <button type="button" class="btn btn-primary btn-sm" onclick="pasarAEdicion()">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="cerrarModalVer()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="ver-nota-etiquetas" style="margin-bottom: var(--spacing-md);"></div>
+            
+            <div id="ver-nota-contenido" class="markdown-body" style="min-height: 150px; max-height: 60vh; overflow-y: auto; padding: var(--spacing-lg); background: var(--bg-secondary); border-radius: var(--radius-md); border-left: 4px solid var(--primary);"></div>
+            
+            <div id="ver-nota-archivos" style="margin-top: var(--spacing-lg); border-top: 1px solid var(--border-color); padding-top: var(--spacing-md);"></div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--spacing-lg); padding-top: var(--spacing-md); border-top: 1px solid var(--border-color); font-size: 0.85rem; color: var(--text-muted);">
+                <span id="ver-nota-fecha"></span>
+                <div style="display: flex; gap: var(--spacing-md);">
+                    <a href="#" id="ver-nota-pin" class="btn btn-ghost btn-sm"><i class="fas fa-thumbtack"></i></a>
+                    <a href="#" id="ver-nota-archive" class="btn btn-ghost btn-sm"><i class="fas fa-archive"></i></a>
+                </div>
+            </div>
         </div>
     </div>
 
