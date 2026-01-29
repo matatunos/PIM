@@ -108,8 +108,8 @@ if (isset($_SESSION['_last_activity']) && (time() - $_SESSION['_last_activity'] 
 }
 $_SESSION['_last_activity'] = time();
 
-// Versión de la aplicación
-define('PIM_VERSION', '2.5.0');
+// Versión de la aplicación (cargada desde version.php)
+require_once dirname(__DIR__) . '/version.php';
 
 // Zona horaria
 date_default_timezone_set('Europe/Madrid');
