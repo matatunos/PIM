@@ -149,19 +149,34 @@ $top_usuarios = $stmt->fetchAll();
             color: var(--text-secondary);
         }
         .stats-card {
-            background: linear-gradient(135deg, var(--primary-color) 0%, #0056b3 100%);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
             padding: var(--spacing-lg);
-            border-radius: var(--border-radius);
+            border-radius: var(--radius-lg);
             margin-bottom: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+            transition: transform var(--transition-base);
+        }
+        .stats-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
         }
         .stats-card h3 {
             margin: 0;
-            font-size: 2.5em;
+            font-size: 2rem;
         }
         .stats-card p {
             margin: var(--spacing-sm) 0 0 0;
             opacity: 0.9;
+        }
+        .stats-card.secondary {
+            background: linear-gradient(135deg, var(--secondary), #ff9eb3);
+        }
+        .stats-card.info {
+            background: linear-gradient(135deg, var(--info), #bfaae5);
+        }
+        .stats-card.success {
+            background: linear-gradient(135deg, var(--success), #a8dfc2);
         }
     </style>
 </head>
