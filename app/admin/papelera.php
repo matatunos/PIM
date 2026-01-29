@@ -15,7 +15,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'restaurar') {
     $tipo = $_POST['tipo'] ?? '';
     $item_id = (int)($_POST['item_id'] ?? 0);
     
-    if (in_array($tipo, ['notas', 'tareas', 'eventos', 'contactos']) && $item_id > 0) {
+    if (in_array($tipo, ['notas', 'tareas', 'eventos', 'contactos', 'archivos']) && $item_id > 0) {
         $table = $tipo;
         $stmt = $pdo->prepare("UPDATE $table SET borrado_en = NULL WHERE id = ?");
         if ($stmt->execute([$item_id])) {
@@ -34,7 +34,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'borrar_permanente') {
     $tipo = $_POST['tipo'] ?? '';
     $item_id = (int)($_POST['item_id'] ?? 0);
     
-    if (in_array($tipo, ['notas', 'tareas', 'eventos', 'contactos']) && $item_id > 0) {
+    if (in_array($tipo, ['notas', 'tareas', 'eventos', 'contactos', 'archivos']) && $item_id > 0) {
         $table = $tipo;
         $stmt = $pdo->prepare("DELETE FROM $table WHERE id = ? AND borrado_en IS NOT NULL");
         if ($stmt->execute([$item_id])) {
@@ -120,7 +120,8 @@ function getTipoIcon($tipo) {
         'notas' => 'fas fa-sticky-note',
         'tareas' => 'fas fa-tasks',
         'eventos' => 'fas fa-calendar',
-        'contactos' => 'fas fa-address-book'
+        'contactos' => 'fas fa-address-book',
+        'archivos' => 'fas fa-file'
     ];
     return $icons[$tipo] ?? 'fas fa-trash';
 }
@@ -130,7 +131,8 @@ function getTipoLabel($tipo) {
         'notas' => 'Notas',
         'tareas' => 'Tareas',
         'eventos' => 'Eventos',
-        'contactos' => 'Contactos'
+        'contactos' => 'Contactos',
+        'archivos' => 'Archivos'
     ];
     return $labels[$tipo] ?? ucfirst($tipo);
 }
