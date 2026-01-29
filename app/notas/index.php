@@ -345,13 +345,12 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
             grid-template-columns: 40px 1fr 150px;
             grid-template-rows: auto auto;
             align-items: start;
-            gap: var(--spacing-md);
-            padding: var(--spacing-lg);
+            gap: var(--spacing-sm);
+            padding: var(--spacing-md) var(--spacing-lg);
             border-left-width: 4px;
             border-left-style: solid;
             background: var(--bg-secondary);
             border-radius: var(--radius-md);
-            min-height: 70px;
             max-height: none;
             position: relative;
         }
@@ -391,7 +390,7 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
             grid-column: 3;
             grid-row: 2;
             justify-content: flex-end;
-            align-items: center;
+            align-items: flex-start;
         }
         .notas-container[data-view="lista"] .pin-icon {
             position: static;
