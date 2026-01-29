@@ -344,7 +344,7 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
             display: grid;
             grid-template-columns: 40px 100px 1fr 100px;
             grid-template-rows: auto auto;
-            align-items: start;
+            align-items: center;
             gap: var(--spacing-sm);
             padding: var(--spacing-sm) var(--spacing-lg);
             border-left-width: 4px;
@@ -390,7 +390,7 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
             grid-column: 4;
             grid-row: 1 / 3;
             justify-content: flex-end;
-            align-items: flex-start;
+            align-items: center;
         }
         .notas-container[data-view="lista"] .pin-icon {
             position: static;
