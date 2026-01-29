@@ -121,8 +121,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['import_file'])) {
         if (file_exists($temp_dir . '/tareas.json')) {
             $tareas = json_decode(file_get_contents($temp_dir . '/tareas.json'), true);
             foreach ($tareas as $tarea) {
-                $stmt = $pdo->prepare('INSERT INTO tareas (usuario_id, titulo, descripcion, estado, prioridad, fecha_vencimiento, creado_en) VALUES (?, ?, ?, ?, ?, ?, ?)');
-                if ($stmt->execute([$usuario_id, $tarea['titulo'] ?? '', $tarea['descripcion'] ?? '', $tarea['estado'] ?? 'pendiente', $tarea['prioridad'] ?? 'normal', $tarea['fecha_vencimiento'] ?? null, date('Y-m-d H:i:s')])) {
+                $stmt = $pdo->prepare('INSERT INTO tareas (usuario_id, titulo, descripcion, completada, prioridad, fecha_vencimiento, lista, creado_en) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+                if ($stmt->execute([$usuario_id, $tarea['titulo'] ?? '', $tarea['descripcion'] ?? '', $tarea['completada'] ?? 0, $tarea['prioridad'] ?? 'media', $tarea['fecha_vencimiento'] ?? null, $tarea['lista'] ?? 'General', date('Y-m-d H:i:s')])) {
                     $imported_count++;
                 }
             }
@@ -132,8 +132,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['import_file'])) {
         if (file_exists($temp_dir . '/eventos.json')) {
             $eventos = json_decode(file_get_contents($temp_dir . '/eventos.json'), true);
             foreach ($eventos as $evento) {
-                $stmt = $pdo->prepare('INSERT INTO eventos (usuario_id, titulo, descripcion, fecha_inicio, fecha_fin, ubicacion, creado_en) VALUES (?, ?, ?, ?, ?, ?, ?)');
-                if ($stmt->execute([$usuario_id, $evento['titulo'] ?? '', $evento['descripcion'] ?? '', $evento['fecha_inicio'] ?? date('Y-m-d'), $evento['fecha_fin'] ?? date('Y-m-d'), $evento['ubicacion'] ?? '', date('Y-m-d H:i:s')])) {
+                $stmt = $pdo->prepare('INSERT INTO eventos (usuario_id, titulo, descripcion, fecha_inicio, fecha_fin, ubicacion, color, todo_el_dia, creado_en) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+                if ($stmt->execute([$usuario_id, $evento['titulo'] ?? '', $evento['descripcion'] ?? '', $evento['fecha_inicio'] ?? date('Y-m-d H:i:s'), $evento['fecha_fin'] ?? null, $evento['ubicacion'] ?? '', $evento['color'] ?? '#a8dadc', $evento['todo_el_dia'] ?? 0, date('Y-m-d H:i:s')])) {
                     $imported_count++;
                 }
             }
@@ -143,8 +143,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['import_file'])) {
         if (file_exists($temp_dir . '/contactos.json')) {
             $contactos = json_decode(file_get_contents($temp_dir . '/contactos.json'), true);
             foreach ($contactos as $contacto) {
-                $stmt = $pdo->prepare('INSERT INTO contactos (usuario_id, nombre, email, telefono, empresa, notas, creado_en) VALUES (?, ?, ?, ?, ?, ?, ?)');
-                if ($stmt->execute([$usuario_id, $contacto['nombre'] ?? '', $contacto['email'] ?? '', $contacto['telefono'] ?? '', $contacto['empresa'] ?? '', $contacto['notas'] ?? '', date('Y-m-d H:i:s')])) {
+                $stmt = $pdo->prepare('INSERT INTO contactos (usuario_id, nombre, apellido, email, telefono, telefono_alt, direccion, ciudad, pais, empresa, cargo, notas, favorito, avatar_color, creado_en) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+                if ($stmt->execute([$usuario_id, $contacto['nombre'] ?? '', $contacto['apellido'] ?? '', $contacto['email'] ?? '', $contacto['telefono'] ?? '', $contacto['telefono_alt'] ?? '', $contacto['direccion'] ?? '', $contacto['ciudad'] ?? '', $contacto['pais'] ?? '', $contacto['empresa'] ?? '', $contacto['cargo'] ?? '', $contacto['notas'] ?? '', $contacto['favorito'] ?? 0, $contacto['avatar_color'] ?? '#a8dadc', date('Y-m-d H:i:s')])) {
                     $imported_count++;
                 }
             }
@@ -154,8 +154,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['import_file'])) {
         if (file_exists($temp_dir . '/links.json')) {
             $links = json_decode(file_get_contents($temp_dir . '/links.json'), true);
             foreach ($links as $link) {
-                $stmt = $pdo->prepare('INSERT INTO links (usuario_id, titulo, url, descripcion, creado_en) VALUES (?, ?, ?, ?, ?)');
-                if ($stmt->execute([$usuario_id, $link['titulo'] ?? '', $link['url'] ?? '', $link['descripcion'] ?? '', date('Y-m-d H:i:s')])) {
+                $stmt = $pdo->prepare('INSERT INTO links (usuario_id, titulo, url, descripcion, icono, categoria, color, favorito, orden, creado_en) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+                if ($stmt->execute([$usuario_id, $link['titulo'] ?? '', $link['url'] ?? '', $link['descripcion'] ?? '', $link['icono'] ?? 'link', $link['categoria'] ?? 'General', $link['color'] ?? '#a8dadc', $link['favorito'] ?? 0, $link['orden'] ?? 0, date('Y-m-d H:i:s')])) {
                     $imported_count++;
                 }
             }
