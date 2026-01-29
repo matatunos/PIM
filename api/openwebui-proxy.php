@@ -4,6 +4,10 @@
  * Permite al chat del PIM comunicarse con Open WebUI y usar RAG
  */
 
+// Aumentar timeouts para RAG
+set_time_limit(300); // 5 minutos
+ini_set('max_execution_time', 300);
+
 require_once '../config/config.php';
 require_once '../includes/auth_check.php';
 
@@ -88,25 +92,38 @@ switch ($endpoint) {
         header('Content-Type: text/event-stream');
         header('Cache-Control: no-cache');
         header('Connection: keep-alive');
+        header('X-Accel-Buffering: no'); // Desactivar buffering en nginx/apache
+        
+        // Desactivar buffering de PHP
+        if (ob_get_level()) ob_end_clean();
         
         $ch = curl_init("{$OPENWEBUI_BASE}/api/chat/completions");
         curl_setopt_array($ch, [
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => json_encode($payload),
+            CURLOPT_TIMEOUT => 300, // 5 minutos timeout
+            CURLOPT_CONNECTTIMEOUT => 30,
             CURLOPT_HTTPHEADER => [
                 "Authorization: Bearer {$OPENWEBUI_API_KEY}",
                 "Content-Type: application/json"
             ],
             CURLOPT_WRITEFUNCTION => function($ch, $data) {
                 echo $data;
-                ob_flush();
+                if (ob_get_level()) ob_flush();
                 flush();
                 return strlen($data);
             }
         ]);
         
         curl_exec($ch);
+        $error = curl_error($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
+        
+        // Si hubo error de curl, enviarlo
+        if ($error) {
+            echo "data: " . json_encode(['error' => $error]) . "\n\n";
+        }
         break;
         
     case 'chat-simple':

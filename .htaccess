@@ -50,8 +50,8 @@ RedirectMatch 404 /favicon.ico
 # Ocultar versión de Apache
 ServerSignature Off
 
-# Limitar tamaño de requests (10MB)
-LimitRequestBody 10485760
+# Limitar tamaño de requests (100MB)
+LimitRequestBody 104857600
 
 # Prevenir hotlinking y ataques comunes
 <IfModule mod_rewrite.c>
@@ -95,3 +95,5 @@ LimitRequestBody 10485760
     php_value post_max_size 100M
     php_value upload_max_filesize 100M
 </IfModule>
+
+# Timeout extendido para chat IA - configurado en Apache VirtualHost

@@ -40,6 +40,9 @@ function generarColorEtiqueta($nombre) {
     return $colores[crc32($nombre) % count($colores)];
 }
 
+// Detectar si es petición AJAX
+$isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
 // Subir archivo(s)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivos'])) {
     $archivos = $_FILES['archivos'];
@@ -166,6 +169,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivos'])) {
         foreach ($errores_archivos as $err) {
             error_log("Upload error: $err");
         }
+        if (empty($error)) {
+            $error = implode(', ', $errores_archivos);
+        }
+    }
+    
+    // Si es AJAX, devolver JSON y terminar
+    if ($isAjax) {
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => $contador > 0,
+            'message' => $mensaje ?: $error,
+            'uploaded' => $contador,
+            'duplicates' => $duplicados,
+            'errors' => $errores_archivos
+        ]);
+        exit;
     }
 }
 
@@ -705,6 +724,85 @@ function getFileIcon($tipo_mime) {
         </div>
     </div>
     
+    <!-- Overlay de Carga -->
+    <div id="uploadOverlay" class="upload-overlay">
+        <div class="upload-progress-box">
+            <div class="upload-spinner"></div>
+            <h3 id="uploadTitle">Subiendo archivos...</h3>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <p id="uploadStatus">Preparando...</p>
+            <p id="uploadDetails" class="upload-details"></p>
+        </div>
+    </div>
+    
+    <style>
+        .upload-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .upload-overlay.active {
+            display: flex;
+        }
+        .upload-progress-box {
+            background: var(--bg-primary);
+            padding: var(--spacing-2xl);
+            border-radius: var(--radius-lg);
+            text-align: center;
+            min-width: 350px;
+            max-width: 450px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .upload-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--gray-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto var(--spacing-lg);
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .progress-bar-container {
+            width: 100%;
+            height: 12px;
+            background: var(--gray-200);
+            border-radius: 6px;
+            overflow: hidden;
+            margin: var(--spacing-lg) 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark, #2563eb));
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 6px;
+        }
+        #uploadStatus {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: var(--spacing-md) 0 0;
+        }
+        .upload-details {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: var(--spacing-sm);
+        }
+    </style>
+
     <!-- Modal Subir Archivo(s) -->
     <div id="modalSubir" class="modal">
         <div class="modal-content" style="display: flex; flex-direction: column; max-height: 90vh;">
@@ -712,7 +810,7 @@ function getFileIcon($tipo_mime) {
                 <i class="fas fa-cloud-upload-alt"></i>
                 Subir Archivo(s)
             </h2>
-            <form method="POST" enctype="multipart/form-data" class="form" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+            <form method="POST" enctype="multipart/form-data" class="form" id="uploadForm" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
                 <?= csrf_field() ?>
                 <div style="flex: 1; overflow-y: auto; padding-right: var(--spacing-md);">
                     <div class="upload-zone" onclick="document.getElementById('archivos').click()">
@@ -901,6 +999,106 @@ function getFileIcon($tipo_mime) {
             document.getElementById('archivos').files = files;
             mostrarArchivosSeleccionados(document.getElementById('archivos'));
         }, false);
+        
+        // Upload con progreso
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const fileInput = document.getElementById('archivos');
+            
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert('Por favor selecciona al menos un archivo');
+                return;
+            }
+            
+            // Calcular tamaño total
+            let totalSize = 0;
+            for (let i = 0; i < fileInput.files.length; i++) {
+                totalSize += fileInput.files[i].size;
+            }
+            
+            // Mostrar overlay
+            const overlay = document.getElementById('uploadOverlay');
+            const progressBar = document.getElementById('progressBar');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const uploadDetails = document.getElementById('uploadDetails');
+            const uploadTitle = document.getElementById('uploadTitle');
+            
+            overlay.classList.add('active');
+            document.getElementById('modalSubir').classList.remove('active');
+            
+            uploadTitle.textContent = fileInput.files.length > 1 
+                ? `Subiendo ${fileInput.files.length} archivos...` 
+                : 'Subiendo archivo...';
+            
+            const xhr = new XMLHttpRequest();
+            
+            xhr.upload.addEventListener('progress', function(e) {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    progressBar.style.width = percent + '%';
+                    
+                    const loadedMB = (e.loaded / 1024 / 1024).toFixed(2);
+                    const totalMB = (e.total / 1024 / 1024).toFixed(2);
+                    
+                    uploadStatus.textContent = percent + '%';
+                    uploadDetails.textContent = `${loadedMB} MB de ${totalMB} MB`;
+                }
+            });
+            
+            xhr.addEventListener('load', function() {
+                if (xhr.status === 200) {
+                    let response;
+                    try {
+                        response = JSON.parse(xhr.responseText);
+                    } catch(e) {
+                        // Si no es JSON, asumir éxito
+                        response = { success: true, message: 'Archivos subidos' };
+                    }
+                    
+                    if (response.success) {
+                        uploadStatus.textContent = '¡Completado!';
+                        uploadDetails.textContent = response.message || 'Redirigiendo...';
+                        progressBar.style.width = '100%';
+                        progressBar.style.background = '#10b981';
+                    } else {
+                        uploadStatus.textContent = response.message || 'Sin cambios';
+                        uploadDetails.textContent = response.duplicates > 0 
+                            ? `${response.duplicates} archivo(s) duplicado(s)` 
+                            : 'Verifica los archivos';
+                        progressBar.style.width = '100%';
+                        progressBar.style.background = '#f59e0b';
+                    }
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 3000);
+                } else {
+                    uploadStatus.textContent = 'Error en la subida';
+                    uploadDetails.textContent = 'Inténtalo de nuevo';
+                    progressBar.style.background = '#ef4444';
+                    
+                    setTimeout(() => {
+                        overlay.classList.remove('active');
+                    }, 2000);
+                }
+            });
+            
+            xhr.addEventListener('error', function() {
+                uploadStatus.textContent = 'Error de conexión';
+                uploadDetails.textContent = 'Verifica tu conexión e inténtalo de nuevo';
+                progressBar.style.background = '#ef4444';
+                
+                setTimeout(() => {
+                    overlay.classList.remove('active');
+                }, 3000);
+            });
+            
+            xhr.open('POST', window.location.href, true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.send(formData);
+        });
     </script>
 </body>
 </html>

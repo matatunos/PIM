@@ -196,7 +196,7 @@ ingest_documents() {
     return 0
 }
 
-# Ingerir notas en Open WebUI
+# Ingerir notas en Open WebUI (como archivos .txt)
 ingest_notes() {
     local notes="$1"
     local count=$(echo "$notes" | jq '.total')
@@ -208,38 +208,48 @@ ingest_notes() {
     
     log_info "Ingiriendo $count notas en Open WebUI..."
     
+    # Crear directorio temporal para notas
+    local tmp_dir=$(mktemp -d)
+    trap "rm -rf $tmp_dir" EXIT
+    
     # Iterar sobre notas
     echo "$notes" | jq -r '.data[] | @json' | while read -r note; do
         local titulo=$(echo "$note" | jq -r '.titulo // "Sin título"')
         local contenido=$(echo "$note" | jq -r '.contenido')
-        local openwebui_url="http://$OPENWEBUI_HOST:$OPENWEBUI_PORT/api/documents"
+        local nota_id=$(echo "$note" | jq -r '.id')
+        local openwebui_url="http://$OPENWEBUI_HOST:$OPENWEBUI_PORT/api/v1/files/"
         
-        # Preparar payload para Open WebUI
-        local payload=$(jq -n \
-            --arg titulo "$titulo" \
-            --arg contenido "$contenido" \
-            '{
-                "title": $titulo,
-                "content": $contenido,
-                "source": "pim-sync-notes",
-                "metadata": {
-                    "synced_at": (now | strftime("%Y-%m-%dT%H:%M:%SZ")),
-                    "source_system": "PIM"
-                }
-            }')
+        # Crear archivo temporal con el contenido de la nota
+        local safe_name=$(echo "$titulo" | sed 's/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ _-]/_/g' | head -c 100)
+        local tmp_file="$tmp_dir/${safe_name}.txt"
         
-        # Enviar a Open WebUI
+        # Escribir contenido con título como cabecera
+        echo "# $titulo" > "$tmp_file"
+        echo "" >> "$tmp_file"
+        echo "$contenido" >> "$tmp_file"
+        
+        # Subir como archivo a Open WebUI
         local response=$(curl -s -X POST \
             -H "Authorization: Bearer $OPENWEBUI_API_KEY" \
-            -H "Content-Type: application/json" \
-            -d "$payload" \
+            -F "file=@$tmp_file;filename=${safe_name}.txt" \
             "$openwebui_url" || echo '{"error": "Connection failed"}')
         
         if echo "$response" | grep -q '"error"'; then
             log_error "Error ingiriendo nota: $titulo"
+        elif echo "$response" | grep -q '"id"'; then
+            local file_id=$(echo "$response" | jq -r '.id')
+            log_info "✓ Nota subida: $titulo"
+            
+            # Procesar archivo para RAG
+            local process_url="http://$OPENWEBUI_HOST:$OPENWEBUI_PORT/api/v1/files/$file_id/process"
+            curl -s -X POST \
+                -H "Authorization: Bearer $OPENWEBUI_API_KEY" \
+                "$process_url" >/dev/null 2>&1
         else
             log_info "✓ Nota ingirida: $titulo"
         fi
+        
+        rm -f "$tmp_file"
     done
     
     return 0

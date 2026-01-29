@@ -186,8 +186,30 @@ $openwebui_port = $config['openwebui_port'] ?? '8080';
         .btn-send:disabled {
             background: #ccc;
             cursor: not-allowed;
+        }        
+        .btn-stop {
+            padding: 10px 20px;
+            background: #f44336;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            animation: pulse-stop 1s infinite;
         }
         
+        .btn-stop:hover {
+            background: #d32f2f;
+        }
+        
+        @keyframes pulse-stop {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }        
         .typing-indicator {
             display: flex;
             gap: 4px;
@@ -269,8 +291,8 @@ $openwebui_port = $config['openwebui_port'] ?? '8080';
             position: absolute;
             top: 100%;
             left: 0;
-            width: 350px;
-            max-height: 300px;
+            width: 400px;
+            max-height: 400px;
             overflow-y: auto;
             background: #fff;
             border: 1px solid var(--border-color);
@@ -301,6 +323,72 @@ $openwebui_port = $config['openwebui_port'] ?? '8080';
             background: none;
             border: none;
             cursor: pointer;
+        }
+        
+        .btn-select-quick {
+            padding: 4px 10px;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 4px;
+            background: #f8f9fa !important;
+            font-size: 12px !important;
+            transition: all 0.2s;
+        }
+        
+        .btn-select-quick:hover {
+            background: var(--primary) !important;
+            color: #fff !important;
+            border-color: var(--primary) !important;
+        }
+        
+        .docs-search {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .docs-search input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        
+        .docs-search input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .docs-filters {
+            display: flex;
+            gap: 6px;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border-color);
+            background: #f8f9fa;
+        }
+        
+        .docs-filter-btn {
+            padding: 4px 10px;
+            font-size: 11px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .docs-filter-btn:hover {
+            border-color: var(--primary);
+        }
+        
+        .docs-filter-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+        
+        .docs-list-container {
+            max-height: 280px;
+            overflow-y: auto;
         }
         
         .doc-item {
@@ -427,10 +515,25 @@ $openwebui_port = $config['openwebui_port'] ?? '8080';
                             </button>
                             <div class="docs-dropdown" id="docs-dropdown">
                                 <div class="docs-dropdown-header">
-                                    <span><i class="fas fa-folder-open"></i> Seleccionar documentos</span>
+                                    <div style="display:flex;gap:8px;align-items:center;">
+                                        <button type="button" id="select-all-notes" class="btn-select-quick" title="Seleccionar solo notas">
+                                            📝 Notas
+                                        </button>
+                                        <button type="button" id="select-all-docs" class="btn-select-quick" title="Seleccionar todo">
+                                            📁 Todo
+                                        </button>
+                                    </div>
                                     <button type="button" id="clear-docs">Limpiar</button>
                                 </div>
-                                <div id="docs-list">
+                                <div class="docs-search">
+                                    <input type="text" id="docs-search-input" placeholder="🔍 Buscar documentos...">
+                                </div>
+                                <div class="docs-filters">
+                                    <button type="button" class="docs-filter-btn active" data-filter="all">Todos</button>
+                                    <button type="button" class="docs-filter-btn" data-filter="docs">📄 Archivos</button>
+                                    <button type="button" class="docs-filter-btn" data-filter="notes">📝 Notas</button>
+                                </div>
+                                <div class="docs-list-container" id="docs-list">
                                     <div style="padding: 20px; text-align: center; color: #999;">
                                         <i class="fas fa-spinner fa-spin"></i> Cargando...
                                     </div>
@@ -465,6 +568,10 @@ $openwebui_port = $config['openwebui_port'] ?? '8080';
                             class="chat-input" 
                             placeholder="Escribe tu mensaje... (selecciona documentos arriba para consultar su contenido)"
                             rows="1"></textarea>
+                        <button id="btn-stop" class="btn-stop" style="display:none;">
+                            <i class="fas fa-stop"></i>
+                            Parar
+                        </button>
                         <button id="btn-send" class="btn-send">
                             <i class="fas fa-paper-plane"></i>
                             Enviar
@@ -482,10 +589,12 @@ $openwebui_port = $config['openwebui_port'] ?? '8080';
     let isGenerating = false;
     let availableFiles = [];
     let selectedFiles = [];
+    let currentAbortController = null;
     
     const chatMessages = document.getElementById('chat-messages');
     const chatInput = document.getElementById('chat-input');
     const btnSend = document.getElementById('btn-send');
+    const btnStop = document.getElementById('btn-stop');
     const modelSelect = document.getElementById('model-select');
     const statusDot = document.getElementById('status-dot');
     const statusText = document.getElementById('status-text');
@@ -493,13 +602,22 @@ $openwebui_port = $config['openwebui_port'] ?? '8080';
     const docsDropdown = document.getElementById('docs-dropdown');
     const docsList = document.getElementById('docs-list');
     const docsCount = document.getElementById('docs-count');
+    const docsSearchInput = document.getElementById('docs-search-input');
     
-    // Cargar archivos disponibles
+    let currentFilter = 'all';
+    let searchQuery = '';
+    
+    // Cargar archivos disponibles y seleccionar solo NOTAS por defecto
     async function loadFiles() {
         try {
             const response = await fetch(`${API_PROXY}?endpoint=files`);
             availableFiles = await response.json();
+            
+            // Seleccionar solo notas por defecto (más ligero para RAG)
+            selectedFiles = availableFiles.filter(f => isNote(f)).map(f => f.id);
+            
             renderFilesList();
+            updateDocsUI();
             updateStatus(true);
         } catch (error) {
             console.error('Error cargando archivos:', error);
@@ -517,26 +635,69 @@ $openwebui_port = $config['openwebui_port'] ?? '8080';
         return '';
     }
     
+    function isNote(file) {
+        const name = file.meta?.name || file.filename || '';
+        // Notas: archivos .txt, sin extensión, o con prefijos [Paperless], [BookStack], etc.
+        const hasNotePrefix = name.startsWith('[') || name.includes('Paperless') || name.includes('BookStack');
+        const isTxtFile = name.endsWith('.txt') || name.endsWith('.md');
+        const noExtension = !name.includes('.') && name.length > 0;
+        return hasNotePrefix || isTxtFile || noExtension;
+    }
+    
+    function isDocument(file) {
+        const name = file.meta?.name || file.filename || '';
+        const ext = name.split('.').pop().toLowerCase();
+        return ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'yml', 'yaml', 'json'].includes(ext);
+    }
+    
+    function filterFiles() {
+        return availableFiles.filter(file => {
+            const name = (file.meta?.name || file.filename || '').toLowerCase();
+            
+            // Filtro por búsqueda
+            if (searchQuery && !name.includes(searchQuery.toLowerCase())) {
+                return false;
+            }
+            
+            // Filtro por tipo
+            if (currentFilter === 'notes' && !isNote(file)) {
+                return false;
+            }
+            if (currentFilter === 'docs' && !isDocument(file)) {
+                return false;
+            }
+            
+            return true;
+        });
+    }
+    
     function renderFilesList() {
-        if (availableFiles.length === 0) {
-            docsList.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;"><i class="fas fa-folder-open"></i><br>No hay documentos sincronizados</div>';
+        const filteredFiles = filterFiles();
+        
+        if (filteredFiles.length === 0) {
+            if (searchQuery || currentFilter !== 'all') {
+                docsList.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;"><i class="fas fa-search"></i><br>No se encontraron resultados</div>';
+            } else {
+                docsList.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;"><i class="fas fa-folder-open"></i><br>No hay documentos sincronizados</div>';
+            }
             return;
         }
         
-        docsList.innerHTML = availableFiles.map(file => {
+        docsList.innerHTML = filteredFiles.map(file => {
             const name = file.meta?.name || file.filename || 'Sin nombre';
             const size = file.meta?.size ? formatSize(file.meta.size) : '';
-            const iconClass = getFileIcon(name);
+            const iconClass = isNote(file) ? 'note' : getFileIcon(name);
             const isSelected = selectedFiles.includes(file.id);
+            const noteIndicator = isNote(file) ? '<span style="font-size:10px;color:#7c4dff;">📝</span> ' : '';
             
             return `
                 <label class="doc-item ${isSelected ? 'selected' : ''}" data-id="${file.id}">
                     <input type="checkbox" ${isSelected ? 'checked' : ''}>
-                    <div class="doc-icon ${iconClass}">
-                        <i class="fas fa-file${iconClass === 'pdf' ? '-pdf' : ''}"></i>
+                    <div class="doc-icon ${iconClass}" style="${isNote(file) ? 'background:#f3e5f5;color:#7b1fa2;' : ''}">
+                        <i class="fas ${isNote(file) ? 'fa-sticky-note' : 'fa-file' + (iconClass === 'pdf' ? '-pdf' : '')}"></i>
                     </div>
                     <div class="doc-item-info">
-                        <div class="doc-item-name" title="${name}">${name}</div>
+                        <div class="doc-item-name" title="${name}">${noteIndicator}${name}</div>
                         <div class="doc-item-meta">${size}</div>
                     </div>
                 </label>
@@ -557,6 +718,22 @@ $openwebui_port = $config['openwebui_port'] ?? '8080';
             });
         });
     }
+    
+    // Búsqueda
+    docsSearchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        renderFilesList();
+    });
+    
+    // Filtros
+    document.querySelectorAll('.docs-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.docs-filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.dataset.filter;
+            renderFilesList();
+        });
+    });
     
     function toggleFile(fileId, selected) {
         if (selected) {
@@ -581,6 +758,9 @@ $openwebui_port = $config['openwebui_port'] ?? '8080';
             item.classList.toggle('selected', isSelected);
             item.querySelector('input').checked = isSelected;
         });
+        
+        // Actualizar checkbox "seleccionar todos"
+        updateSelectAllState();
     }
     
     function formatSize(bytes) {
@@ -611,6 +791,26 @@ $openwebui_port = $config['openwebui_port'] ?? '8080';
         selectedFiles = [];
         updateDocsUI();
     });
+    
+    // Seleccionar solo notas
+    document.getElementById('select-all-notes').addEventListener('click', () => {
+        // Seleccionar solo archivos que son notas
+        const notesOnly = availableFiles.filter(f => isNote(f));
+        selectedFiles = notesOnly.map(f => f.id);
+        updateDocsUI();
+    });
+    
+    // Seleccionar todos
+    document.getElementById('select-all-docs').addEventListener('click', () => {
+        // Seleccionar todos los archivos
+        selectedFiles = availableFiles.map(f => f.id);
+        updateDocsUI();
+    });
+    
+    // Actualizar estado visual
+    function updateSelectAllState() {
+        // Ya no hay checkbox, solo botones
+    }
     
     // Auto-resize textarea
     chatInput.addEventListener('input', function() {
@@ -672,6 +872,11 @@ $openwebui_port = $config['openwebui_port'] ?? '8080';
         
         isGenerating = true;
         btnSend.disabled = true;
+        btnSend.style.display = 'none';
+        btnStop.style.display = 'flex';
+        
+        // Crear AbortController para poder cancelar
+        currentAbortController = new AbortController();
         
         try {
             const payload = {
@@ -688,7 +893,8 @@ $openwebui_port = $config['openwebui_port'] ?? '8080';
             const response = await fetch(`${API_PROXY}?endpoint=chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(payload),
+                signal: currentAbortController.signal
             });
             
             document.getElementById('typing-indicator')?.remove();
@@ -750,16 +956,32 @@ $openwebui_port = $config['openwebui_port'] ?? '8080';
             }
             
         } catch (error) {
-            console.error('Error:', error);
             document.getElementById('typing-indicator')?.remove();
-            addMessage('assistant', `❌ Error: ${error.message}. Verifica la conexión con Open WebUI.`);
-            updateStatus(false);
+            
+            if (error.name === 'AbortError') {
+                // Cancelado por el usuario
+                addMessage('assistant', '⏹️ *Respuesta interrumpida*');
+            } else {
+                console.error('Error:', error);
+                addMessage('assistant', `❌ Error: ${error.message}. Verifica la conexión con Open WebUI.`);
+                updateStatus(false);
+            }
         } finally {
             isGenerating = false;
             btnSend.disabled = false;
+            btnSend.style.display = 'flex';
+            btnStop.style.display = 'none';
+            currentAbortController = null;
             chatInput.focus();
         }
     }
+    
+    // Botón de Stop
+    btnStop.addEventListener('click', () => {
+        if (currentAbortController) {
+            currentAbortController.abort();
+        }
+    });
     
     function addMessage(role, content, extra = '') {
         const div = document.createElement('div');
