@@ -4,56 +4,60 @@ require_once '../../config/database.php';
 
 $usuario_id = $_SESSION['user_id'];
 $mensaje = $error = '';
-$paso = isset($_POST['paso']) ? (int)$_POST['paso'] : 1;
-$filas_preview = [];
-$mapeo = [];
 
-// Procesar archivo CSV
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo']) && $paso === 1) {
-    if ($_FILES['archivo']['error'] === UPLOAD_ERR_OK) {
-        $archivo_temp = $_FILES['archivo']['tmp_name'];
-        
-        // Leer primeras líneas del CSV
-        if (($handle = fopen($archivo_temp, 'r')) !== false) {
-            $count = 0;
-            while (($fila = fgetcsv($handle, 1000, ',')) !== false && $count < 5) {
-                $fila = array_map('trim', $fila);
-                $filas_preview[] = $fila;
-                $count++;
-            }
-            fclose($handle);
-            
-            // Guardar archivo temporalmente en sesión
-            $_SESSION['csv_temp_data'] = [];
-            if (($handle = fopen($archivo_temp, 'r')) !== false) {
-                while (($fila = fgetcsv($handle, 1000, ',')) !== false) {
-                    $_SESSION['csv_temp_data'][] = array_map('trim', $fila);
-                }
-                fclose($handle);
-            }
-            
-            if (count($filas_preview) > 0) {
-                $paso = 2; // Ir a mapeo
-            } else {
-                $error = 'El archivo CSV no contiene datos';
-            }
-        } else {
-            $error = 'No se pudo leer el archivo';
-        }
-    } else {
-        $error = 'Error al cargar el archivo';
+// Determinar el paso actual basado en el POST
+$paso = 1;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['paso'])) {
+        $paso = (int)$_POST['paso'];
     }
 }
 
-// Procesar mapeo y previsualización
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $paso === 2 && isset($_POST['mapeo'])) {
-    $mapeo = $_POST['mapeo'];
-    $_SESSION['csv_mapeo'] = $mapeo;
-    $paso = 3; // Ir a confirmación
+// Si no estamos en POST, intentar mantener el paso desde sesión
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' && isset($_SESSION['csv_temp_data'])) {
+    $paso = 2;
 }
 
-// Importar contactos
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $paso === 3 && isset($_POST['confirmar'])) {
+$filas_preview = [];
+$mapeo = [];
+
+// PASO 1: Procesar archivo CSV
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo']) && $_FILES['archivo']['error'] === UPLOAD_ERR_OK) {
+    $archivo_temp = $_FILES['archivo']['tmp_name'];
+    
+    // Leer primeras líneas del CSV para preview
+    if (($handle = fopen($archivo_temp, 'r')) !== false) {
+        $count = 0;
+        while (($fila = fgetcsv($handle, 1000, ',')) !== false && $count < 5) {
+            $fila = array_map('trim', $fila);
+            $filas_preview[] = $fila;
+            $count++;
+        }
+        fclose($handle);
+        
+        // Guardar todo el archivo en sesión
+        $_SESSION['csv_temp_data'] = [];
+        if (($handle = fopen($archivo_temp, 'r')) !== false) {
+            while (($fila = fgetcsv($handle, 1000, ',')) !== false) {
+                $_SESSION['csv_temp_data'][] = array_map('trim', $fila);
+            }
+            fclose($handle);
+        }
+        
+        if (count($filas_preview) > 0) {
+            $paso = 2; // Avanzar a mapeo
+        } else {
+            $error = 'El archivo CSV no contiene datos';
+        }
+    } else {
+        $error = 'No se pudo leer el archivo';
+    }
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && $paso === 2 && isset($_POST['mapeo'])) {
+    // PASO 2: Guardar mapeo y avanzar
+    $_SESSION['csv_mapeo'] = $_POST['mapeo'];
+    $paso = 3;
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && $paso === 3 && isset($_POST['confirmar'])) {
+    // PASO 3: Importar contactos
     $mapeo = $_SESSION['csv_mapeo'] ?? [];
     $datos = $_SESSION['csv_temp_data'] ?? [];
     
@@ -99,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $paso === 3 && isset($_POST['confir
             }
         }
         
-        // Validar que al menos nombre y email
+        // Validar que al menos nombre
         if (empty($nombre)) {
             $errores++;
             continue;
@@ -112,11 +116,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $paso === 3 && isset($_POST['confir
         }
         
         // Verificar duplicado
-        $stmt = $pdo->prepare('SELECT id FROM contactos WHERE usuario_id = ? AND email = ? AND borrado_en IS NULL LIMIT 1');
-        $stmt->execute([$usuario_id, $email]);
-        if (!empty($email) && $stmt->fetch()) {
-            $errores++;
-            continue;
+        if (!empty($email)) {
+            $stmt = $pdo->prepare('SELECT id FROM contactos WHERE usuario_id = ? AND email = ? AND borrado_en IS NULL LIMIT 1');
+            $stmt->execute([$usuario_id, $email]);
+            if ($stmt->fetch()) {
+                $errores++;
+                continue;
+            }
         }
         
         // Insertar
@@ -133,6 +139,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $paso === 3 && isset($_POST['confir
     unset($_SESSION['csv_temp_data']);
     unset($_SESSION['csv_mapeo']);
     $paso = 1; // Volver al inicio
+}
+
+// Si estamos en paso 2 o 3, recuperar el preview guardado
+if (($paso === 2 || $paso === 3) && isset($_SESSION['csv_temp_data'])) {
+    $filas_preview = [];
+    $count = 0;
+    foreach ($_SESSION['csv_temp_data'] as $fila) {
+        if ($count < 5) {
+            $filas_preview[] = $fila;
+            $count++;
+        } else {
+            break;
+        }
+    }
 }
 
 // Campos disponibles para mapeo
