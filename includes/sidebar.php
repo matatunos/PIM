@@ -1,3 +1,10 @@
+<!-- Botón hamburguesa para móviles (visible solo en pantallas pequeñas) -->
+<button id="hamburger-menu" class="hamburger-btn" aria-label="Abrir menú">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
+
 <aside class="sidebar">
     <div class="sidebar-header">
         <a href="/index.php" class="sidebar-logo">
@@ -279,6 +286,39 @@
                 modal.addEventListener('click', function(e) {
                     if (e.target === modal) {
                         modal.remove();
+                    }
+                });
+            });
+        }
+        
+        // Hamburger menu functionality
+        const hamburger = document.getElementById('hamburger-menu');
+        const sidebar = document.querySelector('.sidebar');
+        
+        if (hamburger && sidebar) {
+            hamburger.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.classList.toggle('active');
+                sidebar.classList.toggle('active');
+            });
+            
+            // Close sidebar when clicking outside
+            document.addEventListener('click', function(e) {
+                if (sidebar.classList.contains('active') && 
+                    !sidebar.contains(e.target) && 
+                    !hamburger.contains(e.target)) {
+                    hamburger.classList.remove('active');
+                    sidebar.classList.remove('active');
+                }
+            });
+            
+            // Close sidebar when clicking a link
+            sidebar.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) {
+                        hamburger.classList.remove('active');
+                        sidebar.classList.remove('active');
                     }
                 });
             });
