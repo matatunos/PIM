@@ -91,12 +91,17 @@ if (isset($_GET['visit']) && is_numeric($_GET['visit'])) {
 }
 
 // Eliminar link
-if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-    $id = (int)$_GET['delete'];
-    $stmt = $pdo->prepare('DELETE FROM links WHERE id = ? AND usuario_id = ?');
-    $stmt->execute([$id, $usuario_id]);
-    header('Location: index.php');
-    exit;
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
+    if (!csrf_verify()) {
+        die('Error CSRF');
+    }
+    $id = (int)($_POST['id'] ?? 0);
+    if ($id > 0) {
+        $stmt = $pdo->prepare('DELETE FROM links WHERE id = ? AND usuario_id = ?');
+        $stmt->execute([$id, $usuario_id]);
+        header('Location: index.php');
+        exit;
+    }
 }
 
 // Toggle favorito
@@ -549,9 +554,14 @@ foreach ($links as $link) {
                                             <a href="?fav=<?= $link['id'] ?>" class="btn btn-ghost btn-icon btn-sm" title="Favorito">
                                                 <i class="fas fa-star"></i>
                                             </a>
-                                            <a href="?delete=<?= $link['id'] ?>" class="btn btn-danger btn-icon btn-sm" onclick="return confirm('¿Eliminar este link?')" title="Eliminar">
-                                                <i class="fas fa-trash"></i>
-                                            </a>
+                                            <form method="POST" style="display: inline;" onsubmit="return confirm('¿Eliminar este link?')">
+                                                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                                                <input type="hidden" name="action" value="delete">
+                                                <input type="hidden" name="id" value="<?= $link['id'] ?>">
+                                                <button type="submit" class="btn btn-danger btn-icon btn-sm" title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                         
                                         <div class="link-icon" style="background: linear-gradient(135deg, <?= htmlspecialchars($link['color']) ?>, <?= htmlspecialchars($link['color']) ?>dd);">

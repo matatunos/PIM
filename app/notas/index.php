@@ -81,20 +81,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 }
 
 // Mover nota a papelera
-if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-    $id = (int)$_GET['delete'];
-    $stmt = $pdo->prepare('UPDATE notas SET borrado_en = NOW() WHERE id = ? AND usuario_id = ?');
-    $stmt->execute([$id, $usuario_id]);
-    
-    // Registrar en papelera_logs
-    $stmt = $pdo->prepare('SELECT titulo FROM notas WHERE id = ?');
-    $stmt->execute([$id]);
-    $nota = $stmt->fetch();
-    $stmt = $pdo->prepare('INSERT INTO papelera_logs (usuario_id, tipo, item_id, nombre) VALUES (?, ?, ?, ?)');
-    $stmt->execute([$usuario_id, 'notas', $id, $nota['titulo'] ?? 'Sin título']);
-    
-    header('Location: index.php');
-    exit;
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
+    if (!csrf_verify()) {
+        die('Error CSRF');
+    }
+    $id = (int)($_POST['id'] ?? 0);
+    if ($id > 0) {
+        $stmt = $pdo->prepare('UPDATE notas SET borrado_en = NOW() WHERE id = ? AND usuario_id = ?');
+        $stmt->execute([$id, $usuario_id]);
+        
+        // Registrar en papelera_logs
+        $stmt = $pdo->prepare('SELECT titulo FROM notas WHERE id = ?');
+        $stmt->execute([$id]);
+        $nota = $stmt->fetch();
+        $stmt = $pdo->prepare('INSERT INTO papelera_logs (usuario_id, tipo, item_id, nombre) VALUES (?, ?, ?, ?)');
+        $stmt->execute([$usuario_id, 'notas', $id, $nota['titulo'] ?? 'Sin título']);
+        
+        header('Location: index.php');
+        exit;
+    }
 }
 
 // Archivar/desarchivar
@@ -826,9 +831,14 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
                                         <a href="?archive=<?= $nota['id'] ?>" class="btn btn-ghost btn-icon btn-sm" title="<?= $nota['archivada'] ? 'Desarchivar' : 'Archivar' ?>">
                                             <i class="fas fa-archive"></i>
                                         </a>
-                                        <a href="?delete=<?= $nota['id'] ?>" class="btn btn-danger btn-icon btn-sm" onclick="return confirm('¿Eliminar esta nota?')" title="Eliminar">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
+                                        <form method="POST" style="display: inline;" onsubmit="return confirm('¿Eliminar esta nota?')">
+                                            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                                            <input type="hidden" name="action" value="delete">
+                                            <input type="hidden" name="id" value="<?= $nota['id'] ?>">
+                                            <button type="submit" class="btn btn-danger btn-icon btn-sm" title="Eliminar">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                     
                                     <?php if ($nota['titulo']): ?>

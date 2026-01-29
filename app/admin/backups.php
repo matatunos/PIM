@@ -53,8 +53,11 @@ if (isset($_GET['download']) && !empty($_GET['download'])) {
 }
 
 // Eliminar backup
-if (isset($_GET['delete']) && !empty($_GET['delete'])) {
-    $filename = basename($_GET['delete']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'eliminar') {
+    if (!csrf_verify()) {
+        die('Error CSRF');
+    }
+    $filename = basename($_POST['filename'] ?? '');
     $filepath = $backup_dir . '/' . $filename;
     
     if (file_exists($filepath) && strpos(realpath($filepath), realpath($backup_dir)) === 0) {
@@ -330,8 +333,10 @@ function formatBytes($bytes) {
     </div>
     
     <!-- Formulario oculto para borrar -->
-    <form id="form-borrar" method="GET" style="display: none;">
-        <input type="hidden" name="delete" id="delete_input">
+    <form id="form-borrar" method="POST" style="display: none;">
+        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+        <input type="hidden" name="action" value="eliminar">
+        <input type="hidden" name="filename" id="delete_input">
     </form>
     
     <script>

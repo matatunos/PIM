@@ -66,20 +66,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 }
 
 // Mover evento a papelera
-if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-    $id = (int)$_GET['delete'];
-    $stmt = $pdo->prepare('SELECT titulo FROM eventos WHERE id = ? AND usuario_id = ?');
-    $stmt->execute([$id, $usuario_id]);
-    $evento = $stmt->fetch();
-    
-    $stmt = $pdo->prepare('UPDATE eventos SET borrado_en = NOW() WHERE id = ? AND usuario_id = ?');
-    $stmt->execute([$id, $usuario_id]);
-    
-    $stmt = $pdo->prepare('INSERT INTO papelera_logs (usuario_id, tipo, item_id, nombre) VALUES (?, ?, ?, ?)');
-    $stmt->execute([$usuario_id, 'eventos', $id, $evento['titulo'] ?? 'Sin título']);
-    
-    header('Location: index.php?vista=' . $vista . '&fecha=' . $fecha);
-    exit;
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
+    if (!csrf_verify()) {
+        die('Error CSRF');
+    }
+    $id = (int)($_POST['id'] ?? 0);
+    if ($id > 0) {
+        $stmt = $pdo->prepare('SELECT titulo FROM eventos WHERE id = ? AND usuario_id = ?');
+        $stmt->execute([$id, $usuario_id]);
+        $evento = $stmt->fetch();
+        
+        $stmt = $pdo->prepare('UPDATE eventos SET borrado_en = NOW() WHERE id = ? AND usuario_id = ?');
+        $stmt->execute([$id, $usuario_id]);
+        
+        $stmt = $pdo->prepare('INSERT INTO papelera_logs (usuario_id, tipo, item_id, nombre) VALUES (?, ?, ?, ?)');
+        $stmt->execute([$usuario_id, 'eventos', $id, $evento['titulo'] ?? 'Sin título']);
+        
+        header('Location: index.php?vista=' . $vista . '&fecha=' . $fecha);
+        exit;
+    }
 }
 
 // Obtener todos los eventos del usuario
@@ -615,7 +620,16 @@ $eventos = $stmt->fetchAll();
         function eliminarEvento() {
             if (confirm('¿Eliminar este evento?')) {
                 const id = document.getElementById('evento-id').value;
-                window.location.href = '?delete=' + id;
+                // Crear formulario POST para eliminar
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.innerHTML = `
+                    <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="id" value="${id}">
+                `;
+                document.body.appendChild(form);
+                form.submit();
             }
         }
         

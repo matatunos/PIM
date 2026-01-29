@@ -30,20 +30,25 @@ if (isset($_GET['toggle']) && is_numeric($_GET['toggle'])) {
 }
 
 // Mover tarea a papelera
-if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-    $id = (int)$_GET['delete'];
-    $stmt = $pdo->prepare('UPDATE tareas SET borrado_en = NOW() WHERE id = ? AND usuario_id = ?');
-    $stmt->execute([$id, $usuario_id]);
-    
-    // Registrar en papelera_logs
-    $stmt = $pdo->prepare('SELECT titulo FROM tareas WHERE id = ?');
-    $stmt->execute([$id]);
-    $tarea = $stmt->fetch();
-    $stmt = $pdo->prepare('INSERT INTO papelera_logs (usuario_id, tipo, item_id, nombre) VALUES (?, ?, ?, ?)');
-    $stmt->execute([$usuario_id, 'tareas', $id, $tarea['titulo'] ?? 'Sin título']);
-    
-    header('Location: index.php');
-    exit;
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
+    if (!csrf_verify()) {
+        die('Error CSRF');
+    }
+    $id = (int)($_POST['id'] ?? 0);
+    if ($id > 0) {
+        $stmt = $pdo->prepare('UPDATE tareas SET borrado_en = NOW() WHERE id = ? AND usuario_id = ?');
+        $stmt->execute([$id, $usuario_id]);
+        
+        // Registrar en papelera_logs
+        $stmt = $pdo->prepare('SELECT titulo FROM tareas WHERE id = ?');
+        $stmt->execute([$id]);
+        $tarea = $stmt->fetch();
+        $stmt = $pdo->prepare('INSERT INTO papelera_logs (usuario_id, tipo, item_id, nombre) VALUES (?, ?, ?, ?)');
+        $stmt->execute([$usuario_id, 'tareas', $id, $tarea['titulo'] ?? 'Sin título']);
+        
+        header('Location: index.php');
+        exit;
+    }
 }
 
 // Editar tarea
@@ -518,9 +523,14 @@ $listas = $stmt->fetchAll(PDO::FETCH_COLUMN);
                                     <button type="button" class="btn btn-primary btn-icon btn-sm" onclick="editarTarea(<?= $tarea['id'] ?>, <?= htmlspecialchars(json_encode($tarea)) ?>)">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <a href="?delete=<?= $tarea['id'] ?>" class="btn btn-danger btn-icon btn-sm" onclick="return confirm('¿Eliminar esta tarea?')">>
-                                        <i class="fas fa-trash"></i>
-                                    </a>
+                                    <form method="POST" style="display: inline;" onsubmit="return confirm('¿Eliminar esta tarea?')">
+                                        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="id" value="<?= $tarea['id'] ?>">
+                                        <button type="submit" class="btn btn-danger btn-icon btn-sm">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         <?php endforeach; ?>

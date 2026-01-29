@@ -74,9 +74,12 @@ if (isset($_GET['disable_2fa']) && is_numeric($_GET['disable_2fa'])) {
 }
 
 // Eliminar usuario
-if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-    $id = (int)$_GET['delete'];
-    if ($id != $_SESSION['user_id']) { // No puede eliminarse a sí mismo
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'eliminar') {
+    if (!csrf_verify()) {
+        die('Error CSRF');
+    }
+    $id = (int)($_POST['id'] ?? 0);
+    if ($id > 0 && $id != $_SESSION['user_id']) { // No puede eliminarse a sí mismo
         $stmt = $pdo->prepare('DELETE FROM usuarios WHERE id = ?');
         $stmt->execute([$id]);
         $mensaje = 'Usuario eliminado exitosamente';
@@ -397,9 +400,14 @@ $stats = $stmt->fetch();
                                             <?php endif; ?>
                                             
                                             <?php if ($usuario['id'] != $_SESSION['user_id']): ?>
-                                                <a href="?delete=<?= $usuario['id'] ?>" class="btn btn-danger btn-icon btn-sm" onclick="return confirm('¿Eliminar este usuario?')" title="Eliminar">
-                                                    <i class="fas fa-trash"></i>
-                                                </a>
+                                                <form method="POST" style="display: inline;" onsubmit="return confirm('¿Eliminar este usuario?')">
+                                                    <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                                                    <input type="hidden" name="action" value="eliminar">
+                                                    <input type="hidden" name="id" value="<?= $usuario['id'] ?>">
+                                                    <button type="submit" class="btn btn-danger btn-icon btn-sm" title="Eliminar">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
                                             <?php endif; ?>
                                         </div>
                                     </td>

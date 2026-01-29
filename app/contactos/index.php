@@ -45,20 +45,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 }
 
 // Mover contacto a papelera
-if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-    $id = (int)$_GET['delete'];
-    $stmt = $pdo->prepare('UPDATE contactos SET borrado_en = NOW() WHERE id = ? AND usuario_id = ?');
-    $stmt->execute([$id, $usuario_id]);
-    
-    // Registrar en papelera_logs
-    $stmt = $pdo->prepare('SELECT nombre FROM contactos WHERE id = ?');
-    $stmt->execute([$id]);
-    $contacto = $stmt->fetch();
-    $stmt = $pdo->prepare('INSERT INTO papelera_logs (usuario_id, tipo, item_id, nombre) VALUES (?, ?, ?, ?)');
-    $stmt->execute([$usuario_id, 'contactos', $id, $contacto['nombre'] ?? 'Sin nombre']);
-    
-    header('Location: index.php');
-    exit;
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
+    if (!csrf_verify()) {
+        die('Error CSRF');
+    }
+    $id = (int)($_POST['id'] ?? 0);
+    if ($id > 0) {
+        $stmt = $pdo->prepare('UPDATE contactos SET borrado_en = NOW() WHERE id = ? AND usuario_id = ?');
+        $stmt->execute([$id, $usuario_id]);
+        
+        // Registrar en papelera_logs
+        $stmt = $pdo->prepare('SELECT nombre FROM contactos WHERE id = ?');
+        $stmt->execute([$id]);
+        $contacto = $stmt->fetch();
+        $stmt = $pdo->prepare('INSERT INTO papelera_logs (usuario_id, tipo, item_id, nombre) VALUES (?, ?, ?, ?)');
+        $stmt->execute([$usuario_id, 'contactos', $id, $contacto['nombre'] ?? 'Sin nombre']);
+        
+        header('Location: index.php');
+        exit;
+    }
 }
 
 // Toggle favorito
@@ -532,9 +537,14 @@ $contactos = $stmt->fetchAll();
                                     <a href="?fav=<?= $contacto['id'] ?>" class="btn btn-ghost btn-icon btn-sm" title="Favorito">
                                         <i class="fas fa-star"></i>
                                     </a>
-                                    <a href="?delete=<?= $contacto['id'] ?>" class="btn btn-danger btn-icon btn-sm" onclick="return confirm('¿Eliminar este contacto?')" title="Eliminar">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
+                                    <form method="POST" style="display: inline;" onsubmit="return confirm('¿Eliminar este contacto?')">
+                                        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="id" value="<?= $contacto['id'] ?>">
+                                        <button type="submit" class="btn btn-danger btn-icon btn-sm" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
                                 </div>
                                 
                                 <?php if ($contacto['telefono']): ?>

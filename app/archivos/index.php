@@ -71,13 +71,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivos'])) {
         $nombre_unico = uniqid() . '_' . time() . '_' . rand(1000, 9999) . '.' . $extension;
         $ruta_destino = UPLOAD_PATH . '/' . $nombre_unico;
         
+        // Validar extensión
         if (!in_array($extension, $extensiones_permitidas)) {
             $errores_archivos[] = "$nombre_original: tipo no permitido";
             continue;
-        } elseif ($archivos['size'][$i] > $max_size) {
+        }
+        
+        // Validar tamaño
+        if ($archivos['size'][$i] > $max_size) {
             $errores_archivos[] = "$nombre_original: supera tamaño máximo de " . $config['max_size'] . "MB";
             continue;
-        } elseif (move_uploaded_file($archivos['tmp_name'][$i], $ruta_destino)) {
+        }
+        
+        // Validar MIME real del contenido (magic bytes)
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime_real = $finfo->file($archivos['tmp_name'][$i]);
+        
+        // Mapeo de extensiones permitidas a MIMEs válidos
+        $mimes_validos = [
+            'jpg' => ['image/jpeg'],
+            'jpeg' => ['image/jpeg'],
+            'png' => ['image/png'],
+            'gif' => ['image/gif'],
+            'webp' => ['image/webp'],
+            'pdf' => ['application/pdf'],
+            'doc' => ['application/msword'],
+            'docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+            'xls' => ['application/vnd.ms-excel'],
+            'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+            'txt' => ['text/plain'],
+            'csv' => ['text/plain', 'text/csv', 'application/csv'],
+            'zip' => ['application/zip', 'application/x-zip-compressed'],
+            'mp3' => ['audio/mpeg', 'audio/mp3'],
+            'mp4' => ['video/mp4'],
+            'svg' => ['image/svg+xml'],
+        ];
+        
+        // Verificar si el MIME real coincide con la extensión
+        if (isset($mimes_validos[$extension])) {
+            if (!in_array($mime_real, $mimes_validos[$extension])) {
+                $errores_archivos[] = "$nombre_original: el contenido no coincide con la extensión (posible archivo malicioso)";
+                continue;
+            }
+        }
+        
+        if (move_uploaded_file($archivos['tmp_name'][$i], $ruta_destino)) {
             $tipo_mime = mime_content_type($ruta_destino);
             $tamano = $archivos['size'][$i];
             $hash_archivo = hash_file('sha256', $ruta_destino);
@@ -132,20 +170,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivos'])) {
 }
 
 // Eliminar archivo
-if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-    $id = (int)$_GET['delete'];
-    $stmt = $pdo->prepare('SELECT * FROM archivos WHERE id = ? AND usuario_id = ?');
-    $stmt->execute([$id, $usuario_id]);
-    $archivo = $stmt->fetch();
-    
-    if ($archivo && file_exists($archivo['ruta'])) {
-        unlink($archivo['ruta']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
+    if (!csrf_verify()) {
+        die('Error CSRF');
     }
-    
-    $stmt = $pdo->prepare('DELETE FROM archivos WHERE id = ? AND usuario_id = ?');
-    $stmt->execute([$id, $usuario_id]);
-    header('Location: index.php');
-    exit;
+    $id = (int)($_POST['id'] ?? 0);
+    if ($id > 0) {
+        $stmt = $pdo->prepare('SELECT * FROM archivos WHERE id = ? AND usuario_id = ?');
+        $stmt->execute([$id, $usuario_id]);
+        $archivo = $stmt->fetch();
+        
+        if ($archivo && file_exists($archivo['ruta'])) {
+            unlink($archivo['ruta']);
+        }
+        
+        $stmt = $pdo->prepare('DELETE FROM archivos WHERE id = ? AND usuario_id = ?');
+        $stmt->execute([$id, $usuario_id]);
+        header('Location: index.php');
+        exit;
+    }
 }
 
 // Descargar archivo
@@ -637,9 +680,14 @@ function getFileIcon($tipo_mime) {
                                         <a href="?download=<?= $archivo['id'] ?>" class="btn btn-primary btn-icon btn-sm" title="Descargar">
                                             <i class="fas fa-download"></i>
                                         </a>
-                                        <a href="?delete=<?= $archivo['id'] ?>" class="btn btn-danger btn-icon btn-sm" onclick="return confirm('¿Eliminar este archivo?')" title="Eliminar">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
+                                        <form method="POST" style="display: inline;" onsubmit="return confirm('¿Eliminar este archivo?')">
+                                            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                                            <input type="hidden" name="action" value="delete">
+                                            <input type="hidden" name="id" value="<?= $archivo['id'] ?>">
+                                            <button type="submit" class="btn btn-danger btn-icon btn-sm" title="Eliminar">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                     
                                     <?php if ($archivo['descargas'] > 0): ?>
