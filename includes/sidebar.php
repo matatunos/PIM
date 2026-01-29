@@ -97,7 +97,7 @@
             </div>
             
             <div class="user-dropdown" id="userDropdown">
-                <div class="dropdown-item" onclick="window.location.href='/app/perfil/2fa.php'">
+                <div class="dropdown-item" onclick="window.location.href='/app/perfil/index.php'">
                     <i class="fas fa-user-cog"></i>
                     <span>Mi Perfil</span>
                 </div>
