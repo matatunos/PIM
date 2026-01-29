@@ -342,9 +342,9 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
         }
         .notas-container[data-view="lista"] .nota-card {
             display: grid;
-            grid-template-columns: 40px 1fr 200px 120px 80px;
+            grid-template-columns: 40px 1fr 150px;
             grid-template-rows: auto auto;
-            align-items: center;
+            align-items: start;
             gap: var(--spacing-md);
             padding: var(--spacing-lg);
             border-left-width: 4px;
@@ -380,16 +380,16 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
             font-size: 0.85rem;
             color: var(--text-secondary);
             white-space: nowrap;
-            grid-column: 4;
-            grid-row: 1 / 3;
+            grid-column: 3;
+            grid-row: 1;
             text-align: right;
         }
         .notas-container[data-view="lista"] .nota-actions {
             opacity: 1;
             display: flex;
             gap: var(--spacing-xs);
-            grid-column: 5;
-            grid-row: 1 / 3;
+            grid-column: 3;
+            grid-row: 2;
             justify-content: flex-end;
             align-items: center;
         }
