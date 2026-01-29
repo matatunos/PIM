@@ -1,17 +1,24 @@
 <?php
 require_once '../../config/config.php';
+require_once '../../config/database.php';
 require_once '../../includes/auth_check.php';
 
 $usuario_id = $_SESSION['user_id'];
-$mensaje = '';
 
-// Obtener mes y año actual o del parámetro (GET o POST)
-$mes = isset($_POST['mes']) ? (int)$_POST['mes'] : (isset($_GET['mes']) ? (int)$_GET['mes'] : date('n'));
-$anio = isset($_POST['anio']) ? (int)$_POST['anio'] : (isset($_GET['anio']) ? (int)$_GET['anio'] : date('Y'));
+// Obtener vista (mes, semana, dia)
+$vista = $_GET['vista'] ?? 'mes';
+if (!in_array($vista, ['mes', 'semana', 'dia'])) {
+    $vista = 'mes';
+}
 
-// Validar mes y año
-if ($mes < 1 || $mes > 12) $mes = date('n');
-if ($anio < 1900 || $anio > 2100) $anio = date('Y');
+// Obtener fecha de navegación
+$fecha = $_GET['fecha'] ?? date('Y-m-d');
+try {
+    $fecha_obj = new DateTime($fecha);
+} catch (Exception $e) {
+    $fecha_obj = new DateTime();
+    $fecha = $fecha_obj->format('Y-m-d');
+}
 
 // Crear evento
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'crear') {
@@ -30,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         
         $stmt = $pdo->prepare('INSERT INTO eventos (usuario_id, titulo, descripcion, fecha_inicio, fecha_fin, hora_inicio, hora_fin, ubicacion, color, todo_el_dia) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         $stmt->execute([$usuario_id, $titulo, $descripcion, $fecha_inicio, $fecha_fin, $hora_inicio, $hora_fin, $ubicacion, $color, $todo_el_dia]);
-        header('Location: index.php?mes=' . $mes . '&anio=' . $anio);
+        header('Location: index.php?vista=' . $vista . '&fecha=' . $fecha_inicio);
         exit;
     }
 }
@@ -52,8 +59,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         if (empty($fecha_fin)) $fecha_fin = $fecha_inicio;
         
         $stmt = $pdo->prepare('UPDATE eventos SET titulo = ?, descripcion = ?, fecha_inicio = ?, fecha_fin = ?, hora_inicio = ?, hora_fin = ?, ubicacion = ?, color = ?, todo_el_dia = ? WHERE id = ? AND usuario_id = ?');
-        $result = $stmt->execute([$titulo, $descripcion, $fecha_inicio, $fecha_fin, $hora_inicio, $hora_fin, $ubicacion, $color, $todo_el_dia, $id, $usuario_id]);
-        header('Location: index.php?mes=' . $mes . '&anio=' . $anio);
+        $stmt->execute([$titulo, $descripcion, $fecha_inicio, $fecha_fin, $hora_inicio, $hora_fin, $ubicacion, $color, $todo_el_dia, $id, $usuario_id]);
+        header('Location: index.php?vista=' . $vista . '&fecha=' . $fecha_inicio);
         exit;
     }
 }
@@ -61,59 +68,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 // Mover evento a papelera
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $id = (int)$_GET['delete'];
+    $stmt = $pdo->prepare('SELECT titulo FROM eventos WHERE id = ? AND usuario_id = ?');
+    $stmt->execute([$id, $usuario_id]);
+    $evento = $stmt->fetch();
+    
     $stmt = $pdo->prepare('UPDATE eventos SET borrado_en = NOW() WHERE id = ? AND usuario_id = ?');
     $stmt->execute([$id, $usuario_id]);
     
-    // Registrar en papelera_logs
-    $stmt = $pdo->prepare('SELECT titulo FROM eventos WHERE id = ?');
-    $stmt->execute([$id]);
-    $evento = $stmt->fetch();
     $stmt = $pdo->prepare('INSERT INTO papelera_logs (usuario_id, tipo, item_id, nombre) VALUES (?, ?, ?, ?)');
     $stmt->execute([$usuario_id, 'eventos', $id, $evento['titulo'] ?? 'Sin título']);
     
-    header('Location: index.php?mes=' . $mes . '&anio=' . $anio);
+    header('Location: index.php?vista=' . $vista . '&fecha=' . $fecha);
     exit;
 }
 
-// Obtener eventos del mes
-$primer_dia = sprintf('%04d-%02d-01', $anio, $mes);
-$ultimo_dia = date('Y-m-t', strtotime($primer_dia));
-
-$stmt = $pdo->prepare('SELECT * FROM eventos WHERE usuario_id = ? AND borrado_en IS NULL AND ((fecha_inicio BETWEEN ? AND ?) OR (fecha_fin BETWEEN ? AND ?) OR (fecha_inicio <= ? AND fecha_fin >= ?)) ORDER BY fecha_inicio, hora_inicio');
-$stmt->execute([$usuario_id, $primer_dia, $ultimo_dia, $primer_dia, $ultimo_dia, $primer_dia, $ultimo_dia]);
+// Obtener todos los eventos del usuario
+$stmt = $pdo->prepare('SELECT * FROM eventos WHERE usuario_id = ? AND borrado_en IS NULL ORDER BY fecha_inicio, hora_inicio');
+$stmt->execute([$usuario_id]);
 $eventos = $stmt->fetchAll();
-
-// Agrupar eventos por fecha
-$eventos_por_fecha = [];
-foreach ($eventos as $evento) {
-    $fecha = substr($evento['fecha_inicio'], 0, 10); // Extraer solo YYYY-MM-DD
-    if (!isset($eventos_por_fecha[$fecha])) {
-        $eventos_por_fecha[$fecha] = [];
-    }
-    $eventos_por_fecha[$fecha][] = $evento;
-}
-
-// Calcular calendario
-$primer_dia_mes = mktime(0, 0, 0, $mes, 1, $anio);
-$dias_en_mes = date('t', $primer_dia_mes);
-$dia_semana_inicio = date('N', $primer_dia_mes); // 1 = Lunes, 7 = Domingo
-
-$mes_anterior = $mes - 1;
-$anio_anterior = $anio;
-if ($mes_anterior < 1) {
-    $mes_anterior = 12;
-    $anio_anterior--;
-}
-
-$mes_siguiente = $mes + 1;
-$anio_siguiente = $anio;
-if ($mes_siguiente > 12) {
-    $mes_siguiente = 1;
-    $anio_siguiente++;
-}
-
-$meses_es = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-$dias_es = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -123,101 +95,87 @@ $dias_es = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
     <title>Calendario - PIM</title>
     <link rel="stylesheet" href="/assets/css/styles.css">
     <link rel="stylesheet" href="/assets/fonts/fontawesome/css/all.min.css">
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
     <style>
-        .calendario-header {
+        .calendar-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: var(--spacing-xl);
-            padding: var(--spacing-lg);
-            background: var(--bg-primary);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
+            margin-bottom: var(--spacing-lg);
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
         }
-        .mes-titulo {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-        .nav-mes {
+        .view-toggle {
             display: flex;
             gap: var(--spacing-sm);
         }
-        .calendario-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 1px;
-            background: var(--gray-200);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-        }
-        .dia-semana {
-            background: var(--primary);
-            color: white;
-            padding: var(--spacing-md);
-            text-align: center;
-            font-weight: 700;
-            font-size: 0.9rem;
-        }
-        .dia-celda {
+        .view-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
             background: var(--bg-primary);
-            min-height: 120px;
-            padding: var(--spacing-sm);
+            border-radius: var(--radius-md);
             cursor: pointer;
-            transition: background var(--transition-fast);
-            position: relative;
+            transition: all var(--transition-fast);
+            color: var(--text-secondary);
         }
-        .dia-celda:hover {
-            background: var(--bg-secondary);
-        }
-        .dia-celda.otro-mes {
-            background: var(--gray-50);
-            opacity: 0.5;
-        }
-        .dia-celda.hoy {
-            background: var(--primary-light);
-        }
-        .dia-numero {
-            font-weight: 700;
-            font-size: 0.9rem;
-            margin-bottom: var(--spacing-xs);
-            color: var(--text-primary);
-        }
-        .evento-mini {
-            font-size: 0.7rem;
-            padding: 0.2rem 0.4rem;
-            margin-bottom: 0.2rem;
-            border-radius: var(--radius-sm);
+        .view-btn.active {
             background: var(--primary);
             color: white;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            cursor: pointer;
+            border-color: var(--primary);
         }
-        .lista-eventos {
-            margin-top: var(--spacing-xl);
+        .view-btn:hover {
+            border-color: var(--primary);
         }
-        .evento-card {
+        .nav-buttons {
+            display: flex;
+            gap: var(--spacing-md);
+            align-items: center;
+        }
+        .fecha-actual {
+            font-size: 1.2rem;
+            font-weight: 600;
+            min-width: 200px;
+            text-align: center;
+        }
+        .fc {
+            font-family: inherit;
+        }
+        .fc .fc-button-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        .fc .fc-button-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+        .fc .fc-button-primary:not(:disabled).fc-button-active {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+        .fc-daygrid-day.fc-day-today {
+            background-color: var(--primary-light) !important;
+        }
+        .fc .fc-col-header-cell {
+            background: var(--gray-100);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        .fc-event {
+            border: none !important;
+            cursor: pointer !important;
+        }
+        .fc-event-title {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .fc-daygrid-day-number {
+            padding: var(--spacing-xs);
+        }
+        #calendar {
             background: var(--bg-primary);
             padding: var(--spacing-lg);
             border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
-            margin-bottom: var(--spacing-md);
-            border-left: 4px solid;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-        .evento-info h3 {
-            margin: 0 0 var(--spacing-sm) 0;
-            font-size: 1.2rem;
-        }
-        .evento-meta {
-            display: flex;
-            gap: var(--spacing-lg);
-            color: var(--text-secondary);
-            font-size: 0.9rem;
         }
         .modal {
             display: none;
@@ -231,7 +189,9 @@ $dias_es = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
             align-items: center;
             justify-content: center;
         }
-        .modal.active { display: flex; }
+        .modal.active {
+            display: flex;
+        }
         .modal-content {
             background: var(--bg-primary);
             padding: var(--spacing-2xl);
@@ -241,120 +201,342 @@ $dias_es = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
             max-height: 90vh;
             overflow-y: auto;
         }
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: var(--spacing-sm);
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        .form-group input[type="text"],
+        .form-group input[type="date"],
+        .form-group input[type="time"],
+        .form-group textarea {
+            width: 100%;
+            padding: var(--spacing-sm);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .color-options {
+            display: flex;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        .color-option.selected {
+            border-color: var(--text-primary);
+            box-shadow: 0 0 0 2px var(--bg-primary);
+        }
+        .modal-buttons {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+            justify-content: flex-end;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all var(--transition-fast);
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+        .btn-secondary {
+            background: var(--gray-200);
+            color: var(--text-primary);
+        }
+        .btn-secondary:hover {
+            background: var(--gray-300);
+        }
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        .checkbox-group {
+            display: flex;
+            gap: var(--spacing-md);
+            align-items: center;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
+    <div class="app-container">
+        <?php include '../../includes/sidebar.php'; ?>
+        
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="top-bar-left">
+                    <h1 class="page-title"><i class="fas fa-calendar-alt"></i> Calendario</h1>
+                </div>
+            </div>
+            
+            <div class="content-area">
+                <div class="calendar-header">
+                    <div class="fecha-actual" id="fechaActual">
+                        <?php 
+                        if ($vista === 'mes') {
+                            echo $fecha_obj->format('F Y');
+                        } elseif ($vista === 'semana') {
+                            $lunes = clone $fecha_obj;
+                            $lunes->modify('Monday this week');
+                            $domingo = clone $lunes;
+                            $domingo->modify('+6 days');
+                            echo $lunes->format('d/m') . ' - ' . $domingo->format('d/m/Y');
+                        } else {
+                            echo $fecha_obj->format('d/m/Y');
+                        }
+                        ?>
+                    </div>
+                    
+                    <div class="view-toggle">
+                        <button class="view-btn <?= $vista === 'dia' ? 'active' : '' ?>" onclick="cambiarVista('dayGridDay')">
+                            <i class="fas fa-square"></i> Día
+                        </button>
+                        <button class="view-btn <?= $vista === 'semana' ? 'active' : '' ?>" onclick="cambiarVista('dayGridWeek')">
+                            <i class="fas fa-calendar-week"></i> Semana
+                        </button>
+                        <button class="view-btn <?= $vista === 'mes' ? 'active' : '' ?>" onclick="cambiarVista('dayGridMonth')">
+                            <i class="fas fa-calendar"></i> Mes
+                        </button>
+                    </div>
+                    
+                    <div class="nav-buttons">
+                        <button class="btn btn-secondary" onclick="navegar(-1)">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="btn btn-secondary" onclick="irHoy()">
+                            Hoy
+                        </button>
+                        <button class="btn btn-secondary" onclick="navegar(1)">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <button class="btn btn-primary" onclick="abrirModalNuevo()">
+                            <i class="fas fa-plus"></i> Nuevo
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="calendar"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de evento -->
+    <div class="modal" id="modalEvento">
+        <div class="modal-content">
+            <h2 id="modal-title"><i class="fas fa-calendar-plus"></i> Nuevo Evento</h2>
+            
+            <form id="formEvento" method="POST">
+                <input type="hidden" name="action" id="form-action" value="crear">
+                <input type="hidden" name="id" id="evento-id">
+                
+                <div class="form-group">
+                    <label>Título *</label>
+                    <input type="text" id="titulo" name="titulo" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea id="descripcion" name="descripcion"></textarea>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                    <div class="form-group">
+                        <label>Fecha inicio *</label>
+                        <input type="date" id="fecha_inicio" name="fecha_inicio" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Fecha fin</label>
+                        <input type="date" id="fecha_fin" name="fecha_fin">
+                    </div>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="todo_el_dia" name="todo_el_dia" onchange="toggleHoras()">
+                    <label for="todo_el_dia">Evento de todo el día</label>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);" id="horarios">
+                    <div class="form-group">
+                        <label>Hora inicio</label>
+                        <input type="time" id="hora_inicio" name="hora_inicio">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Hora fin</label>
+                        <input type="time" id="hora_fin" name="hora_fin">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Ubicación</label>
+                    <input type="text" id="ubicacion" name="ubicacion">
+                </div>
+                
+                <div class="form-group">
+                    <label>Color</label>
+                    <div class="color-options">
+                        <input type="hidden" id="color_seleccionado" name="color" value="#a8dadc">
+                        <div class="color-option selected" style="background: #a8dadc;" onclick="seleccionarColor('#a8dadc', this)"></div>
+                        <div class="color-option" style="background: #ff6b6b;" onclick="seleccionarColor('#ff6b6b', this)"></div>
+                        <div class="color-option" style="background: #4ecdc4;" onclick="seleccionarColor('#4ecdc4', this)"></div>
+                        <div class="color-option" style="background: #ffe66d;" onclick="seleccionarColor('#ffe66d', this)"></div>
+                        <div class="color-option" style="background: #95e1d3;" onclick="seleccionarColor('#95e1d3', this)"></div>
+                        <div class="color-option" style="background: #f38181;" onclick="seleccionarColor('#f38181', this)"></div>
+                    </div>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="btn-delete" style="display: none;" onclick="eliminarEvento()">
+                        <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <script>
+        const eventosData = <?= json_encode($eventos) ?>;
+        const vistaActual = '<?= $vista ?>';
+        const fechaActual = '<?= $fecha ?>';
+        
+        let calendar;
+        let vistaMap = {
+            'dia': 'dayGridDay',
+            'semana': 'dayGridWeek',
+            'mes': 'dayGridMonth'
+        };
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+            
+            // Mapear eventos para FullCalendar
+            const eventos = eventosData.map(e => ({
+                id: e.id,
+                title: e.titulo,
+                start: e.fecha_inicio + (e.hora_inicio ? 'T' + e.hora_inicio : ''),
+                end: e.fecha_fin + (e.hora_fin ? 'T' + e.hora_fin : ''),
+                backgroundColor: e.color,
+                borderColor: e.color,
+                allDay: e.todo_el_dia == 1,
+                extendedProps: {
+                    descripcion: e.descripcion,
+                    ubicacion: e.ubicacion,
+                    color: e.color,
+                    id: e.id
+                }
+            }));
+            
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: vistaMap[vistaActual] || 'dayGridMonth',
+                initialDate: fechaActual,
+                headerToolbar: false,
+                locale: 'es',
+                height: 'auto',
+                contentHeight: 'auto',
+                events: eventos,
+                dateClick: function(info) {
+                    abrirModalNuevo(info.dateStr);
+                },
+                eventClick: function(info) {
+                    editarEvento(info.event.id);
+                }
+            });
+            
+            calendar.render();
+        });
+        
+        function cambiarVista(vista) {
+            if (calendar) {
+                calendar.changeView(vista);
+                actualizarBotones(vista);
+            }
+        }
+        
+        function actualizarBotones(vista) {
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const vistaTexto = Object.keys(vistaMap).find(k => vistaMap[k] === vista);
+            if (vistaTexto === 'dia') {
+                document.querySelectorAll('.view-btn')[0].classList.add('active');
+            } else if (vistaTexto === 'semana') {
+                document.querySelectorAll('.view-btn')[1].classList.add('active');
+            } else {
+                document.querySelectorAll('.view-btn')[2].classList.add('active');
+            }
+        }
+        
+        function navegar(dir) {
+            if (calendar) {
+                if (dir > 0) {
+                    calendar.next();
+                } else {
+                    calendar.prev();
+                }
+            }
+        }
+        
+        function irHoy() {
+            if (calendar) {
+                calendar.today();
+            }
+        }
+        
         function cerrarModal() {
             document.getElementById('modalEvento').classList.remove('active');
         }
         
-        function mostrarArchivos(tipo, id, event) {
-            if (event) {
-                event.stopPropagation();
-            }
-            
-            const modalId = 'modalArchivos' + tipo.charAt(0).toUpperCase() + tipo.slice(1) + id;
-            const container = 'lista-archivos-' + tipo + '-' + id;
-            
-            fetch('/api/archivos.php?action=listar')
-                .then(r => r.json())
-                .then(data => {
-                    if (!data.success || data.archivos.length === 0) {
-                        document.getElementById(container).innerHTML = '<p style="text-align: center; color: var(--text-muted);">No hay archivos disponibles</p>';
-                        return;
-                    }
-                    
-                    fetch('/api/archivos.php?action=' + tipo + 's&' + tipo + '_id=' + id)
-                        .then(r => r.json())
-                        .then(vinculados => {
-                            const vinculadosIds = new Set(vinculados.archivos.map(a => a.id));
-                            
-                            let html = '';
-                            data.archivos.forEach(archivo => {
-                                const vinculado = vinculadosIds.has(archivo.id);
-                                const etiquetas = archivo.etiquetas ? archivo.etiquetas.split(',').map(e => '<span style="display: inline-block; background: ' + (archivo.color_etiqueta || '#e0e0e0') + '; color: #333; padding: 2px 6px; border-radius: 3px; font-size: 0.75rem; margin-right: 4px;">' + e.trim() + '</span>').join('') : '';
-                                html += '<label style="display: block; padding: var(--spacing-sm); border-bottom: 1px solid var(--gray-200); cursor: pointer;"><div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: 4px;"><input type="checkbox" ' + (vinculado ? 'checked' : '') + ' onchange="toggleArchivo(this, ' + archivo.id + ', ' + id + ', \'' + tipo + '\')"><strong>' + archivo.nombre_original + '</strong></div><div style="margin-left: 24px; font-size: 0.85rem; color: var(--text-muted);">' + (etiquetas || '<em>sin etiquetas</em>') + '</div></label>';
-                            });
-                            document.getElementById(container).innerHTML = html;
-                        });
-                });
-            
-            if (!document.getElementById(modalId)) {
-                const modal = document.createElement('div');
-                modal.id = modalId;
-                modal.className = 'modal active';
-                const closeBtn = document.createElement('button');
-                closeBtn.type = 'button';
-                closeBtn.className = 'btn btn-ghost';
-                closeBtn.style.flex = '1';
-                closeBtn.textContent = 'Cerrar';
-                closeBtn.onclick = function() {
-                    document.getElementById(modalId).classList.remove('active');
-                };
-                
-                const header = document.createElement('h3');
-                header.style.marginBottom = 'var(--spacing-lg)';
-                header.innerHTML = '<i class="fas fa-link"></i> Vincular Archivos';
-                
-                const listContainer = document.createElement('div');
-                listContainer.id = container;
-                listContainer.style.cssText = 'max-height: 400px; overflow-y: auto; border: 1px solid var(--gray-200); border-radius: var(--radius-md); padding: var(--spacing-md);';
-                listContainer.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Cargando archivos...</p>';
-                
-                const buttonDiv = document.createElement('div');
-                buttonDiv.style.cssText = 'display: flex; gap: var(--spacing-md); margin-top: var(--spacing-lg);';
-                buttonDiv.appendChild(closeBtn);
-                
-                const content = document.createElement('div');
-                content.className = 'modal-content';
-                content.style.maxWidth = '600px';
-                content.appendChild(header);
-                content.appendChild(listContainer);
-                content.appendChild(buttonDiv);
-                
-                modal.appendChild(content);
-                document.body.appendChild(modal);
-                modal.addEventListener('click', function(e) {
-                    if (e.target === this) this.classList.remove('active');
-                });
-            } else {
-                document.getElementById(modalId).classList.add('active');
-            }
-        }
-        
-        function toggleArchivo(checkbox, archivoId, id, tipo) {
-            if (checkbox.checked) {
-                fetch('/api/archivos.php?action=vincular_' + tipo, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: 'archivo_id=' + archivoId + '&' + tipo + '_id=' + id
-                });
-            } else {
-                fetch('/api/archivos.php?action=desvincular_' + tipo, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: 'archivo_id=' + archivoId + '&' + tipo + '_id=' + id
-                });
-            }
-        }
-        
-        const eventosData = <?= json_encode($eventos) ?>;
-        
         function abrirModalNuevo(fecha = null) {
-            document.getElementById('modal-title').textContent = 'Nuevo Evento';
+            document.getElementById('modal-title').textContent = '✚ Nuevo Evento';
             document.getElementById('form-action').value = 'crear';
+            document.getElementById('btn-delete').style.display = 'none';
             document.getElementById('formEvento').reset();
             document.getElementById('color_seleccionado').value = '#a8dadc';
             
             if (fecha) {
                 document.getElementById('fecha_inicio').value = fecha;
             } else {
-                document.getElementById('fecha_inicio').value = '<?= date('Y-m-d') ?>';
+                document.getElementById('fecha_inicio').value = new Date().toISOString().split('T')[0];
             }
             
             document.querySelectorAll('.color-option').forEach(el => el.classList.remove('selected'));
             document.querySelector('.color-option').classList.add('selected');
+            
             document.getElementById('modalEvento').classList.add('active');
         }
         
@@ -362,8 +544,9 @@ $dias_es = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
             const evento = eventosData.find(e => e.id == id);
             if (!evento) return;
             
-            document.getElementById('modal-title').textContent = 'Editar Evento';
+            document.getElementById('modal-title').textContent = '✎ Editar Evento';
             document.getElementById('form-action').value = 'editar';
+            document.getElementById('btn-delete').style.display = 'inline-block';
             document.getElementById('evento-id').value = evento.id;
             document.getElementById('titulo').value = evento.titulo;
             document.getElementById('descripcion').value = evento.descripcion || '';
@@ -384,276 +567,38 @@ $dias_es = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
                 }
             });
             
-            // Cargar archivos anexos
-            fetch('/api/archivos.php?action=eventos&evento_id=' + id)
-                .then(r => r.json())
-                .then(data => {
-                    const container = document.getElementById('archivos-anexos-container');
-                    if (!data.success || data.archivos.length === 0) {
-                        container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">Sin archivos anexos</p>';
-                        return;
-                    }
-                    
-                    let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--spacing-sm);">';
-                    data.archivos.forEach(archivo => {
-                        const etiquetas = archivo.etiquetas ? archivo.etiquetas.split(',').map(e => '<span style="display: inline-block; background: ' + (archivo.color_etiqueta || '#e0e0e0') + '; color: #333; padding: 1px 4px; border-radius: 3px; font-size: 0.7rem; margin-right: 2px;">' + e.trim() + '</span>').join('') : '';
-                        html += '<div style="border: 1px solid var(--gray-200); border-radius: var(--radius-md); padding: var(--spacing-sm); display: flex; flex-direction: column; gap: 4px;"><a href="/api/archivos.php?action=descargar&archivo_id=' + archivo.id + '" style="color: var(--primary); text-decoration: none; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="' + archivo.nombre_original + '" download><i class="fas fa-download"></i> ' + archivo.nombre_original.substring(0, 20) + '</a><div style="font-size: 0.75rem; color: var(--text-muted);">' + (archivo.tamaño ? (archivo.tamaño / 1024 / 1024).toFixed(2) + ' MB' : '') + '</div><div style="font-size: 0.75rem;">' + (etiquetas || '<em style="color: var(--text-muted);">sin tags</em>') + '</div></div>';
-                    });
-                    html += '</div>';
-                    container.innerHTML = html;
-                });
-            
             document.getElementById('modalEvento').classList.add('active');
         }
         
-        function selectColor(color) {
+        function eliminarEvento() {
+            if (confirm('¿Eliminar este evento?')) {
+                const id = document.getElementById('evento-id').value;
+                window.location.href = '?delete=' + id;
+            }
+        }
+        
+        function seleccionarColor(color, element) {
+            document.querySelectorAll('.color-option').forEach(el => {
+                el.classList.remove('selected');
+            });
+            element.classList.add('selected');
             document.getElementById('color_seleccionado').value = color;
-            document.querySelectorAll('.color-option').forEach(el => el.classList.remove('selected'));
-            event.target.classList.add('selected');
         }
         
         function toggleHoras() {
-            const container = document.getElementById('horas-container');
-            const checkbox = document.getElementById('todo_el_dia');
-            container.style.display = checkbox.checked ? 'none' : 'grid';
+            const horarios = document.getElementById('horarios');
+            const todoElDia = document.getElementById('todo_el_dia').checked;
+            horarios.style.display = todoElDia ? 'none' : 'grid';
         }
         
-        function mostrarArchivosAnexos(tipo, id) {
-            fetch('/api/archivos.php?action=' + tipo + 's&' + tipo + '_id=' + id)
-                .then(r => r.json())
-                .then(data => {
-                    const badge = document.getElementById('badge-archivos-' + tipo + '-' + id);
-                    if (badge) {
-                        if (data.success && data.archivos.length > 0) {
-                            badge.textContent = data.archivos.length;
-                            badge.style.display = 'flex';
-                        } else {
-                            badge.style.display = 'none';
-                        }
-                    }
-                });
-        }
+        document.getElementById('formEvento').addEventListener('submit', function(e) {
+            e.preventDefault();
+            this.submit();
+        });
         
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('modalEvento').addEventListener('click', function(e) {
-                if (e.target === this) cerrarModal();
-            });
-            
-            // Cargar badges de archivos
-            <?php foreach ($eventos as $evento): ?>
-                mostrarArchivosAnexos('evento', <?= $evento['id'] ?>);
-            <?php endforeach; ?>
+        document.getElementById('modalEvento').addEventListener('click', function(e) {
+            if (e.target === this) cerrarModal();
         });
     </script>
-    <div class="app-container">
-        <?php include '../../includes/sidebar.php'; ?>
-        
-        <div class="main-content">
-            <div class="top-bar">
-                <div class="top-bar-left">
-                    <h1 class="page-title"><i class="fas fa-calendar-alt"></i> Calendario</h1>
-                </div>
-                <div class="top-bar-right">
-                    <a href="?mes=<?= date('n') ?>&anio=<?= date('Y') ?>" class="btn btn-ghost">
-                        <i class="fas fa-calendar-day"></i>
-                        Hoy
-                    </a>
-                    <button onclick="abrirModalNuevo()" class="btn btn-primary">
-                        <i class="fas fa-plus"></i>
-                        Nuevo Evento
-                    </button>
-                </div>
-            </div>
-            
-            <div class="content-area">
-                <div class="calendario-header">
-                    <div class="nav-mes">
-                        <a href="?mes=<?= $mes_anterior ?>&anio=<?= $anio_anterior ?>" class="btn btn-ghost">
-                            <i class="fas fa-chevron-left"></i>
-                        </a>
-                    </div>
-                    <div class="mes-titulo"><?= $meses_es[$mes] ?> <?= $anio ?></div>
-                    <div class="nav-mes">
-                        <a href="?mes=<?= $mes_siguiente ?>&anio=<?= $anio_siguiente ?>" class="btn btn-ghost">
-                            <i class="fas fa-chevron-right"></i>
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="calendario-grid">
-                    <?php foreach ($dias_es as $dia): ?>
-                        <div class="dia-semana"><?= $dia ?></div>
-                    <?php endforeach; ?>
-                    
-                    <?php
-                    // Días del mes anterior
-                    for ($i = 1; $i < $dia_semana_inicio; $i++) {
-                        echo '<div class="dia-celda otro-mes"></div>';
-                    }
-                    
-                    // Días del mes actual
-                    for ($dia = 1; $dia <= $dias_en_mes; $dia++) {
-                        $fecha = sprintf('%04d-%02d-%02d', $anio, $mes, $dia);
-                        $es_hoy = $fecha === date('Y-m-d');
-                        $clase = $es_hoy ? 'dia-celda hoy' : 'dia-celda';
-                        
-                        echo "<div class='$clase' onclick='abrirModalNuevo(\"$fecha\")'>";
-                        echo "<div class='dia-numero'>$dia</div>";
-                        
-                        if (isset($eventos_por_fecha[$fecha])) {
-                            foreach (array_slice($eventos_por_fecha[$fecha], 0, 3) as $evento) {
-                                $color = htmlspecialchars($evento['color']);
-                                $titulo = htmlspecialchars($evento['titulo']);
-                                echo "<div class='evento-mini' style='background: $color;' onclick='event.stopPropagation(); editarEvento({$evento['id']})'>$titulo</div>";
-                            }
-                            if (count($eventos_por_fecha[$fecha]) > 3) {
-                                echo "<div style='text-align: center; font-size: 0.7rem; color: var(--text-muted);'>+" . (count($eventos_por_fecha[$fecha]) - 3) . " más</div>";
-                            }
-                        }
-                        
-                        echo '</div>';
-                    }
-                    
-                    // Días del mes siguiente
-                    $total_celdas = $dia_semana_inicio + $dias_en_mes - 1;
-                    $celdas_restantes = (7 - ($total_celdas % 7)) % 7;
-                    for ($i = 0; $i < $celdas_restantes; $i++) {
-                        echo '<div class="dia-celda otro-mes"></div>';
-                    }
-                    ?>
-                </div>
-                
-                <?php if (!empty($eventos)): ?>
-                    <div class="lista-eventos">
-                        <h2 style="margin-bottom: var(--spacing-lg);">Próximos eventos</h2>
-                        <?php foreach (array_slice($eventos, 0, 10) as $evento): ?>
-                            <div class="evento-card" style="border-left-color: <?= htmlspecialchars($evento['color']) ?>;">
-                                <div class="evento-info">
-                                    <h3><?= htmlspecialchars($evento['titulo']) ?></h3>
-                                    <?php if ($evento['descripcion']): ?>
-                                        <p style="color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
-                                            <?= nl2br(htmlspecialchars($evento['descripcion'])) ?>
-                                        </p>
-                                    <?php endif; ?>
-                                    <div class="evento-meta">
-                                        <span><i class="fas fa-calendar"></i> <?= date('d/m/Y', strtotime($evento['fecha_inicio'])) ?></span>
-                                        <?php if ($evento['hora_inicio']): ?>
-                                            <span><i class="fas fa-clock"></i> <?= substr($evento['hora_inicio'], 0, 5) ?></span>
-                                        <?php endif; ?>
-                                        <?php if ($evento['ubicacion']): ?>
-                                            <span><i class="fas fa-map-marker-alt"></i> <?= htmlspecialchars($evento['ubicacion']) ?></span>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                                <div style="display: flex; gap: var(--spacing-xs);">
-                                    <button type="button" onclick="mostrarArchivos('evento', <?= $evento['id'] ?>, event)" class="btn btn-ghost btn-icon btn-sm" title="Archivos" id="btn-archivos-evento-<?= $evento['id'] ?>" style="position: relative;">
-                                        <i class="fas fa-paperclip"></i>
-                                        <span id="badge-archivos-evento-<?= $evento['id'] ?>" style="position: absolute; top: -8px; right: -8px; background: var(--danger); color: white; border-radius: 50%; width: 18px; height: 18px; display: none; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold;"></span>
-                                    </button>
-                                    <button onclick="editarEvento(<?= $evento['id'] ?>)" class="btn btn-ghost btn-icon btn-sm">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <a href="?delete=<?= $evento['id'] ?>&mes=<?= $mes ?>&anio=<?= $anio ?>" class="btn btn-danger btn-icon btn-sm" onclick="return confirm('¿Eliminar este evento?')">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modal Evento -->
-    <div id="modalEvento" class="modal">
-        <div class="modal-content">
-            <h2 style="margin-bottom: var(--spacing-lg);">
-                <i class="fas fa-calendar-plus"></i>
-                <span id="modal-title">Nuevo Evento</span>
-            </h2>
-            <form method="POST" class="form" id="formEvento">
-                <input type="hidden" name="action" id="form-action" value="crear">
-                <input type="hidden" name="id" id="evento-id">
-                <input type="hidden" name="color" id="color_seleccionado" value="#a8dadc">
-                <input type="hidden" name="mes" value="<?= $mes ?>">
-                <input type="hidden" name="anio" value="<?= $anio ?>">
-                
-                <div class="form-group">
-                    <label for="titulo">Título *</label>
-                    <input type="text" id="titulo" name="titulo" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="descripcion">Descripción</label>
-                    <textarea id="descripcion" name="descripcion" rows="3"></textarea>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
-                    <div class="form-group">
-                        <label for="fecha_inicio">Fecha inicio *</label>
-                        <input type="date" id="fecha_inicio" name="fecha_inicio" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="fecha_fin">Fecha fin</label>
-                        <input type="date" id="fecha_fin" name="fecha_fin">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="todo_el_dia" name="todo_el_dia" onchange="toggleHoras()">
-                        Todo el día
-                    </label>
-                </div>
-                
-                <div id="horas-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
-                    <div class="form-group">
-                        <label for="hora_inicio">Hora inicio</label>
-                        <input type="time" id="hora_inicio" name="hora_inicio">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="hora_fin">Hora fin</label>
-                        <input type="time" id="hora_fin" name="hora_fin">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="ubicacion">Ubicación</label>
-                    <input type="text" id="ubicacion" name="ubicacion" placeholder="Lugar del evento">
-                </div>
-                
-                <div class="form-group">
-                    <label>Color</label>
-                    <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
-                        <?php $colores = ['#a8dadc', '#ffc6d3', '#d4c5f9', '#c7f0db', '#ffe5d9', '#ffb5a7', '#cce2ff', '#fff9e6']; ?>
-                        <?php foreach ($colores as $color): ?>
-                            <div style="width: 40px; height: 40px; background: <?= $color ?>; border-radius: var(--radius-md); cursor: pointer; border: 3px solid transparent;" 
-                                 class="color-option <?= $color === '#a8dadc' ? 'selected' : '' ?>"
-                                 onclick="selectColor('<?= $color ?>')"></div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-                
-                <div style="border-top: 1px solid var(--gray-200); padding-top: var(--spacing-md); margin-top: var(--spacing-lg);">
-                    <h3 style="font-size: 0.95rem; margin-bottom: var(--spacing-sm);"><i class="fas fa-paperclip"></i> Archivos Anexos</h3>
-                    <div id="archivos-anexos-container" style="padding: var(--spacing-sm); background: var(--bg-secondary); border-radius: var(--radius-md); min-height: 60px;"></div>
-                </div>
-                
-                <div style="display: flex; gap: var(--spacing-md); margin-top: var(--spacing-xl);">
-                    <button type="submit" class="btn btn-primary" style="flex: 1;">
-                        <i class="fas fa-check"></i>
-                        Guardar Evento
-                    </button>
-                    <button type="button" class="btn btn-ghost" onclick="cerrarModal()">
-                        Cancelar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-    
 </body>
 </html>
