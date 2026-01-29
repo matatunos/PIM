@@ -1,6 +1,7 @@
 <?php
-require_once '../../includes/auth_check.php';
+require_once '../../config/config.php';
 require_once '../../config/database.php';
+require_once '../../includes/auth_check.php';
 $stmt = $pdo->prepare('SELECT * FROM tareas WHERE usuario_id = ? AND fecha_vencimiento >= CURDATE() AND completada = 0 ORDER BY fecha_vencimiento');
 $stmt->execute([$_SESSION['user_id']]);
 $recordatorios = $stmt->fetchAll();

@@ -1,6 +1,7 @@
 <?php
-require_once '../../includes/auth_check.php';
+require_once '../../config/config.php';
 require_once '../../config/database.php';
+require_once '../../includes/auth_check.php';
 
 $usuario_id = $_SESSION['user_id'];
 $q = trim($_GET['q'] ?? '');
