@@ -929,9 +929,9 @@ body {
    Responsive
    ========================================== */
 
-@media screen and (max-width: 768px) {
+@media (max-width: 768px) {
     .navbar-menu {
-        display: none;
+        display: none !important;
     }
     
     .sidebar {
@@ -956,6 +956,13 @@ body {
     
     .content-area {
         padding: var(--spacing-lg);
+    }
+}
+
+/* Desktop: hide hamburger */
+@media (min-width: 769px) {
+    #hamburger-menu {
+        display: none !important;
     }
 }
         padding: var(--spacing-lg);
