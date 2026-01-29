@@ -5,6 +5,9 @@
  * Extrae páginas de BookStack y las crea como notas en PIM
  */
 
+// Cargar sistema de auditoría
+require_once dirname(__DIR__) . '/includes/audit_logger.php';
+
 // Configuración BookStack (vía SSH a Proxmox)
 $PROXMOX_HOST = '192.168.1.2';
 $PROXMOX_PASS = 'fr1t@ng@';
@@ -33,7 +36,18 @@ $PIM_DB_PASS = $_ENV['DB_PASS'] ?? '';
 // Usuario para asignar las notas (admin = 1)
 $PIM_USER_ID = 1;
 
-echo "=== Importador BookStack → PIM ===\n\n";
+$LOG_FILE = '/var/log/pim-bookstack.log';
+
+// Función de log
+function blog($msg, $level = 'INFO') {
+    global $LOG_FILE;
+    $timestamp = date('Y-m-d H:i:s');
+    $line = "[$timestamp] [$level] $msg";
+    echo "$line\n";
+    @file_put_contents($LOG_FILE, "$line\n", FILE_APPEND | LOCK_EX);
+}
+
+blog("=== Importador BookStack → PIM ===", 'INFO');
 
 // Función para ejecutar comando en BookStack vía SSH
 function bookstack_query($query) {
@@ -147,25 +161,27 @@ foreach ($ids as $page_id) {
             $stmt = $pdo->prepare("INSERT IGNORE INTO nota_etiqueta (nota_id, etiqueta_id) VALUES (?, ?)");
             $stmt->execute([$nota_id, $etiqueta_id]);
             
-            echo "   ✅ Importada: $titulo\n";
+            blog("Importada: $titulo");
             $importadas++;
         }
     } catch (PDOException $e) {
-        echo "   ❌ Error en '$titulo': " . $e->getMessage() . "\n";
+        blog("Error en '$titulo': " . $e->getMessage(), 'ERROR');
         $errores++;
     }
 }
 
-echo "\n=== Resumen ===\n";
-echo "✅ Importadas: $importadas\n";
-echo "🔄 Actualizadas: $actualizadas\n";
-echo "❌ Errores: $errores\n";
+// Resumen
+$resumen = "BookStack: $importadas importadas, $actualizadas actualizadas, $errores errores";
+blog("=== Resumen: $resumen ===");
 
-// Preguntar si sincronizar con Open WebUI
+// Registrar en auditoría
+$exitoso = ($errores == 0);
+logSystemAction($pdo, 'sync', 'Importación BookStack', $resumen, $exitoso, $PIM_USER_ID);
+
+// Sincronizar con Open WebUI
 if ($importadas > 0 || $actualizadas > 0) {
-    echo "\n🔄 Sincronizando con Open WebUI...\n";
+    blog("Sincronizando con Open WebUI...");
     passthru('bash ' . __DIR__ . '/sync-openwebui.sh');
 }
 
-echo "\n✨ ¡Proceso completado!\n";
-echo "Ahora puedes preguntar a Ollama sobre tu documentación de BookStack.\n";
+blog("¡Proceso completado!");

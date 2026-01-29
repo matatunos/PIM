@@ -265,6 +265,15 @@ register_sync_history() {
 INSERT INTO sync_history (tipo, status, mensaje, documentos_procesados, sincronizado_en)
 VALUES ('documento', '$status', '$mensaje', $docs_count, NOW());
 EOF
+
+    # Registrar también en logs de auditoría
+    local exitoso=1
+    [ "$status" = "failed" ] && exitoso=0
+    
+    mysql -u "${DB_USER}" -p"${DB_PASS}" "${DB_NAME}" <<EOF
+INSERT INTO logs_acceso (usuario_id, ip, ip_address, user_agent, accion, tipo_evento, descripcion, exitoso)
+VALUES (1, 'SYSTEM', 'SYSTEM', 'sync-openwebui.sh', 'Sync Open WebUI', 'sync', '$mensaje', $exitoso);
+EOF
 }
 
 # MAIN

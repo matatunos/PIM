@@ -5,6 +5,9 @@
  * Extrae el texto OCR de los documentos y los sincroniza con Open WebUI
  */
 
+// Cargar sistema de auditoría
+require_once dirname(__DIR__) . '/includes/audit_logger.php';
+
 // Configuración Paperless
 $PAPERLESS_URL = 'http://192.168.1.18:8000';
 $PAPERLESS_TOKEN = '9580e1d36b354a86fce60c40d6a6854c0e8e95f8';
@@ -27,7 +30,18 @@ $PIM_DB_USER = $_ENV['DB_USER'] ?? 'pim_user';
 $PIM_DB_PASS = $_ENV['DB_PASS'] ?? '';
 $PIM_USER_ID = 1;
 
-echo "=== Importador Paperless-ngx → PIM ===\n\n";
+$LOG_FILE = '/var/log/pim-paperless.log';
+
+// Función de log
+function plog($msg, $level = 'INFO') {
+    global $LOG_FILE;
+    $timestamp = date('Y-m-d H:i:s');
+    $line = "[$timestamp] [$level] $msg";
+    echo "$line\n";
+    @file_put_contents($LOG_FILE, "$line\n", FILE_APPEND | LOCK_EX);
+}
+
+plog("=== Importador Paperless-ngx → PIM ===", 'INFO');
 
 // Función para llamar a la API de Paperless
 function paperless_api($endpoint) {
@@ -234,7 +248,7 @@ foreach ($allDocs as $doc) {
             $stmt = $pdo->prepare("UPDATE paperless_sync SET checksum = ? WHERE paperless_id = ?");
             $stmt->execute([$checksum, $docId]);
             
-            echo "   🔄 Actualizado: $tituloNota\n";
+            plog("Actualizado: $tituloNota");
             $actualizadas++;
         } else {
             // Crear nueva nota
@@ -250,25 +264,27 @@ foreach ($allDocs as $doc) {
             $stmt = $pdo->prepare("INSERT INTO paperless_sync (paperless_id, nota_id, checksum) VALUES (?, ?, ?)");
             $stmt->execute([$docId, $notaId, $checksum]);
             
-            echo "   ✅ Importado: $tituloNota\n";
+            plog("Importado: $tituloNota");
             $importadas++;
         }
     } catch (PDOException $e) {
-        echo "   ❌ Error en '$tituloNota': " . $e->getMessage() . "\n";
+        plog("Error en '$tituloNota': " . $e->getMessage(), 'ERROR');
         $errores++;
     }
 }
 
-echo "\n=== Resumen ===\n";
-echo "✅ Importados: $importadas\n";
-echo "🔄 Actualizados: $actualizadas\n";
-echo "⏭️  Sin cambios: $sinCambios\n";
-echo "❌ Errores: $errores\n";
+// Resumen
+$resumen = "Paperless: $importadas importados, $actualizadas actualizados, $sinCambios sin cambios, $errores errores";
+plog("=== Resumen: $resumen ===");
+
+// Registrar en auditoría
+$exitoso = ($errores == 0);
+logSystemAction($pdo, 'sync', 'Importación Paperless-ngx', $resumen, $exitoso, $PIM_USER_ID);
 
 // Sincronizar con Open WebUI
 if ($importadas > 0 || $actualizadas > 0) {
-    echo "\n🔄 Sincronizando con Open WebUI...\n";
+    plog("Sincronizando con Open WebUI...");
     passthru('bash ' . __DIR__ . '/sync-openwebui.sh');
 }
 
-echo "\n✨ ¡Proceso completado!\n";
+plog("¡Proceso completado!");
