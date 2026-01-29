@@ -307,16 +307,16 @@ $contactos = $stmt->fetchAll();
         }
         .contactos-container[data-view="compacta"] .contacto-card {
             display: grid;
-            grid-template-columns: 1fr auto;
+            grid-template-columns: auto 1fr auto;
             align-items: center;
-            gap: var(--spacing-md);
-            padding: var(--spacing-md) var(--spacing-lg);
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-lg);
             background: var(--bg-primary);
             border-bottom: 1px solid var(--gray-200);
             border-radius: 0;
             box-shadow: none;
             position: relative;
-            min-height: auto;
+            min-height: 48px;
         }
         .contactos-container[data-view="compacta"] .contacto-card:first-child {
             border-radius: var(--radius-lg) var(--radius-lg) 0 0;
@@ -334,8 +334,8 @@ $contactos = $stmt->fetchAll();
             display: flex;
             flex-direction: row;
             align-items: center;
-            gap: var(--spacing-md);
-            grid-column: 1;
+            gap: var(--spacing-sm);
+            grid-column: 2;
         }
         .contactos-container[data-view="compacta"] .contacto-avatar {
             width: 40px;
@@ -360,11 +360,7 @@ $contactos = $stmt->fetchAll();
             right: auto;
         }
         .contactos-container[data-view="compacta"] .contacto-actions {
-            position: static;
-            display: flex;
-            gap: var(--spacing-xs);
-            justify-content: flex-end;
-            align-items: center;
+            display: none;
         }
         
         /* Icono de llamada en vista compacta */
@@ -375,23 +371,24 @@ $contactos = $stmt->fetchAll();
             display: flex;
             align-items: center;
             justify-content: center;
+            grid-column: 3;
         }
         .contacto-call-btn a {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             background: var(--success);
             color: white;
             text-decoration: none;
             transition: all var(--transition-fast);
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
         .contacto-call-btn a:hover {
             background: #5ed496;
-            transform: scale(1.1);
+            transform: scale(1.15);
         }
         
         /* Vista Contenido */
