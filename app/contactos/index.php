@@ -306,8 +306,7 @@ $contactos = $stmt->fetchAll();
             gap: 0;
         }
         .contactos-container[data-view="compacta"] .contacto-card {
-            display: grid;
-            grid-template-columns: auto 1fr auto;
+            display: flex;
             align-items: center;
             gap: var(--spacing-sm);
             padding: var(--spacing-sm) var(--spacing-lg);
@@ -335,7 +334,7 @@ $contactos = $stmt->fetchAll();
             flex-direction: row;
             align-items: center;
             gap: var(--spacing-sm);
-            grid-column: 2;
+            flex: 1;
         }
         .contactos-container[data-view="compacta"] .contacto-avatar {
             width: 40px;
@@ -371,7 +370,7 @@ $contactos = $stmt->fetchAll();
             display: flex;
             align-items: center;
             justify-content: center;
-            grid-column: 3;
+            flex-shrink: 0;
         }
         .contacto-call-btn a {
             display: flex;
