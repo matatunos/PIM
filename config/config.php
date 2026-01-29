@@ -29,7 +29,7 @@ if (!isset($_SESSION['_created'])) {
 }
 
 // Versión de la aplicación
-define('PIM_VERSION', '2.2.0');
+define('PIM_VERSION', '2.3.0');
 
 // Zona horaria
 date_default_timezone_set('Europe/Madrid');
