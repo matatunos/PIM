@@ -1,6 +1,7 @@
 <?php
 require_once '../../config/config.php';
 require_once '../../includes/auth_check.php';
+require_once '../../includes/audit_logger.php';
 
 $usuario_id = $_SESSION['user_id'];
 $mensaje = $error = '';
@@ -113,10 +114,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivos'])) {
         if ($duplicados > 0) {
             $mensaje .= " (" . $duplicados . " duplicado(s) rechazado(s))";
         }
+        // Registrar en auditoría
+        logAction('subir', 'archivo', "Se subieron $contador archivo(s)", true);
     } elseif ($duplicados > 0) {
         $error = "Todos los archivos ya existen (duplicados rechazados)";
+        logAction('subir', 'archivo', "Intento de subir archivos duplicados", false);
     } else {
         $error = 'Error al subir los archivos';
+        logAction('subir', 'archivo', 'Error durante la subida de archivos', false);
     }
     
     if (!empty($errores_archivos)) {
@@ -153,6 +158,9 @@ if (isset($_GET['download']) && is_numeric($_GET['download'])) {
     if ($archivo && file_exists($archivo['ruta'])) {
         $stmt = $pdo->prepare('UPDATE archivos SET descargas = descargas + 1 WHERE id = ?');
         $stmt->execute([$id]);
+        
+        // Registrar en auditoría
+        logAction('descargar', 'archivo', 'Archivo descargado: ' . $archivo['nombre_original'], true);
         
         header('Content-Type: ' . $archivo['tipo_mime']);
         header('Content-Disposition: attachment; filename="' . $archivo['nombre_original'] . '"');
