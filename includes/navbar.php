@@ -2,7 +2,7 @@
 <?php require_once __DIR__.'/lang.php'; ?>
 <nav class="navbar-glass">
   <div class="navbar-container">
-    <button id="hamburger-menu" title="Menú">
+    <button id="hamburger-menu" title="Menú" style="display: none;">
       <span></span>
       <span></span>
       <span></span>
@@ -26,13 +26,30 @@
 </nav>
 
 <script>
-// Hamburger menu toggle - solo funcionalidad, sin tocar display
+// Función para actualizar visibilidad del hamburger
+function updateHamburgerVisibility() {
+    const hamburger = document.getElementById('hamburger-menu');
+    const isMobile = window.innerWidth <= 768;
+    
+    if (!hamburger) return;
+    
+    if (isMobile) {
+        hamburger.style.display = 'flex';
+        hamburger.style.flexDirection = 'column';
+    } else {
+        hamburger.style.display = 'none';
+    }
+}
+
+// Ejecutar al cargar
 document.addEventListener('DOMContentLoaded', function() {
+    updateHamburgerVisibility();
+    
+    // Configurar funcionalidad del hamburger
     const hamburger = document.getElementById('hamburger-menu');
     const sidebar = document.querySelector('.sidebar');
     
     if (hamburger && sidebar) {
-        // Click en hamburger
         hamburger.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -40,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
             sidebar.classList.toggle('active');
         });
         
-        // Cerrar sidebar al hacer click fuera
+        // Cerrar al click fuera
         document.addEventListener('click', function(e) {
             if (!sidebar.contains(e.target) && !hamburger.contains(e.target)) {
                 hamburger.classList.remove('active');
@@ -48,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Cerrar sidebar al hacer click en un link del sidebar
+        // Cerrar al click en links
         sidebar.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', function() {
                 if (window.innerWidth <= 768) {
@@ -59,5 +76,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Actualizar cuando cambie el tamaño
+window.addEventListener('resize', updateHamburgerVisibility);
 </script>
 

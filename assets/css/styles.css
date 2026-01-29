@@ -857,7 +857,6 @@ body {
    ========================================== */
 
 #hamburger-menu {
-    display: none !important;
     position: relative;
     z-index: 2000;
     width: auto;
@@ -870,7 +869,6 @@ body {
     padding: 8px;
     gap: 6px;
     margin-right: 12px;
-    flex-direction: column;
 }
 
 #hamburger-menu span {
@@ -900,7 +898,7 @@ body {
 
 /* Navbar menus visible en desktop */
 .navbar-menu {
-    display: flex !important;
+    display: flex;
     gap: var(--spacing-lg);
     list-style: none;
     margin: 0;
@@ -929,13 +927,8 @@ body {
    ========================================== */
 
 @media screen and (max-width: 768px) {
-    #hamburger-menu {
-        display: flex !important;
-        flex-direction: column;
-    }
-    
     .navbar-menu {
-        display: none !important;
+        display: none;
     }
     
     .sidebar {
