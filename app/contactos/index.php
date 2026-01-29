@@ -466,7 +466,7 @@ $contactos = $stmt->fetchAll();
                     </a>
                     <a href="importar.php" class="btn btn-secondary" style="margin-right: var(--spacing-md);">
                         <i class="fas fa-file-import"></i>
-                        Importar CSV
+                        Importar
                     </a>
                     <button onclick="abrirModalNuevo()" class="btn btn-primary">
                         <i class="fas fa-plus"></i>
