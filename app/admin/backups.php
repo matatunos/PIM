@@ -1,6 +1,7 @@
 <?php
 require_once '../../config/config.php';
 require_once '../../includes/auth_check.php';
+require_once '../../includes/audit_logger.php';
 
 // Solo administradores
 if ($_SESSION['rol'] !== 'admin') {
@@ -22,10 +23,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     if ($return_var === 0) {
         // El backup se creó exitosamente
         $mensaje = 'Backup creado exitosamente';
+        logAction('backup', 'backup', 'Backup de base de datos creado exitosamente', true);
     } else {
         // Mostrar el último error del output
         $error_msg = !empty($output) ? end($output) : 'Error desconocido al crear el backup';
         $error = 'Error al crear el backup: ' . htmlspecialchars($error_msg);
+        logAction('backup', 'backup', 'Error al crear backup: ' . $error_msg, false);
     }
 }
 
@@ -36,6 +39,9 @@ if (isset($_GET['download']) && !empty($_GET['download'])) {
     
     // Validar que el archivo existe y está en el directorio correcto
     if (file_exists($filepath) && strpos(realpath($filepath), realpath($backup_dir)) === 0) {
+        // Registrar en auditoría
+        logAction('descargar', 'backup', 'Backup descargado: ' . $filename, true);
+        
         header('Content-Type: application/zip');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
         header('Content-Length: ' . filesize($filepath));
@@ -54,8 +60,10 @@ if (isset($_GET['delete']) && !empty($_GET['delete'])) {
     if (file_exists($filepath) && strpos(realpath($filepath), realpath($backup_dir)) === 0) {
         if (unlink($filepath)) {
             $mensaje = 'Backup eliminado: ' . $filename;
+            logAction('eliminar', 'backup', 'Backup eliminado: ' . $filename, true);
         } else {
             $error = 'Error al eliminar el backup';
+            logAction('eliminar', 'backup', 'Error al eliminar backup: ' . $filename, false);
         }
     } else {
         $error = 'Archivo de backup no encontrado';
@@ -77,9 +85,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         
         if ($return_var === 0) {
             $mensaje = 'Backup restaurado exitosamente: ' . htmlspecialchars($filename);
+            logAction('backup', 'backup', 'Backup restaurado: ' . $filename, true);
         } else {
             $error_msg = !empty($output) ? end($output) : 'Error desconocido';
             $error = 'Error al restaurar el backup: ' . htmlspecialchars($error_msg);
+            logAction('backup', 'backup', 'Error al restaurar backup: ' . $error_msg, false);
         }
     } else {
         $error = 'Archivo de backup no encontrado';

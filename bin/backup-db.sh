@@ -24,6 +24,18 @@ LOG_FILE="/var/log/pim-backup.log"
 # Crear directorio de destino si no existe
 mkdir -p "$BACKUP_DIR"
 
+# Función de logging en BD
+log_to_db() {
+    local tipo_evento=$1
+    local descripcion=$2
+    local exitoso=$3
+    
+    mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" << EOF 2>/dev/null
+INSERT INTO logs_acceso (usuario_id, tipo_evento, descripcion, exitoso, ip_address, user_agent, accion)
+VALUES (NULL, '$tipo_evento', '$descripcion', $exitoso, 'SISTEMA', 'CRON/SCRIPT', 'backup');
+EOF
+}
+
 # Función de logging
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
@@ -32,6 +44,8 @@ log() {
 # Función de error
 error() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR: $1" | tee -a "$LOG_FILE"
+    # Registrar error en auditoría
+    log_to_db "backup" "Error en backup automático: $1" 0
     exit 1
 }
 
@@ -123,3 +137,6 @@ log "Tamaño: $BACKUP_SIZE"
 log "Backups totales: $TOTAL_BACKUPS"
 log "Espacio usado: $TOTAL_SIZE"
 log ""
+
+# Registrar en auditoría
+log_to_db "backup" "Backup automático completado: $(basename $FINAL_ZIP) - Tamaño: $BACKUP_SIZE" 1
