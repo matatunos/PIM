@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 
                 if ($etiqueta_id) {
                     $stmt = $pdo->prepare('INSERT INTO nota_etiqueta (nota_id, etiqueta_id) VALUES (?, ?)');
-                    $stmt->execute([$nota_id, $etiqueta_id]);
+                    $stmt->execute([$id, $etiqueta_id]);
                 }
             }
         }
