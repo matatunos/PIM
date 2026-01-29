@@ -219,33 +219,71 @@ $contactos = $stmt->fetchAll();
         }
         .contactos-container[data-view="lista"] .contacto-card {
             display: grid;
-            grid-template-columns: 80px 1fr auto auto auto;
+            grid-template-columns: 80px 1fr 250px 150px 80px;
+            grid-template-rows: auto auto;
             align-items: center;
-            gap: var(--spacing-md);
-            padding: var(--spacing-md);
+            gap: var(--spacing-lg);
+            padding: var(--spacing-lg);
             background: var(--bg-secondary);
             border-radius: var(--radius-md);
             position: relative;
+            min-height: 80px;
+        }
+        .contactos-container[data-view="lista"] .contacto-avatar {
+            grid-column: 1;
+            grid-row: 1 / 3;
+            width: 80px;
+            height: 80px;
         }
         .contactos-container[data-view="lista"] .contacto-header {
             margin: 0;
-            display: contents;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+            grid-column: 2;
+            grid-row: 1 / 3;
+        }
+        .contactos-container[data-view="lista"] .contacto-info {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
         }
         .contactos-container[data-view="lista"] .contacto-detalles {
             display: flex;
+            flex-direction: column;
             gap: var(--spacing-sm);
-            flex-wrap: wrap;
             font-size: 0.85rem;
+            grid-column: 3;
+            grid-row: 1 / 3;
         }
         .contactos-container[data-view="lista"] .contacto-detalle {
             white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
         }
         .contactos-container[data-view="lista"] .contacto-info h3 {
             margin: 0;
             font-size: 1rem;
+            font-weight: 600;
         }
         .contactos-container[data-view="lista"] .contacto-empresa {
             font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .contactos-container[data-view="lista"] .star-badge {
+            position: absolute;
+            top: var(--spacing-md);
+            right: var(--spacing-md);
+        }
+        .contactos-container[data-view="lista"] .contacto-actions {
+            position: static;
+            display: flex;
+            gap: var(--spacing-xs);
+            grid-column: 5;
+            grid-row: 1 / 3;
+            justify-content: flex-end;
+            align-items: center;
         }
         
         /* Vista Contenido */

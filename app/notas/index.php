@@ -342,21 +342,24 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
         }
         .notas-container[data-view="lista"] .nota-card {
             display: grid;
-            grid-template-columns: 1fr auto auto auto auto;
+            grid-template-columns: 40px 1fr 200px 120px 80px;
+            grid-template-rows: auto auto;
             align-items: center;
             gap: var(--spacing-md);
-            padding: var(--spacing-md);
+            padding: var(--spacing-lg);
             border-left-width: 4px;
             border-left-style: solid;
             background: var(--bg-secondary);
             border-radius: var(--radius-md);
-            min-height: auto;
+            min-height: 70px;
             max-height: none;
             position: relative;
         }
         .notas-container[data-view="lista"] .nota-titulo {
             font-weight: 600;
             font-size: 0.95rem;
+            grid-column: 2;
+            grid-row: 1;
         }
         .notas-container[data-view="lista"] .nota-contenido {
             display: none;
@@ -365,24 +368,36 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
             display: flex;
             gap: var(--spacing-xs);
             flex-wrap: wrap;
+            grid-column: 2;
+            grid-row: 2;
+            align-self: start;
         }
         .notas-container[data-view="lista"] .nota-etiquetas .etiqueta {
             font-size: 0.75rem;
-            padding: 0.2rem 0.4rem;
+            padding: 0.3rem 0.6rem;
         }
         .notas-container[data-view="lista"] .nota-footer {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             color: var(--text-secondary);
             white-space: nowrap;
+            grid-column: 4;
+            grid-row: 1 / 3;
+            text-align: right;
         }
         .notas-container[data-view="lista"] .nota-actions {
             opacity: 1;
             display: flex;
             gap: var(--spacing-xs);
+            grid-column: 5;
+            grid-row: 1 / 3;
+            justify-content: flex-end;
+            align-items: center;
         }
         .notas-container[data-view="lista"] .pin-icon {
             position: static;
             color: var(--text-secondary);
+            grid-column: 1;
+            grid-row: 1 / 3;
         }
         
         /* Vista Contenido */
