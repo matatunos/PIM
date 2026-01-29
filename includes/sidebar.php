@@ -67,6 +67,14 @@
                 <i class="fas fa-users-cog"></i>
                 Usuarios
             </a>
+            <a href="/app/admin/backups.php" class="nav-link <?= strpos($_SERVER['PHP_SELF'], '/admin/backups') !== false ? 'active' : '' ?>">
+                <i class="fas fa-database"></i>
+                Backups
+            </a>
+            <a href="/app/admin/papelera.php" class="nav-link <?= strpos($_SERVER['PHP_SELF'], '/admin/papelera') !== false ? 'active' : '' ?>">
+                <i class="fas fa-trash"></i>
+                Papelera
+            </a>
             <a href="/app/admin/archivos.php" class="nav-link <?= strpos($_SERVER['PHP_SELF'], '/admin/archivos') !== false ? 'active' : '' ?>">
                 <i class="fas fa-folder-cog"></i>
                 Gestión de Archivos
