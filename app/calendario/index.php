@@ -58,11 +58,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Eliminar evento
+// Mover evento a papelera
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $id = (int)$_GET['delete'];
-    $stmt = $pdo->prepare('DELETE FROM eventos WHERE id = ? AND usuario_id = ?');
+    $stmt = $pdo->prepare('UPDATE eventos SET borrado_en = NOW() WHERE id = ? AND usuario_id = ?');
     $stmt->execute([$id, $usuario_id]);
+    
+    // Registrar en papelera_logs
+    $stmt = $pdo->prepare('SELECT titulo FROM eventos WHERE id = ?');
+    $stmt->execute([$id]);
+    $evento = $stmt->fetch();
+    $stmt = $pdo->prepare('INSERT INTO papelera_logs (usuario_id, tipo, item_id, nombre) VALUES (?, ?, ?, ?)');
+    $stmt->execute([$usuario_id, 'eventos', $id, $evento['titulo'] ?? 'Sin título']);
+    
     header('Location: index.php?mes=' . $mes . '&anio=' . $anio);
     exit;
 }
@@ -71,7 +79,7 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
 $primer_dia = sprintf('%04d-%02d-01', $anio, $mes);
 $ultimo_dia = date('Y-m-t', strtotime($primer_dia));
 
-$stmt = $pdo->prepare('SELECT * FROM eventos WHERE usuario_id = ? AND ((fecha_inicio BETWEEN ? AND ?) OR (fecha_fin BETWEEN ? AND ?) OR (fecha_inicio <= ? AND fecha_fin >= ?)) ORDER BY fecha_inicio, hora_inicio');
+$stmt = $pdo->prepare('SELECT * FROM eventos WHERE usuario_id = ? AND borrado_en IS NULL AND ((fecha_inicio BETWEEN ? AND ?) OR (fecha_fin BETWEEN ? AND ?) OR (fecha_inicio <= ? AND fecha_fin >= ?)) ORDER BY fecha_inicio, hora_inicio');
 $stmt->execute([$usuario_id, $primer_dia, $ultimo_dia, $primer_dia, $ultimo_dia, $primer_dia, $ultimo_dia]);
 $eventos = $stmt->fetchAll();
 

@@ -29,11 +29,19 @@ if (isset($_GET['toggle']) && is_numeric($_GET['toggle'])) {
     exit;
 }
 
-// Eliminar tarea
+// Mover tarea a papelera
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $id = (int)$_GET['delete'];
-    $stmt = $pdo->prepare('DELETE FROM tareas WHERE id = ? AND usuario_id = ?');
+    $stmt = $pdo->prepare('UPDATE tareas SET borrado_en = NOW() WHERE id = ? AND usuario_id = ?');
     $stmt->execute([$id, $usuario_id]);
+    
+    // Registrar en papelera_logs
+    $stmt = $pdo->prepare('SELECT titulo FROM tareas WHERE id = ?');
+    $stmt->execute([$id]);
+    $tarea = $stmt->fetch();
+    $stmt = $pdo->prepare('INSERT INTO papelera_logs (usuario_id, tipo, item_id, nombre) VALUES (?, ?, ?, ?)');
+    $stmt->execute([$usuario_id, 'tareas', $id, $tarea['titulo'] ?? 'Sin título']);
+    
     header('Location: index.php');
     exit;
 }
@@ -77,7 +85,7 @@ $filtro_prioridad = $_GET['prioridad'] ?? 'todas';
 $filtro_lista = $_GET['lista'] ?? 'todas';
 
 // Construir query con filtros seguros
-$sql = 'SELECT * FROM tareas WHERE usuario_id = ?';
+$sql = 'SELECT * FROM tareas WHERE usuario_id = ? AND borrado_en IS NULL';
 $params = [$usuario_id];
 
 if ($filtro_completada === 'pendientes') {
@@ -110,7 +118,7 @@ $stmt->execute($params);
 $tareas = $stmt->fetchAll();
 
 // Obtener listas únicas
-$stmt = $pdo->prepare('SELECT DISTINCT lista FROM tareas WHERE usuario_id = ? ORDER BY lista');
+$stmt = $pdo->prepare('SELECT DISTINCT lista FROM tareas WHERE usuario_id = ? AND borrado_en IS NULL ORDER BY lista');
 $stmt->execute([$usuario_id]);
 $listas = $stmt->fetchAll(PDO::FETCH_COLUMN);
 ?>

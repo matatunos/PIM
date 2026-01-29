@@ -72,11 +72,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Eliminar nota
+// Mover nota a papelera
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $id = (int)$_GET['delete'];
-    $stmt = $pdo->prepare('DELETE FROM notas WHERE id = ? AND usuario_id = ?');
+    $stmt = $pdo->prepare('UPDATE notas SET borrado_en = NOW() WHERE id = ? AND usuario_id = ?');
     $stmt->execute([$id, $usuario_id]);
+    
+    // Registrar en papelera_logs
+    $stmt = $pdo->prepare('SELECT titulo FROM notas WHERE id = ?');
+    $stmt->execute([$id]);
+    $nota = $stmt->fetch();
+    $stmt = $pdo->prepare('INSERT INTO papelera_logs (usuario_id, tipo, item_id, nombre) VALUES (?, ?, ?, ?)');
+    $stmt->execute([$usuario_id, 'notas', $id, $nota['titulo'] ?? 'Sin título']);
+    
     header('Location: index.php');
     exit;
 }
@@ -109,7 +117,7 @@ $sql = 'SELECT n.*, GROUP_CONCAT(e.nombre SEPARATOR ", ") as etiquetas
         FROM notas n 
         LEFT JOIN nota_etiqueta ne ON n.id = ne.nota_id 
         LEFT JOIN etiquetas e ON ne.etiqueta_id = e.id 
-        WHERE n.usuario_id = ?';
+        WHERE n.usuario_id = ? AND n.borrado_en IS NULL';
 $params = [$usuario_id];
 
 if (!$mostrar_archivadas) {

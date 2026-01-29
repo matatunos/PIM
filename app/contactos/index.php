@@ -44,11 +44,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Eliminar contacto
+// Mover contacto a papelera
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $id = (int)$_GET['delete'];
-    $stmt = $pdo->prepare('DELETE FROM contactos WHERE id = ? AND usuario_id = ?');
+    $stmt = $pdo->prepare('UPDATE contactos SET borrado_en = NOW() WHERE id = ? AND usuario_id = ?');
     $stmt->execute([$id, $usuario_id]);
+    
+    // Registrar en papelera_logs
+    $stmt = $pdo->prepare('SELECT nombre FROM contactos WHERE id = ?');
+    $stmt->execute([$id]);
+    $contacto = $stmt->fetch();
+    $stmt = $pdo->prepare('INSERT INTO papelera_logs (usuario_id, tipo, item_id, nombre) VALUES (?, ?, ?, ?)');
+    $stmt->execute([$usuario_id, 'contactos', $id, $contacto['nombre'] ?? 'Sin nombre']);
+    
     header('Location: index.php');
     exit;
 }
@@ -64,7 +72,7 @@ if (isset($_GET['fav']) && is_numeric($_GET['fav'])) {
 
 // Obtener contactos
 $buscar = $_GET['q'] ?? '';
-$sql = 'SELECT * FROM contactos WHERE usuario_id = ?';
+$sql = 'SELECT * FROM contactos WHERE usuario_id = ? AND borrado_en IS NULL';
 $params = [$usuario_id];
 
 if (!empty($buscar)) {
