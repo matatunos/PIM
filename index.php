@@ -41,9 +41,50 @@ $stmt->execute([$usuario_id]);
 $eventos_hoy = $stmt->fetchAll();
 
 // Notas recientes
-$stmt = $pdo->prepare('SELECT * FROM notas WHERE usuario_id = ? AND archivada = 0 ORDER BY actualizado_en DESC LIMIT 6');
+$stmt = $pdo->prepare('SELECT * FROM notas WHERE usuario_id = ? AND archivada = 0 AND borrado_en IS NULL ORDER BY actualizado_en DESC LIMIT 6');
 $stmt->execute([$usuario_id]);
 $notas_recientes = $stmt->fetchAll();
+
+// ESTADÍSTICAS AVANZADAS
+// Tareas completadas este mes
+$stmt = $pdo->prepare('SELECT COUNT(*) as total FROM tareas WHERE usuario_id = ? AND completada = 1 AND YEAR(actualizado_en) = YEAR(NOW()) AND MONTH(actualizado_en) = MONTH(NOW())');
+$stmt->execute([$usuario_id]);
+$tareas_completadas_mes = $stmt->fetch()['total'];
+
+// Notas creadas este mes
+$stmt = $pdo->prepare('SELECT COUNT(*) as total FROM notas WHERE usuario_id = ? AND YEAR(creado_en) = YEAR(NOW()) AND MONTH(creado_en) = MONTH(NOW()) AND borrado_en IS NULL');
+$stmt->execute([$usuario_id]);
+$notas_creadas_mes = $stmt->fetch()['total'];
+
+// Archivos más descargado
+$stmt = $pdo->prepare('SELECT nombre_original, descargas FROM archivos WHERE usuario_id = ? ORDER BY descargas DESC LIMIT 1');
+$stmt->execute([$usuario_id]);
+$archivo_mas_descargado = $stmt->fetch();
+
+// Eventos este mes
+$stmt = $pdo->prepare('SELECT COUNT(*) as total FROM eventos WHERE usuario_id = ? AND YEAR(fecha_inicio) = YEAR(NOW()) AND MONTH(fecha_inicio) = MONTH(NOW()) AND borrado_en IS NULL');
+$stmt->execute([$usuario_id]);
+$eventos_mes = $stmt->fetch()['total'];
+
+// Gráfico de actividad - últimos 30 días
+$actividad_dias = [];
+for ($i = 29; $i >= 0; $i--) {
+    $fecha = date('Y-m-d', strtotime("-$i days"));
+    $stmt = $pdo->prepare('
+        SELECT 
+            (SELECT COUNT(*) FROM notas WHERE usuario_id = ? AND DATE(creado_en) = ? AND borrado_en IS NULL) +
+            (SELECT COUNT(*) FROM tareas WHERE usuario_id = ? AND DATE(creado_en) = ? AND borrado_en IS NULL) +
+            (SELECT COUNT(*) FROM eventos WHERE usuario_id = ? AND DATE(creado_en) = ? AND borrado_en IS NULL) +
+            (SELECT COUNT(*) FROM contactos WHERE usuario_id = ? AND DATE(creado_en) = ? AND borrado_en IS NULL)
+        as total
+    ');
+    $stmt->execute([$usuario_id, $fecha, $usuario_id, $fecha, $usuario_id, $fecha, $usuario_id, $fecha]);
+    $count = $stmt->fetch()['total'];
+    $actividad_dias[] = [
+        'fecha' => date('d/m', strtotime($fecha)),
+        'count' => $count
+    ];
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -211,6 +252,51 @@ $notas_recientes = $stmt->fetchAll();
             color: var(--gray-900);
         }
         
+        .activity-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 120px;
+            padding: var(--spacing-md) 0;
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .activity-bar {
+            flex: 1;
+            background: linear-gradient(180deg, var(--primary), var(--primary-light));
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+            min-height: 4px;
+            cursor: help;
+            transition: all var(--transition-base);
+            position: relative;
+            opacity: 0.7;
+        }
+        
+        .activity-bar:hover {
+            opacity: 1;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .activity-bar-label {
+            position: absolute;
+            bottom: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.65rem;
+            white-space: nowrap;
+            color: var(--text-secondary);
+        }
+        
+        .activity-bar-value {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
         .event-item {
             display: flex;
             align-items: center;
@@ -324,6 +410,26 @@ $notas_recientes = $stmt->fetchAll();
                         <div class="stat-number"><?= $contactos_totales ?></div>
                         <div class="stat-label">Contactos</div>
                     </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+                        <div class="stat-number"><?= $tareas_completadas_mes ?></div>
+                        <div class="stat-label">Tareas Completadas Este Mes</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                        </div>
+                        <div class="stat-number"><?= $notas_creadas_mes ?></div>
+                        <div class="stat-label">Notas Creadas Este Mes</div>
+                    </div>
                 </div>
                 
                 <!-- Acciones Rápidas -->
@@ -344,6 +450,40 @@ $notas_recientes = $stmt->fetchAll();
                         <i class="fas fa-plus"></i>
                         Nuevo Contacto
                     </a>
+                </div>
+                
+                <!-- Gráfico de Actividad -->
+                <div class="card" style="margin-bottom: var(--spacing-xl);">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-chart-bar"></i>
+                            Actividad - Últimos 30 Días
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div style="overflow-x: auto; padding-bottom: 35px; position: relative;">
+                            <div class="activity-chart">
+                                <?php 
+                                $max_actividad = max(array_column($actividad_dias, 'count'));
+                                if ($max_actividad === 0) $max_actividad = 1;
+                                foreach ($actividad_dias as $dia): 
+                                    $altura = ($dia['count'] / $max_actividad) * 100;
+                                ?>
+                                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                                        <div class="activity-bar" style="height: <?= $altura ?>%; min-height: <?= $altura > 0 ? '4px' : '1px' ?>;" title="<?= $dia['count'] ?> items el <?= $dia['fecha'] ?>">
+                                            <?php if ($dia['count'] > 0): ?>
+                                                <span class="activity-bar-value"><?= $dia['count'] ?></span>
+                                            <?php endif; ?>
+                                            <span class="activity-bar-label"><?= $dia['fecha'] ?></span>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <p style="text-align: center; color: var(--text-secondary); font-size: 0.9em; margin-top: var(--spacing-md);">
+                            <i class="fas fa-info-circle"></i> Muestra notas, tareas, eventos y contactos creados por día
+                        </p>
+                    </div>
                 </div>
                 
                 <div class="grid grid-cols-2">
