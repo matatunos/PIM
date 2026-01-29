@@ -154,7 +154,7 @@
         
         // Close dropdown when clicking elsewhere
         document.addEventListener('click', function(e) {
-            if (!profileMenu.contains(e.target)) {
+            if (profileMenu && !profileMenu.contains(e.target)) {
                 profileToggle.classList.remove('active');
                 dropdown.classList.remove('active');
             }
@@ -164,9 +164,12 @@
         if (miPerfilBtn) {
             miPerfilBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
+                e.preventDefault();
                 profileToggle.classList.remove('active');
                 dropdown.classList.remove('active');
-                window.location.href = '/app/perfil/index.php';
+                setTimeout(() => {
+                    window.location.href = '/app/perfil/index.php';
+                }, 100);
             });
         }
         
