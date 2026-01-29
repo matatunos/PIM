@@ -25,11 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $stmt->execute([$archivo_id]);
         
         // Registrar en papelera_logs
-        $stmt = $pdo->prepare('
-            INSERT INTO papelera_logs (usuario_id, tipo, item_id, nombre, borrado_en)
-            VALUES (?, ?, ?, ?, NOW())
-        ');
-        $stmt->execute([$archivo['usuario_id'], 'archivo', $archivo_id, $archivo['nombre_original']]);
+        $stmt = $pdo->prepare('INSERT INTO papelera_logs (usuario_id, tipo, item_id, nombre) VALUES (?, ?, ?, ?)');
+        $stmt->execute([$archivo['usuario_id'], 'archivos', $archivo_id, $archivo['nombre_original']]);
         
         $mensaje = 'Archivo eliminado. Se encuentra en la papelera';
     } else {
