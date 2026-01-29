@@ -346,6 +346,95 @@ foreach ($links as $link) {
             font-size: 0.9rem;
             color: var(--text-secondary);
         }
+        
+        /* Vista Mosaico */
+        .links-container[data-view="mosaico"] .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--spacing-lg);
+        }
+        
+        /* Vista Lista */
+        .links-container[data-view="lista"] .links-grid {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+        .links-container[data-view="lista"] .link-card {
+            display: grid;
+            grid-template-columns: 56px 1fr auto auto;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            background: var(--bg-secondary);
+            border-left: 4px solid;
+            border-radius: var(--radius-md);
+        }
+        .links-container[data-view="lista"] .link-icon {
+            margin: 0;
+        }
+        .links-container[data-view="lista"] .link-description {
+            display: none;
+            margin: 0;
+        }
+        .links-container[data-view="lista"] .link-meta {
+            display: flex;
+            gap: var(--spacing-md);
+            font-size: 0.8rem;
+        }
+        
+        /* Vista Contenido */
+        .links-container[data-view="contenido"] .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: var(--spacing-lg);
+        }
+        .links-container[data-view="contenido"] .link-card {
+            display: block;
+        }
+        
+        /* Vista Detalles */
+        .links-container[data-view="detalles"] .links-grid {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+        .links-container[data-view="detalles"] .link-card {
+            display: block;
+            width: 100%;
+        }
+        
+        /* Botones de vista */
+        .view-btn {
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            transition: all var(--transition-fast);
+            border-radius: 0;
+        }
+        .view-btn:hover {
+            color: var(--primary);
+            background: var(--bg-secondary);
+        }
+        .view-btn.active {
+            color: var(--primary);
+            background: var(--bg-secondary);
+        }
+        
+        @media (max-width: 768px) {
+            .links-container[data-view="lista"] .link-card {
+                grid-template-columns: 56px 1fr auto;
+            }
+            .links-container[data-view="contenido"] .links-grid {
+                grid-template-columns: 1fr;
+            }
+            .view-toggle {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -377,6 +466,46 @@ foreach ($links as $link) {
             </div>
             
             <div class="content-area">
+                <!-- Búsqueda y vistas -->
+                <div style="display: flex; gap: var(--spacing-md); flex-wrap: wrap; align-items: center; margin-bottom: var(--spacing-lg);">
+                    <form method="GET" style="display: flex; gap: var(--spacing-md); flex: 1; min-width: 250px;">
+                        <input type="text" name="q" placeholder="Buscar links..." value="<?= htmlspecialchars($buscar) ?>" class="form-control">
+                        <select name="categoria" class="form-control">
+                            <option value="todas">Todas las categorías</option>
+                            <?php foreach ($categorias as $cat): ?>
+                                <option value="<?= htmlspecialchars($cat) ?>" <?= $filtro_categoria === $cat ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($cat) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <?php if ($buscar || $filtro_categoria !== 'todas'): ?>
+                            <a href="index.php" class="btn btn-ghost">Limpiar</a>
+                        <?php endif; ?>
+                    </form>
+                    
+                    <div class="view-toggle" style="display: flex; gap: var(--spacing-xs); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0;">
+                        <button class="view-btn" onclick="cambiarVista('mosaico')" title="Mosaico" style="border: none; border-right: 1px solid var(--border-color);">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button class="view-btn" onclick="cambiarVista('lista')" title="Lista" style="border: none; border-right: 1px solid var(--border-color);">
+                            <i class="fas fa-list"></i>
+                        </button>
+                        <button class="view-btn" onclick="cambiarVista('contenido')" title="Contenido" style="border: none; border-right: 1px solid var(--border-color);">
+                            <i class="fas fa-align-left"></i>
+                        </button>
+                        <button class="view-btn" onclick="cambiarVista('detalles')" title="Detalles" style="border: none;">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+                    </div>
+                    
+                    <button onclick="document.getElementById('modalNuevo').classList.add('active')" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Nuevo Link
+                    </button>
+                </div>
                 <?php if ($mensaje): ?>
                     <div class="alert alert-success"><?= htmlspecialchars($mensaje) ?></div>
                 <?php endif; ?>
@@ -397,15 +526,16 @@ foreach ($links as $link) {
                         </div>
                     </div>
                 <?php else: ?>
-                    <?php foreach ($links_por_categoria as $categoria => $links_cat): ?>
-                        <div class="category-section">
-                            <div class="category-header">
-                                <i class="fas fa-folder" style="color: var(--primary); font-size: 1.5rem;"></i>
-                                <h2 class="category-title"><?= htmlspecialchars($categoria) ?></h2>
-                                <span class="text-muted">(<?= count($links_cat) ?>)</span>
-                            </div>
-                            
-                            <div class="links-grid">
+                    <div class="links-container" data-view="mosaico" id="linksContainer">
+                        <?php foreach ($links_por_categoria as $categoria => $links_cat): ?>
+                            <div class="category-section">
+                                <div class="category-header">
+                                    <i class="fas fa-folder" style="color: var(--primary); font-size: 1.5rem;"></i>
+                                    <h2 class="category-title"><?= htmlspecialchars($categoria) ?></h2>
+                                    <span class="text-muted">(<?= count($links_cat) ?>)</span>
+                                </div>
+                                
+                                <div class="links-grid">
                                 <?php foreach ($links_cat as $link): ?>
                                     <div class="link-card" style="border-left-color: <?= htmlspecialchars($link['color']) ?>;" onclick="window.open('?visit=<?= $link['id'] ?>', '_blank')">
                                         <?php if ($link['favorito']): ?>
@@ -440,9 +570,10 @@ foreach ($links as $link) {
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
+                                </div>
                             </div>
-                        </div>
-                    <?php endforeach; ?>
+                        <?php endforeach; ?>
+                    </div>
                 <?php endif; ?>
             </div>
         </div>
@@ -625,6 +756,36 @@ foreach ($links as $link) {
     </div>
     
     <script>
+        // Vista system
+        function cambiarVista(tipo) {
+            const container = document.getElementById('linksContainer');
+            if (!container) return;
+            
+            container.setAttribute('data-view', tipo);
+            localStorage.setItem('links-view', tipo);
+            
+            // Actualizar botones
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.view-btn').classList.add('active');
+        }
+        
+        // Cargar vista guardada
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedView = localStorage.getItem('links-view') || 'mosaico';
+            const container = document.getElementById('linksContainer');
+            if (container) {
+                container.setAttribute('data-view', savedView);
+                document.querySelectorAll('.view-btn').forEach((btn, idx) => {
+                    const views = ['mosaico', 'lista', 'contenido', 'detalles'];
+                    if (views[idx] === savedView) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+        });
+        
         // Array de categorías disponibles
         const categoriasDisponibles = [
             <?php foreach ($categorias as $cat): ?>

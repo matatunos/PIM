@@ -407,6 +407,98 @@ function getFileIcon($tipo_mime) {
             max-width: 600px;
             width: 90%;
         }
+        
+        /* Vista Mosaico */
+        .archivos-container[data-view="mosaico"] .archivos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+        }
+        
+        /* Vista Lista */
+        .archivos-container[data-view="lista"] .archivos-grid {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+        .archivos-container[data-view="lista"] .archivo-card {
+            display: grid;
+            grid-template-columns: 100px 1fr auto auto auto;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+        }
+        .archivos-container[data-view="lista"] .archivo-preview {
+            height: 100px;
+            width: 100px;
+            margin: 0;
+        }
+        .archivos-container[data-view="lista"] .archivo-info {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+        .archivos-container[data-view="lista"] .archivo-etiquetas {
+            display: flex;
+            gap: var(--spacing-xs);
+            flex-wrap: wrap;
+        }
+        
+        /* Vista Contenido */
+        .archivos-container[data-view="contenido"] .archivos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: var(--spacing-lg);
+        }
+        .archivos-container[data-view="contenido"] .archivo-preview {
+            height: 250px;
+        }
+        
+        /* Vista Detalles */
+        .archivos-container[data-view="detalles"] .archivos-grid {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+        .archivos-container[data-view="detalles"] .archivo-card {
+            display: block;
+            padding: var(--spacing-lg);
+        }
+        .archivos-container[data-view="detalles"] .archivo-preview {
+            height: 300px;
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        /* Botones de vista */
+        .view-btn {
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            transition: all var(--transition-fast);
+            border-radius: 0;
+        }
+        .view-btn:hover {
+            color: var(--primary);
+            background: var(--bg-secondary);
+        }
+        .view-btn.active {
+            color: var(--primary);
+            background: var(--bg-secondary);
+        }
+        
+        @media (max-width: 768px) {
+            .archivos-container[data-view="lista"] .archivo-card {
+                grid-template-columns: 60px 1fr auto;
+            }
+            .view-toggle {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -449,9 +541,9 @@ function getFileIcon($tipo_mime) {
                     </div>
                 </div>
                 
-                <!-- Búsqueda y Filtros -->
-                <div style="margin-bottom: var(--spacing-xl);">
-                    <form method="GET" style="display: flex; gap: var(--spacing-md); flex-wrap: wrap;">
+                <!-- Búsqueda y Vistas -->
+                <div style="display: flex; gap: var(--spacing-md); flex-wrap: wrap; align-items: center; margin-bottom: var(--spacing-lg);">
+                    <form method="GET" style="display: flex; gap: var(--spacing-md); flex: 1; min-width: 250px;">
                         <input type="text" name="q" placeholder="Buscar archivos..." value="<?= htmlspecialchars($buscar) ?>" class="form-control" style="flex: 1; min-width: 200px;">
                         
                         <select name="etiqueta" onchange="this.form.submit()" style="padding: 0.5rem 1rem; border: 2px solid var(--gray-200); border-radius: var(--radius-md);">
@@ -466,12 +558,26 @@ function getFileIcon($tipo_mime) {
                         
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-search"></i>
-                            Buscar
                         </button>
                         <?php if ($buscar || $filtro_etiqueta): ?>
                             <a href="index.php" class="btn btn-ghost">Limpiar</a>
                         <?php endif; ?>
                     </form>
+                    
+                    <div class="view-toggle" style="display: flex; gap: var(--spacing-xs); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0;">
+                        <button class="view-btn" onclick="cambiarVista('mosaico')" title="Mosaico" style="border: none; border-right: 1px solid var(--border-color);">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button class="view-btn" onclick="cambiarVista('lista')" title="Lista" style="border: none; border-right: 1px solid var(--border-color);">
+                            <i class="fas fa-list"></i>
+                        </button>
+                        <button class="view-btn" onclick="cambiarVista('contenido')" title="Contenido" style="border: none; border-right: 1px solid var(--border-color);">
+                            <i class="fas fa-align-left"></i>
+                        </button>
+                        <button class="view-btn" onclick="cambiarVista('detalles')" title="Detalles" style="border: none;">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+                    </div>
                 </div>
                 
                 <!-- Grid de archivos -->
@@ -484,7 +590,8 @@ function getFileIcon($tipo_mime) {
                         </div>
                     </div>
                 <?php else: ?>
-                    <div class="archivos-grid">
+                    <div class="archivos-container" data-view="mosaico" id="archivosContainer">
+                        <div class="archivos-grid">
                         <?php foreach ($archivos as $archivo): ?>
                             <div class="archivo-card">
                                 <div class="archivo-preview">
@@ -543,6 +650,7 @@ function getFileIcon($tipo_mime) {
                                 </div>
                             </div>
                         <?php endforeach; ?>
+                        </div>
                     </div>
                 <?php endif; ?>
             </div>
@@ -647,6 +755,36 @@ function getFileIcon($tipo_mime) {
     </div>
     
     <script>
+        // Vista system
+        function cambiarVista(tipo) {
+            const container = document.getElementById('archivosContainer');
+            if (!container) return;
+            
+            container.setAttribute('data-view', tipo);
+            localStorage.setItem('archivos-view', tipo);
+            
+            // Actualizar botones
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.view-btn').classList.add('active');
+        }
+        
+        // Cargar vista guardada
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedView = localStorage.getItem('archivos-view') || 'mosaico';
+            const container = document.getElementById('archivosContainer');
+            if (container) {
+                container.setAttribute('data-view', savedView);
+                document.querySelectorAll('.view-btn').forEach((btn, idx) => {
+                    const views = ['mosaico', 'lista', 'contenido', 'detalles'];
+                    if (views[idx] === savedView) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+        });
+        
         function mostrarArchivosSeleccionados(input) {
             if (input.files && input.files.length > 0) {
                 let lista = '';

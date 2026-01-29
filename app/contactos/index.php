@@ -203,6 +203,109 @@ $contactos = $stmt->fetchAll();
             max-height: 90vh;
             overflow-y: auto;
         }
+        
+        /* Vista Mosaico */
+        .contactos-container[data-view="mosaico"] .contactos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: var(--spacing-lg);
+        }
+        
+        /* Vista Lista */
+        .contactos-container[data-view="lista"] .contactos-grid {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+        .contactos-container[data-view="lista"] .contacto-card {
+            display: grid;
+            grid-template-columns: 80px 1fr auto auto auto;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            position: relative;
+        }
+        .contactos-container[data-view="lista"] .contacto-header {
+            margin: 0;
+            display: contents;
+        }
+        .contactos-container[data-view="lista"] .contacto-detalles {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+        }
+        .contactos-container[data-view="lista"] .contacto-detalle {
+            white-space: nowrap;
+        }
+        .contactos-container[data-view="lista"] .contacto-info h3 {
+            margin: 0;
+            font-size: 1rem;
+        }
+        .contactos-container[data-view="lista"] .contacto-empresa {
+            font-size: 0.8rem;
+        }
+        
+        /* Vista Contenido */
+        .contactos-container[data-view="contenido"] .contactos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: var(--spacing-lg);
+        }
+        .contactos-container[data-view="contenido"] .contacto-card {
+            display: block;
+        }
+        
+        /* Vista Detalles */
+        .contactos-container[data-view="detalles"] .contactos-grid {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+        .contactos-container[data-view="detalles"] .contacto-card {
+            display: block;
+            width: 100%;
+        }
+        .contactos-container[data-view="detalles"] .contacto-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        /* Botones de vista */
+        .view-btn {
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            transition: all var(--transition-fast);
+            border-radius: 0;
+        }
+        .view-btn:hover {
+            color: var(--primary);
+            background: var(--bg-secondary);
+        }
+        .view-btn.active {
+            color: var(--primary);
+            background: var(--bg-secondary);
+        }
+        
+        @media (max-width: 768px) {
+            .contactos-container[data-view="lista"] .contacto-card {
+                grid-template-columns: 60px 1fr auto;
+            }
+            .contactos-container[data-view="contenido"] .contactos-grid {
+                grid-template-columns: 1fr;
+            }
+            .view-toggle {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -227,18 +330,32 @@ $contactos = $stmt->fetchAll();
             </div>
             
             <div class="content-area">
-                <!-- Barra de búsqueda -->
-                <div class="barra-busqueda">
-                    <form method="GET" style="display: flex; gap: var(--spacing-md); flex: 1;">
+                <!-- Barra de búsqueda y vistas -->
+                <div style="display: flex; gap: var(--spacing-md); flex-wrap: wrap; align-items: center; margin-bottom: var(--spacing-lg);">
+                    <form method="GET" style="display: flex; gap: var(--spacing-md); flex: 1; min-width: 250px;">
                         <input type="text" name="q" placeholder="Buscar contactos..." value="<?= htmlspecialchars($buscar) ?>" class="form-control">
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-search"></i>
-                            Buscar
                         </button>
                         <?php if ($buscar): ?>
                             <a href="index.php" class="btn btn-ghost">Limpiar</a>
                         <?php endif; ?>
                     </form>
+                    
+                    <div class="view-toggle" style="display: flex; gap: var(--spacing-xs); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0;">
+                        <button class="view-btn" onclick="cambiarVista('mosaico')" title="Mosaico" style="border: none; border-right: 1px solid var(--border-color);">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button class="view-btn" onclick="cambiarVista('lista')" title="Lista" style="border: none; border-right: 1px solid var(--border-color);">
+                            <i class="fas fa-list"></i>
+                        </button>
+                        <button class="view-btn" onclick="cambiarVista('contenido')" title="Contenido" style="border: none; border-right: 1px solid var(--border-color);">
+                            <i class="fas fa-align-left"></i>
+                        </button>
+                        <button class="view-btn" onclick="cambiarVista('detalles')" title="Detalles" style="border: none;">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+                    </div>
                 </div>
                 
                 <!-- Grid de contactos -->
@@ -251,7 +368,8 @@ $contactos = $stmt->fetchAll();
                         </div>
                     </div>
                 <?php else: ?>
-                    <div class="contactos-grid">
+                    <div class="contactos-container" data-view="mosaico" id="contactosContainer">
+                        <div class="contactos-grid">
                         <?php foreach ($contactos as $contacto): ?>
                             <div class="contacto-card <?= $contacto['favorito'] ? 'favorito' : '' ?>">
                                 <?php if ($contacto['favorito']): ?>
@@ -323,6 +441,7 @@ $contactos = $stmt->fetchAll();
                                 </div>
                             </div>
                         <?php endforeach; ?>
+                        </div>
                     </div>
                 <?php endif; ?>
             </div>
@@ -401,6 +520,36 @@ $contactos = $stmt->fetchAll();
     
     <script>
         const contactosData = <?= json_encode($contactos) ?>;
+        
+        // Vista system
+        function cambiarVista(tipo) {
+            const container = document.getElementById('contactosContainer');
+            if (!container) return;
+            
+            container.setAttribute('data-view', tipo);
+            localStorage.setItem('contactos-view', tipo);
+            
+            // Actualizar botones
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.view-btn').classList.add('active');
+        }
+        
+        // Cargar vista guardada
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedView = localStorage.getItem('contactos-view') || 'mosaico';
+            const container = document.getElementById('contactosContainer');
+            if (container) {
+                container.setAttribute('data-view', savedView);
+                document.querySelectorAll('.view-btn').forEach((btn, idx) => {
+                    const views = ['mosaico', 'lista', 'contenido', 'detalles'];
+                    if (views[idx] === savedView) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+        });
         
         function abrirModalNuevo() {
             document.getElementById('modal-title').textContent = 'Nuevo Contacto';

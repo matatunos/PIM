@@ -311,11 +311,211 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
             max-height: 90vh;
             overflow-y: auto;
         }
+        
+        /* Vista Mosaico */
+        .notas-container[data-view="mosaico"] .notas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+            grid-auto-rows: max-content;
+        }
+        .notas-container[data-view="mosaico"] .nota-card {
+            display: flex;
+            flex-direction: column;
+            min-height: 200px;
+            max-height: 400px;
+        }
+        .notas-container[data-view="mosaico"] .nota-contenido {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 5;
+            -webkit-box-orient: vertical;
+        }
+        
+        /* Vista Lista */
+        .notas-container[data-view="lista"] .notas-grid {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+        .notas-container[data-view="lista"] .nota-card {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto auto;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            border-left-width: 4px;
+            border-left-style: solid;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            min-height: auto;
+            max-height: none;
+            position: relative;
+        }
+        .notas-container[data-view="lista"] .nota-titulo {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .notas-container[data-view="lista"] .nota-contenido {
+            display: none;
+        }
+        .notas-container[data-view="lista"] .nota-etiquetas {
+            display: flex;
+            gap: var(--spacing-xs);
+            flex-wrap: wrap;
+        }
+        .notas-container[data-view="lista"] .nota-etiquetas .etiqueta {
+            font-size: 0.75rem;
+            padding: 0.2rem 0.4rem;
+        }
+        .notas-container[data-view="lista"] .nota-footer {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+        .notas-container[data-view="lista"] .nota-actions {
+            opacity: 1;
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+        .notas-container[data-view="lista"] .pin-icon {
+            position: static;
+            color: var(--text-secondary);
+        }
+        
+        /* Vista Contenido */
+        .notas-container[data-view="contenido"] .notas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: var(--spacing-lg);
+        }
+        .notas-container[data-view="contenido"] .nota-card {
+            min-height: auto;
+            max-height: 500px;
+            padding: var(--spacing-lg);
+        }
+        .notas-container[data-view="contenido"] .nota-titulo {
+            font-size: 1.1rem;
+            margin-bottom: var(--spacing-sm);
+        }
+        .notas-container[data-view="contenido"] .nota-contenido {
+            display: -webkit-box;
+            -webkit-line-clamp: 8;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        /* Vista Detalles */
+        .notas-container[data-view="detalles"] .notas-grid {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+        .notas-container[data-view="detalles"] .nota-card {
+            min-height: auto;
+            max-height: none;
+            grid-template-columns: none;
+            padding: var(--spacing-lg);
+            display: block;
+        }
+        .notas-container[data-view="detalles"] .nota-titulo {
+            font-size: 1.2rem;
+            margin-bottom: var(--spacing-md);
+            font-weight: 700;
+        }
+        .notas-container[data-view="detalles"] .nota-contenido {
+            display: block;
+            overflow: visible;
+            -webkit-line-clamp: unset;
+            -webkit-box-orient: unset;
+            margin-bottom: var(--spacing-md);
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .notas-container[data-view="detalles"] .nota-etiquetas {
+            margin-bottom: var(--spacing-md);
+        }
+        .notas-container[data-view="detalles"] .nota-footer {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            padding-top: var(--spacing-md);
+            border-top: 1px solid var(--border-color);
+        }
+        
+        /* Botones de vista */
+        .view-btn {
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            transition: all var(--transition-fast);
+            border-radius: 0;
+        }
+        .view-btn:hover {
+            color: var(--primary);
+            background: var(--bg-secondary);
+        }
+        .view-btn.active {
+            color: var(--primary);
+            background: var(--bg-secondary);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .notas-container[data-view="lista"] .nota-card {
+                grid-template-columns: 1fr auto;
+            }
+            .notas-container[data-view="contenido"] .notas-grid {
+                grid-template-columns: 1fr;
+            }
+            .view-toggle {
+                width: 100%;
+            }
+            .barra-busqueda form {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
     <script>
         const notasData = <?= json_encode($notas, JSON_UNESCAPED_UNICODE) ?>;
+        
+        // Vista system
+        function cambiarVista(tipo) {
+            const container = document.getElementById('notasContainer');
+            if (!container) return;
+            
+            container.setAttribute('data-view', tipo);
+            localStorage.setItem('notas-view', tipo);
+            
+            // Actualizar botones
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.view-btn').classList.add('active');
+        }
+        
+        // Cargar vista guardada
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedView = localStorage.getItem('notas-view') || 'mosaico';
+            const container = document.getElementById('notasContainer');
+            if (container) {
+                container.setAttribute('data-view', savedView);
+                document.querySelectorAll('.view-btn').forEach((btn, idx) => {
+                    const views = ['mosaico', 'lista', 'contenido', 'detalles'];
+                    if (views[idx] === savedView) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+        });
         
         function abrirModalNueva() {
             document.getElementById('modal-title').textContent = 'Nueva Nota';
@@ -519,18 +719,32 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
             </div>
             
             <div class="content-area">
-                <!-- Barra de búsqueda -->
-                <div class="barra-busqueda">
-                    <form method="GET" style="display: flex; gap: var(--spacing-md); flex: 1;">
+                <!-- Barra de búsqueda y vistas -->
+                <div style="display: flex; gap: var(--spacing-md); flex-wrap: wrap; align-items: center; margin-bottom: var(--spacing-lg);">
+                    <form method="GET" style="display: flex; gap: var(--spacing-md); flex: 1; min-width: 250px;">
                         <input type="text" name="q" placeholder="Buscar notas..." value="<?= htmlspecialchars($buscar) ?>" class="form-control">
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-search"></i>
-                            Buscar
                         </button>
                         <?php if ($buscar): ?>
                             <a href="index.php" class="btn btn-ghost">Limpiar</a>
                         <?php endif; ?>
                     </form>
+                    
+                    <div class="view-toggle" style="display: flex; gap: var(--spacing-xs); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0;">
+                        <button class="view-btn" onclick="cambiarVista('mosaico')" title="Mosaico" style="border: none; border-right: 1px solid var(--border-color);">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button class="view-btn" onclick="cambiarVista('lista')" title="Lista" style="border: none; border-right: 1px solid var(--border-color);">
+                            <i class="fas fa-list"></i>
+                        </button>
+                        <button class="view-btn" onclick="cambiarVista('contenido')" title="Contenido" style="border: none; border-right: 1px solid var(--border-color);">
+                            <i class="fas fa-align-left"></i>
+                        </button>
+                        <button class="view-btn" onclick="cambiarVista('detalles')" title="Detalles" style="border: none;">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+                    </div>
                 </div>
                 
                 <!-- Filtro de etiquetas -->
@@ -559,53 +773,55 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
                         </div>
                     </div>
                 <?php else: ?>
-                    <div class="notas-grid">
-                        <?php foreach ($notas as $nota): ?>
-                            <div class="nota-card <?= $nota['fijada'] ? 'fijada' : '' ?>" 
-                                 style="border-left-color: <?= htmlspecialchars($nota['color']) ?>;"
-                                 onclick="editarNota(<?= $nota['id'] ?>)">
-                                
-                                <?php if ($nota['fijada']): ?>
-                                    <i class="fas fa-thumbtack pin-icon"></i>
-                                <?php endif; ?>
-                                
-                                <div class="nota-actions" onclick="event.stopPropagation();">
-                                    <button type="button" class="btn btn-ghost btn-icon btn-sm" onclick="mostrarArchivos('nota', <?= $nota['id'] ?>, event)" title="Archivos" id="btn-archivos-nota-<?= $nota['id'] ?>" style="position: relative;">
-                                        <i class="fas fa-paperclip"></i>
-                                        <span id="badge-archivos-nota-<?= $nota['id'] ?>" style="position: absolute; top: -8px; right: -8px; background: var(--danger); color: white; border-radius: 50%; width: 18px; height: 18px; display: none; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold;"></span>
-                                    </button>
-                                    <a href="?pin=<?= $nota['id'] ?>" class="btn btn-ghost btn-icon btn-sm" title="<?= $nota['fijada'] ? 'Desfijar' : 'Fijar' ?>">
-                                        <i class="fas fa-thumbtack"></i>
-                                    </a>
-                                    <a href="?archive=<?= $nota['id'] ?>" class="btn btn-ghost btn-icon btn-sm" title="<?= $nota['archivada'] ? 'Desarchivar' : 'Archivar' ?>">
-                                        <i class="fas fa-archive"></i>
-                                    </a>
-                                    <a href="?delete=<?= $nota['id'] ?>" class="btn btn-danger btn-icon btn-sm" onclick="return confirm('¿Eliminar esta nota?')" title="Eliminar">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
-                                </div>
-                                
-                                <?php if ($nota['titulo']): ?>
-                                    <div class="nota-titulo"><?= htmlspecialchars($nota['titulo']) ?></div>
-                                <?php endif; ?>
-                                
-                                <div class="nota-contenido">
-                                    <?= nl2br(htmlspecialchars($nota['contenido'])) ?>
-                                </div>
-                                
-                                <?php if ($nota['etiquetas']): ?>
-                                    <div class="nota-etiquetas">
-                                        <?php foreach (explode(', ', $nota['etiquetas']) as $etiq): ?>
-                                            <span class="etiqueta-badge"><?= htmlspecialchars($etiq) ?></span>
-                                        <?php endforeach; ?>
+                    <div class="notas-container" data-view="mosaico" id="notasContainer">
+                        <div class="notas-grid">
+                            <?php foreach ($notas as $nota): ?>
+                                <div class="nota-card <?= $nota['fijada'] ? 'fijada' : '' ?>" 
+                                     style="border-left-color: <?= htmlspecialchars($nota['color']) ?>;"
+                                     onclick="editarNota(<?= $nota['id'] ?>)">
+                                    
+                                    <?php if ($nota['fijada']): ?>
+                                        <i class="fas fa-thumbtack pin-icon"></i>
+                                    <?php endif; ?>
+                                    
+                                    <div class="nota-actions" onclick="event.stopPropagation();">
+                                        <button type="button" class="btn btn-ghost btn-icon btn-sm" onclick="mostrarArchivos('nota', <?= $nota['id'] ?>, event)" title="Archivos" id="btn-archivos-nota-<?= $nota['id'] ?>" style="position: relative;">
+                                            <i class="fas fa-paperclip"></i>
+                                            <span id="badge-archivos-nota-<?= $nota['id'] ?>" style="position: absolute; top: -8px; right: -8px; background: var(--danger); color: white; border-radius: 50%; width: 18px; height: 18px; display: none; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold;"></span>
+                                        </button>
+                                        <a href="?pin=<?= $nota['id'] ?>" class="btn btn-ghost btn-icon btn-sm" title="<?= $nota['fijada'] ? 'Desfijar' : 'Fijar' ?>">
+                                            <i class="fas fa-thumbtack"></i>
+                                        </a>
+                                        <a href="?archive=<?= $nota['id'] ?>" class="btn btn-ghost btn-icon btn-sm" title="<?= $nota['archivada'] ? 'Desarchivar' : 'Archivar' ?>">
+                                            <i class="fas fa-archive"></i>
+                                        </a>
+                                        <a href="?delete=<?= $nota['id'] ?>" class="btn btn-danger btn-icon btn-sm" onclick="return confirm('¿Eliminar esta nota?')" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
                                     </div>
-                                <?php endif; ?>
-                                
-                                <div class="nota-footer">
-                                    <span><?= date('d/m/Y', strtotime($nota['actualizado_en'])) ?></span>
+                                    
+                                    <?php if ($nota['titulo']): ?>
+                                        <div class="nota-titulo"><?= htmlspecialchars($nota['titulo']) ?></div>
+                                    <?php endif; ?>
+                                    
+                                    <div class="nota-contenido">
+                                        <?= nl2br(htmlspecialchars($nota['contenido'])) ?>
+                                    </div>
+                                    
+                                    <?php if ($nota['etiquetas']): ?>
+                                        <div class="nota-etiquetas">
+                                            <?php foreach (explode(', ', $nota['etiquetas']) as $etiq): ?>
+                                                <span class="etiqueta-badge"><?= htmlspecialchars($etiq) ?></span>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php endif; ?>
+                                    
+                                    <div class="nota-footer">
+                                        <span><?= date('d/m/Y', strtotime($nota['actualizado_en'])) ?></span>
+                                    </div>
                                 </div>
-                            </div>
-                        <?php endforeach; ?>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
                 <?php endif; ?>
             </div>
