@@ -10,7 +10,59 @@ if ($_SESSION['rol'] !== 'admin') {
 
 $mensaje = $error = '';
 
-// Crear tabla config si no existe
+// Borrar archivo
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'borrar_archivo') {
+    $archivo_id = (int)($_POST['archivo_id'] ?? 0);
+    
+    // Obtener archivo
+    $stmt = $pdo->prepare('SELECT id, ruta FROM archivos WHERE id = ?');
+    $stmt->execute([$archivo_id]);
+    $archivo = $stmt->fetch();
+    
+    if ($archivo) {
+        // Borrar archivo del servidor
+        if (file_exists($archivo['ruta'])) {
+            unlink($archivo['ruta']);
+        }
+        
+        // Borrar de base de datos
+        $stmt = $pdo->prepare('DELETE FROM archivos WHERE id = ?');
+        $stmt->execute([$archivo_id]);
+        
+        // Borrar vínculos
+        $pdo->exec('DELETE FROM archivo_nota WHERE archivo_id = ' . $archivo_id);
+        $pdo->exec('DELETE FROM archivo_tarea WHERE archivo_id = ' . $archivo_id);
+        $pdo->exec('DELETE FROM archivo_evento WHERE archivo_id = ' . $archivo_id);
+        
+        $mensaje = 'Archivo borrado correctamente';
+    } else {
+        $error = 'Archivo no encontrado';
+    }
+}
+
+// Obtener listado de archivos
+$buscar = $_GET['q'] ?? '';
+$pagina = max(1, (int)($_GET['pagina'] ?? 1));
+$por_pagina = 20;
+$offset = ($pagina - 1) * $por_pagina;
+
+$sql_where = '';
+$params = [];
+if (!empty($buscar)) {
+    $sql_where = 'WHERE (a.nombre_original LIKE ? OR u.username LIKE ?)';
+    $params = ['%' . $buscar . '%', '%' . $buscar . '%'];
+}
+
+// Contar total
+$stmt = $pdo->prepare('SELECT COUNT(*) as total FROM archivos a LEFT JOIN usuarios u ON a.usuario_id = u.id ' . $sql_where);
+$stmt->execute($params);
+$total = $stmt->fetch()['total'];
+$total_paginas = ceil($total / $por_pagina);
+
+// Obtener archivos
+$stmt = $pdo->prepare('SELECT a.id, a.nombre_original, a.tamano, a.creado_en, u.username, u.id as usuario_id FROM archivos a LEFT JOIN usuarios u ON a.usuario_id = u.id ' . $sql_where . ' ORDER BY a.creado_en DESC LIMIT ? OFFSET ?');
+$stmt->execute(array_merge($params, [$por_pagina, $offset]));
+$archivos = $stmt->fetchAll();
 $pdo->exec('CREATE TABLE IF NOT EXISTS config (
     id INT AUTO_INCREMENT PRIMARY KEY,
     clave VARCHAR(100) NOT NULL UNIQUE,
@@ -127,6 +179,105 @@ function formatBytes($bytes) {
                     </div>
                 </div>
                 
+                <!-- Listado de Archivos -->
+                <div class="card" style="margin-bottom: var(--spacing-lg);">
+                    <div class="card-header">
+                        <h2 style="margin: 0;"><i class="fas fa-file-alt"></i> Listado de Archivos</h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- Búsqueda -->
+                        <form method="GET" style="margin-bottom: var(--spacing-md);">
+                            <div style="display: flex; gap: var(--spacing-md);">
+                                <input type="text" name="q" placeholder="Buscar por nombre o propietario..." value="<?= htmlspecialchars($buscar) ?>" style="flex: 1;">
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-search"></i>
+                                    Buscar
+                                </button>
+                                <?php if (!empty($buscar)): ?>
+                                    <a href="?pagina=1" class="btn btn-sm btn-secondary">Limpiar</a>
+                                <?php endif; ?>
+                            </div>
+                        </form>
+                        
+                        <?php if (count($archivos) > 0): ?>
+                            <div style="overflow-x: auto;">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="border-bottom: 2px solid var(--border-color);">
+                                            <th style="padding: var(--spacing-sm); text-align: left;">ID</th>
+                                            <th style="padding: var(--spacing-sm); text-align: left;">Nombre Archivo</th>
+                                            <th style="padding: var(--spacing-sm); text-align: left;">Propietario</th>
+                                            <th style="padding: var(--spacing-sm); text-align: right;">Tamaño</th>
+                                            <th style="padding: var(--spacing-sm); text-align: left;">Fecha Carga</th>
+                                            <th style="padding: var(--spacing-sm); text-align: center;">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($archivos as $archivo): ?>
+                                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                                <td style="padding: var(--spacing-sm);">#<?= $archivo['id'] ?></td>
+                                                <td style="padding: var(--spacing-sm);">
+                                                    <code style="background-color: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 0.9em;">
+                                                        <?= htmlspecialchars($archivo['nombre_original']) ?>
+                                                    </code>
+                                                </td>
+                                                <td style="padding: var(--spacing-sm);">
+                                                    <?php if ($archivo['usuario_id']): ?>
+                                                        <a href="usuarios.php?id=<?= $archivo['usuario_id'] ?>" style="color: var(--primary-color);">
+                                                            <?= htmlspecialchars($archivo['username'] ?? 'N/A') ?>
+                                                        </a>
+                                                    <?php else: ?>
+                                                        <span style="color: var(--text-secondary);">Eliminado</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td style="padding: var(--spacing-sm); text-align: right;">
+                                                    <?= formatBytes($archivo['tamano']) ?>
+                                                </td>
+                                                <td style="padding: var(--spacing-sm);">
+                                                    <?= date('d/m/Y H:i', strtotime($archivo['creado_en'])) ?>
+                                                </td>
+                                                <td style="padding: var(--spacing-sm); text-align: center;">
+                                                    <button type="button" class="btn btn-sm btn-danger" onclick="confirmarBorrado(<?= $archivo['id'] ?>, '<?= htmlspecialchars(addslashes($archivo['nombre_original'])) ?>')">
+                                                        <i class="fas fa-trash"></i>
+                                                        Borrar
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Paginación -->
+                            <?php if ($total_paginas > 1): ?>
+                                <div style="display: flex; justify-content: center; gap: var(--spacing-sm); margin-top: var(--spacing-md);">
+                                    <?php if ($pagina > 1): ?>
+                                        <a href="?pagina=1<?= !empty($buscar) ? '&q=' . urlencode($buscar) : '' ?>" class="btn btn-sm btn-outline">Primera</a>
+                                        <a href="?pagina=<?= $pagina - 1 ?><?= !empty($buscar) ? '&q=' . urlencode($buscar) : '' ?>" class="btn btn-sm btn-outline">Anterior</a>
+                                    <?php endif; ?>
+                                    
+                                    <span style="display: flex; align-items: center; padding: 0 var(--spacing-sm);">
+                                        Página <?= $pagina ?> de <?= $total_paginas ?>
+                                    </span>
+                                    
+                                    <?php if ($pagina < $total_paginas): ?>
+                                        <a href="?pagina=<?= $pagina + 1 ?><?= !empty($buscar) ? '&q=' . urlencode($buscar) : '' ?>" class="btn btn-sm btn-outline">Siguiente</a>
+                                        <a href="?pagina=<?= $total_paginas ?><?= !empty($buscar) ? '&q=' . urlencode($buscar) : '' ?>" class="btn btn-sm btn-outline">Última</a>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <div style="padding: var(--spacing-lg); text-align: center; color: var(--text-secondary);">
+                                <i class="fas fa-inbox" style="font-size: 3em; margin-bottom: var(--spacing-md); display: block;"></i>
+                                <p>No hay archivos para mostrar</p>
+                                <?php if (!empty($buscar)): ?>
+                                    <p style="font-size: 0.9em;">Intenta con otros términos de búsqueda</p>
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                
                 <!-- Formulario de configuración -->
                 <div class="card">
                     <div class="card-header">
@@ -178,5 +329,20 @@ function formatBytes($bytes) {
             </div>
         </div>
     </div>
+    
+    <!-- Formulario oculto para borrar archivos -->
+    <form id="form-borrar" method="POST" style="display: none;">
+        <input type="hidden" name="action" value="borrar_archivo">
+        <input type="hidden" name="archivo_id" id="archivo_id_input">
+    </form>
+    
+    <script>
+        function confirmarBorrado(archivoId, nombreArchivo) {
+            if (confirm(`¿Está seguro que desea borrar el archivo "${nombreArchivo}"?\n\nEsta acción no se puede deshacer.`)) {
+                document.getElementById('archivo_id_input').value = archivoId;
+                document.getElementById('form-borrar').submit();
+            }
+        }
+    </script>
 </body>
 </html>

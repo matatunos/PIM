@@ -1,0 +1,364 @@
+pageInfo:
+  title: Dashy
+  description: Welcome to your new dashboard!
+  navLinks:
+    - title: GitHub
+      path: https://github.com/Lissy93/dashy
+    - title: Documentation
+      path: https://dashy.to/docs
+appConfig:
+  theme: crayola
+  layout: auto
+  iconSize: medium
+sections:
+  - name: Getting Started
+    icon: fas fa-rocket
+    items:
+      - &ref_0
+        title: Dashy Live
+        description: Development a project management links for Dashy
+        icon: https://i.ibb.co/qWWpD0v/astro-dab-128.png
+        url: https://live.dashy.to/
+        target: newtab
+        id: 0_1481_dashylive
+      - &ref_1
+        title: GitHub
+        description: Source Code, Issues and Pull Requests
+        url: https://github.com/lissy93/dashy
+        icon: favicon
+        id: 1_1481_github
+      - &ref_2
+        title: Docs
+        description: Configuring & Usage Documentation
+        provider: Dashy.to
+        icon: far fa-book
+        url: https://dashy.to/docs
+        id: 2_1481_docs
+      - &ref_3
+        title: Showcase
+        description: See how others are using Dashy
+        url: https://github.com/Lissy93/dashy/blob/master/docs/showcase.md
+        icon: far fa-grin-hearts
+        id: 3_1481_showcase
+      - &ref_4
+        title: Config Guide
+        description: See full list of configuration options
+        url: https://github.com/Lissy93/dashy/blob/master/docs/configuring.md
+        icon: fas fa-wrench
+        id: 4_1481_configguide
+      - &ref_5
+        title: Support
+        description: Get help with Dashy, raise a bug, or get in contact
+        url: https://github.com/Lissy93/dashy/blob/master/.github/SUPPORT.md
+        icon: far fa-hands-helping
+        id: 5_1481_support
+    displayData:
+      sortBy: default
+      rows: 1
+      cols: 1
+      collapsed: true
+      hideForGuests: false
+    filteredItems:
+      - *ref_0
+      - *ref_1
+      - *ref_2
+      - *ref_3
+      - *ref_4
+      - *ref_5
+  - name: AI
+    displayData:
+      sortBy: default
+      rows: 1
+      cols: 1
+      collapsed: true
+      hideForGuests: false
+    items:
+      - &ref_6
+        title: Claude
+        description: programacion
+        url: https://claude.ai/new
+        target: newtab
+        id: 0_138_claude
+    filteredItems:
+      - *ref_6
+  - name: Firewall
+    displayData:
+      sortBy: alphabetical
+      rows: 1
+      cols: 1
+      collapsed: true
+      hideForGuests: false
+    items:
+      - &ref_7
+        title: FW Externo
+        url: https://192.168.155.250/ng/firewall/policy/security-policy/standard
+        target: newtab
+        id: 0_822_fwexterno
+      - &ref_8
+        title: Fortiweb
+        url: https://10.0.0.100/index
+        target: newtab
+        id: 1_822_fortiweb
+      - &ref_9
+        title: Reclasificacion web
+        description: Fortiweb
+        url: https://www.fortiguard.com/faq/wfratingsubmit
+        id: 2_822_reclasificacionweb
+    filteredItems:
+      - *ref_7
+      - *ref_8
+      - *ref_9
+  - name: Usuarios
+    displayData:
+      sortBy: default
+      rows: 1
+      cols: 1
+      collapsed: true
+      hideForGuests: false
+    items:
+      - &ref_10
+        title: DUO
+        url: https://admin-dbbecd94.duosecurity.com/login?next=%2F
+        target: newtab
+        id: 0_859_duo
+      - &ref_11
+        title: 'Autodesk '
+        description: Autocad
+        url: https://manage.autodesk.com/user-access/users/user-list
+        target: newtab
+        id: 1_859_autodesk
+    filteredItems:
+      - *ref_10
+      - *ref_11
+  - name: Citrix
+    displayData:
+      sortBy: default
+      rows: 1
+      cols: 1
+      collapsed: true
+      hideForGuests: false
+    items:
+      - &ref_12
+        title: Director
+        url: >-
+          http://svrdelivery01.hunosa.es/Director/LogOn.aspx?ReturnUrl=%2fdirector%2f%3flocale%3des_ES&locale=es_ES&cc=true#HOME
+        target: newtab
+        id: 0_627_director
+      - &ref_13
+        title: Director2
+        url: >-
+          http://svrdelivery02.hunosa.es/Director/LogOn.aspx?ReturnUrl=%2fdirector%2f%3flocale%3des_ES&locale=es_ES&cc=true#HOME
+        target: newtab
+        id: 1_627_director
+      - &ref_14
+        title: Wyse Management Suite
+        url: https://svrwdm2.hunosa.es/ccm-web/login
+        id: 2_627_wysemanagementsuite
+    filteredItems:
+      - *ref_12
+      - *ref_13
+      - *ref_14
+  - name: CPD
+    displayData:
+      sortBy: default
+      rows: 1
+      cols: 1
+      collapsed: true
+      hideForGuests: false
+    items:
+      - &ref_15
+        title: Rainbow
+        url: https://web.openrainbow.com/rb/2.149.17/index.html#/main/home
+        target: newtab
+        id: 0_215_rainbow
+      - &ref_16
+        title: Ecostruxure CPD
+        description: Schneider
+        url: https://10.250.2.250/gateway/#/overview/cloud
+        id: 1_215_ecostruxurecpd
+      - &ref_17
+        title: Ecostruxure - cloud
+        description: schneider
+        url: https://app.ecostruxureit.com/manage/app-login?isSignUp=false
+        id: 2_215_ecostruxurecloud
+      - &ref_18
+        title: Microsoft Services Hub Assessment
+        url: >-
+          https://serviceshub.microsoft.com/assessments/postlanding?workspaceId=7634a2b7-a341-47d0-8633-9a87260949f8
+        id: 3_215_microsoftserviceshubassessment
+      - &ref_19
+        title: Switches Alcatel
+        url: https://10.250.2.44/login.html#/rbac/user
+        id: 4_215_switchesalcatel
+    filteredItems:
+      - *ref_15
+      - *ref_16
+      - *ref_17
+      - *ref_18
+      - *ref_19
+  - name: Backup
+    displayData:
+      sortBy: default
+      rows: 1
+      cols: 1
+      collapsed: true
+      hideForGuests: false
+    items:
+      - &ref_20
+        title: TSM 4ve
+        description: Maquinas Virtuales
+        url: https://svrtdpve8-1:9081/TsmVMwareUI/#backup
+        target: newtab
+        id: 0_598_tsmve
+      - &ref_21
+        title: TSM Operation Center
+        url: https://svrtsmoc:11090/oc/login
+        target: newtab
+        id: 1_598_tsmoperationcenter
+    filteredItems:
+      - *ref_20
+      - *ref_21
+  - name: Utilidades
+    displayData:
+      sortBy: default
+      rows: 1
+      cols: 1
+      collapsed: true
+      hideForGuests: false
+    items:
+      - &ref_22
+        title: Hunosa Contigo
+        description: Hojas de km
+        url: https://contigo.hunosa.es/
+        id: 0_1032_hunosacontigo
+      - &ref_23
+        title: Dockge
+        description: contenedores docker
+        url: http://10.250.2.157:5001
+        id: 1_1032_dockge
+      - &ref_24
+        title: Insights Data Collector - IBMID
+        url: https://insights.ibm.com/gui/01ec89a9-634b-14b8-aea8-69678b57b807
+        id: 2_1032_insightsdatacollectoribmid
+      - &ref_25
+        title: Office 365 HUNOSA
+        url: https://m365.cloud.microsoft/chat/?auth=2
+        id: 3_1032_officehunosa
+      - &ref_26
+        title: Gitea
+        url: http://10.250.2.155/user/login?redirect_to=%2f
+        target: newtab
+        id: 4_1032_gitea
+    filteredItems:
+      - *ref_22
+      - *ref_23
+      - *ref_24
+      - *ref_25
+      - *ref_26
+  - name: FOG
+    displayData:
+      sortBy: default
+      rows: 1
+      cols: 1
+      collapsed: true
+      hideForGuests: false
+    items:
+      - &ref_27
+        title: Community Scripts
+        description: ''
+        url: https://github.com/FOGProject/fog-community-scripts
+        id: 0_220_communityscripts
+      - &ref_28
+        title: Proyecto FOG
+        url: https://github.com/FOGProject/fogproject
+        id: 1_220_proyectofog
+    filteredItems:
+      - *ref_27
+      - *ref_28
+  - name: Monitorizacion_Hunosa
+    displayData:
+      sortBy: default
+      rows: 1
+      cols: 1
+      collapsed: true
+      hideForGuests: false
+    items:
+      - &ref_29
+        title: Solution Manager
+        url: >-
+          http://susehsm.hunosa.es:50000/sap/bc/ui5_ui5/sap/sysmon_desktop/index.html?TECH_SYS&VIEW_SELECTED&sap-client=001&sap-language=EN#
+        id: 0_2210_solutionmanager
+      - &ref_30
+        title: Zabbix
+        url: http://10.250.2.250/zabbix/
+        id: 1_2210_zabbix
+    filteredItems:
+      - *ref_29
+      - *ref_30
+  - name: SERVIDORES
+    displayData:
+      sortBy: default
+      rows: 1
+      cols: 1
+      collapsed: false
+      hideForGuests: false
+    items:
+      - &ref_31
+        title: Netscaler 1
+        url: http://192.168.69.5
+        id: 0_774_netscaler
+      - &ref_32
+        title: Netscaler 2
+        url: http://192.168.69.2
+        id: 1_774_netscaler
+      - &ref_33
+        title: Citrix Netscaler Downloads
+        url: >-
+          https://accounts.cloud.com/core/login?ReturnUrl=%2Fcore%2Fconnect%2Fauthorize%2Fcallback%3Fstate%3DMDljMWVKTE00S2NrbTZuRXYyRTZjTlh0TS9JMVQ4K3NZRWwvcFR5RXBZR3IrZmk0YXRlZjRDWldidEZMU3MreA%26nonce%3DYVOFButRCIMLGIIJs94IlWNZO5QU1ILS%26client_id%3DQgo1GMNpgg06UDRedat2Gg%253D%253D%26redirect_uri%3Dhttps%253A%252F%252Fextsso.cloud.com%252Foauth2%252Fv1%252Fauthorize%252Fcallback%26response_type%3Dcode%26display%3Dpage%26scope%3Demail%2520openid%2520profile%2520ctx_principal_aliases
+        id: 2_774_citrixnetscalerdownloads
+      - &ref_34
+        title: FortiWeb
+        description: WAF
+        url: https://10.0.0.91/index
+        id: 3_774_fortiweb
+    filteredItems:
+      - *ref_31
+      - *ref_32
+      - *ref_33
+      - *ref_34
+  - name: TragsaTec
+    displayData:
+      sortBy: most-used
+      rows: 1
+      cols: 1
+      collapsed: false
+      hideForGuests: true
+    items:
+      - &ref_35
+        title: Gestion Horarios
+        url: https://calendar.favala.es
+        target: newtab
+        id: 0_894_gestionhorarios
+    filteredItems:
+      - *ref_35
+  - name: OpenText
+    displayData:
+      sortBy: default
+      rows: 1
+      cols: 1
+      collapsed: false
+      hideForGuests: false
+    items:
+      - &ref_36
+        title: fallos buscador y fallos de reinicio
+        url: >-
+          http://svrota1.hunosa.es:8080/OTCSadmin/cs.exe?func=ll&objId=2001&objAction=browse
+        id: 0_823_fallosbuscadoryfallosdereinicio
+      - &ref_37
+        title: backup
+        url: >-
+          http://svrota1.hunosa.es:8080/OTCSadmin/cs.exe?func=ll&objId=437012&objAction=Backup&nexturl=%2FOTCSadmin%2Fcs%2Eexe%3Ffunc%3DOTAdmin%2EBrowse%26objID%3D1%26sort%3DName
+        id: 1_823_backup
+    filteredItems:
+      - *ref_36
+      - *ref_37
