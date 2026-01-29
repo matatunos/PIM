@@ -346,12 +346,12 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
             grid-template-rows: auto auto;
             align-items: start;
             gap: var(--spacing-sm);
-            padding: var(--spacing-md) var(--spacing-lg);
+            padding: var(--spacing-sm) var(--spacing-lg);
             border-left-width: 4px;
             border-left-style: solid;
             background: var(--bg-secondary);
             border-radius: var(--radius-md);
-            max-height: none;
+            min-height: 55px;
             position: relative;
         }
         .notas-container[data-view="lista"] .nota-titulo {
