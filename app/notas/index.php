@@ -277,14 +277,23 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
             margin-bottom: var(--spacing-lg);
         }
         .etiqueta-filtro {
+            display: inline-block;
             padding: 0.5rem 1rem;
             border-radius: var(--radius-md);
             border: 2px solid var(--gray-200);
             background: var(--bg-primary);
+            color: var(--text-primary);
+            text-decoration: none;
             cursor: pointer;
             transition: all var(--transition-fast);
+            font-size: 0.95rem;
         }
-        .etiqueta-filtro:hover, .etiqueta-filtro.active {
+        .etiqueta-filtro:hover {
+            background: var(--gray-100);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .etiqueta-filtro.active {
             background: var(--primary);
             color: white;
             border-color: var(--primary);

@@ -329,6 +329,8 @@ for ($i = 29; $i >= 0; $i--) {
             margin-top: 4px;
         }
     </style>
+    <!-- Toast Notifications Service -->
+    <script src="/assets/js/notifications.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -585,5 +587,6 @@ for ($i = 29; $i >= 0; $i--) {
             </div>
         </div>
     </div>
+    <script src="/assets/js/ajax-nav.js"></script>
 </body>
 </html>

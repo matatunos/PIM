@@ -159,6 +159,19 @@ $contactos = $stmt->fetchAll();
             width: 20px;
             color: var(--primary);
         }
+        .phone-link {
+            color: var(--primary);
+            text-decoration: none;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: all var(--transition-fast);
+            cursor: pointer;
+        }
+        .phone-link:hover {
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+        }
         .contacto-actions {
             position: absolute;
             top: var(--spacing-md);
@@ -457,7 +470,7 @@ $contactos = $stmt->fetchAll();
                                     <?php if ($contacto['telefono']): ?>
                                         <div class="contacto-detalle">
                                             <i class="fas fa-phone"></i>
-                                            <a href="tel:<?= htmlspecialchars($contacto['telefono']) ?>" style="color: var(--text-secondary);">
+                                            <a href="tel:<?= htmlspecialchars($contacto['telefono']) ?>" class="phone-link" title="Llamar a <?= htmlspecialchars($contacto['telefono']) ?>">
                                                 <?= htmlspecialchars($contacto['telefono']) ?>
                                             </a>
                                         </div>
