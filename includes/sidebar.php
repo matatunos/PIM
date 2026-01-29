@@ -105,10 +105,10 @@
             </div>
             
             <div class="user-dropdown" id="userDropdown">
-                <a href="/app/perfil/index.php" class="dropdown-item" style="display: flex; align-items: center; gap: var(--spacing-md); padding: 0.75rem var(--spacing-md); text-decoration: none; color: var(--text-secondary); cursor: pointer; transition: all var(--transition-fast);">
+                <div class="dropdown-item" id="miPerfilBtn">
                     <i class="fas fa-user-cog"></i>
                     <span>Mi Perfil</span>
-                </a>
+                </div>
                 <div class="dropdown-item" id="changePasswordBtn">
                     <i class="fas fa-key"></i>
                     <span>Cambiar Contraseña</span>
@@ -139,6 +139,7 @@
         const profileToggle = document.getElementById('userProfileToggle');
         const dropdown = document.getElementById('userDropdown');
         const profileMenu = document.getElementById('userProfileMenu');
+        const miPerfilBtn = document.getElementById('miPerfilBtn');
         const changePasswordBtn = document.getElementById('changePasswordBtn');
         const downloadExtensionBtn = document.getElementById('downloadExtensionBtn');
         
@@ -159,14 +160,15 @@
             }
         });
         
-        // Cerrar dropdown cuando se hace clic en un link del dropdown
-        const dropdownLinks = dropdown.querySelectorAll('a');
-        dropdownLinks.forEach(link => {
-            link.addEventListener('click', function() {
+        // Mi Perfil button
+        if (miPerfilBtn) {
+            miPerfilBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
                 profileToggle.classList.remove('active');
                 dropdown.classList.remove('active');
+                window.location.href = '/app/perfil/index.php';
             });
-        });
+        }
         
         // Change password button
         if (changePasswordBtn) {
