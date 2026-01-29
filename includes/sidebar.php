@@ -122,6 +122,12 @@
 <script>
     // User Profile Menu Toggle
     document.addEventListener('DOMContentLoaded', function() {
+        // Tareas submenu - mostrar si estamos en /tareas/
+        const tareaSublinks = document.querySelector('.nav-sublinks');
+        if (tareaSublinks && window.location.pathname.includes('/tareas/')) {
+            tareaSublinks.style.display = 'block';
+        }
+        
         const profileToggle = document.getElementById('userProfileToggle');
         const dropdown = document.getElementById('userDropdown');
         const profileMenu = document.getElementById('userProfileMenu');
