@@ -170,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['descargar_datos'])) {
                         </div>
                         
                         <!-- Sección de Privacidad -->
-                        <div class="card">
+                        <div class="card" id="export">
                             <div class="card-header">
                                 <h3 style="margin: 0;"><i class="fas fa-download"></i> Privacidad y Datos</h3>
                             </div>
