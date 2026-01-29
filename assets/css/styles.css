@@ -857,7 +857,7 @@ body {
    ========================================== */
 
 #hamburger-menu {
-    display: none;
+    display: none !important;
     position: relative;
     z-index: 2000;
     width: auto;
@@ -900,7 +900,7 @@ body {
 
 /* Navbar menus visible en desktop */
 .navbar-menu {
-    display: flex;
+    display: flex !important;
     gap: var(--spacing-lg);
     list-style: none;
     margin: 0;
@@ -928,13 +928,14 @@ body {
    Responsive
    ========================================== */
 
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
     #hamburger-menu {
         display: flex !important;
+        flex-direction: column;
     }
     
     .navbar-menu {
-        display: none;
+        display: none !important;
     }
     
     .sidebar {
@@ -958,6 +959,9 @@ body {
     }
     
     .content-area {
+        padding: var(--spacing-lg);
+    }
+}
         padding: var(--spacing-lg);
     }
 }
