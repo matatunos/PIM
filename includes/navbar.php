@@ -2,7 +2,7 @@
 <?php require_once __DIR__.'/lang.php'; ?>
 <nav class="navbar-glass">
   <div class="navbar-container">
-    <button id="hamburger-menu" title="Menú" style="display: none;">
+    <button id="hamburger-menu" title="Menú">
       <span></span>
       <span></span>
       <span></span>
@@ -31,18 +31,32 @@ function updateHamburgerVisibility() {
     const hamburger = document.getElementById('hamburger-menu');
     if (!hamburger) return;
     
-    const isMobile = window.innerWidth <= 768;
-    console.log('Viewport width:', window.innerWidth, 'Mobile:', isMobile);
+    // Usar múltiples métodos para detectar viewport
+    const width1 = window.innerWidth;
+    const width2 = document.documentElement.clientWidth;
+    const width3 = window.visualViewport ? window.visualViewport.width : null;
+    
+    const actualWidth = width1 || width2 || width3 || 0;
+    console.log('Viewport detection - innerWidth:', width1, 'clientWidth:', width2, 'visualViewport:', width3, 'Using:', actualWidth);
+    
+    const isMobile = actualWidth <= 768;
     
     if (isMobile) {
         hamburger.style.display = 'flex';
         hamburger.style.flexDirection = 'column';
         hamburger.style.visibility = 'visible';
+        hamburger.style.opacity = '1';
+        hamburger.style.position = 'relative';
+        console.log('HAMBURGER SHOWN');
     } else {
         hamburger.style.display = 'none';
         hamburger.style.visibility = 'hidden';
+        console.log('HAMBURGER HIDDEN');
     }
 }
+
+// Ejecutar inmediatamente
+updateHamburgerVisibility();
 
 // Ejecutar al cargar
 if (document.readyState === 'loading') {
@@ -58,10 +72,13 @@ window.addEventListener('load', updateHamburgerVisibility);
 window.addEventListener('resize', updateHamburgerVisibility);
 window.addEventListener('orientationchange', updateHamburgerVisibility);
 
-// También ejecutar periódicamente por si acaso
-setTimeout(updateHamburgerVisibility, 100);
-setTimeout(updateHamburgerVisibility, 500);
-setTimeout(updateHamburgerVisibility, 1000);
+// También ejecutar cuando el layout cambie
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', updateHamburgerVisibility);
+}
+
+// Ejecutar periódicamente
+setInterval(updateHamburgerVisibility, 500);
 
 // Configurar funcionalidad del hamburger
 document.addEventListener('DOMContentLoaded', function() {
@@ -87,7 +104,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Cerrar al click en links
         sidebar.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', function() {
-                if (window.innerWidth <= 768) {
+                const actualWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+                if (actualWidth <= 768) {
                     hamburger.classList.remove('active');
                     sidebar.classList.remove('active');
                 }

@@ -863,17 +863,13 @@ body {
     height: auto;
     min-width: 44px;
     min-height: 44px;
-    min-height: 44px;
     background: none;
     border: none;
     cursor: pointer;
     padding: 8px;
     gap: 6px;
     margin-right: 12px;
-}
-
-#hamburger-menu[style*="display: flex"] {
-    display: flex !important;
+    display: flex;
     flex-direction: column;
 }
 
