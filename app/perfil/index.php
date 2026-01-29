@@ -10,6 +10,12 @@ $stmt = $pdo->prepare('SELECT * FROM usuarios WHERE id = ?');
 $stmt->execute([$usuario_id]);
 $usuario = $stmt->fetch();
 
+// Si no se encuentra el usuario, redirigir al login
+if (!$usuario) {
+    header('Location: /app/auth/login.php');
+    exit;
+}
+
 // Procesar descarga de datos
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['descargar_datos'])) {
     // Crear ZIP temporal

@@ -105,10 +105,10 @@
             </div>
             
             <div class="user-dropdown" id="userDropdown">
-                <div class="dropdown-item" onclick="window.location.href='/app/perfil/index.php'">
+                <a href="/app/perfil/index.php" class="dropdown-item" style="display: flex; align-items: center; gap: var(--spacing-md); padding: 0.75rem var(--spacing-md); text-decoration: none; color: var(--text-secondary); cursor: pointer; transition: all var(--transition-fast);">
                     <i class="fas fa-user-cog"></i>
                     <span>Mi Perfil</span>
-                </div>
+                </a>
                 <div class="dropdown-item" id="changePasswordBtn">
                     <i class="fas fa-key"></i>
                     <span>Cambiar Contraseña</span>
