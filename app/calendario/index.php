@@ -319,10 +319,10 @@ $eventos = $stmt->fetchAll();
                     </div>
                     
                     <div class="view-toggle">
-                        <button class="view-btn <?= $vista === 'dia' ? 'active' : '' ?>" onclick="cambiarVista('dayGridDay')">
+                        <button class="view-btn <?= $vista === 'dia' ? 'active' : '' ?>" onclick="cambiarVista('timeGridDay')">
                             <i class="fas fa-square"></i> Día
                         </button>
-                        <button class="view-btn <?= $vista === 'semana' ? 'active' : '' ?>" onclick="cambiarVista('dayGridWeek')">
+                        <button class="view-btn <?= $vista === 'semana' ? 'active' : '' ?>" onclick="cambiarVista('timeGridWeek')">
                             <i class="fas fa-calendar-week"></i> Semana
                         </button>
                         <button class="view-btn <?= $vista === 'mes' ? 'active' : '' ?>" onclick="cambiarVista('dayGridMonth')">
@@ -436,8 +436,8 @@ $eventos = $stmt->fetchAll();
         
         let calendar;
         let vistaMap = {
-            'dia': 'dayGridDay',
-            'semana': 'dayGridWeek',
+            'dia': 'timeGridDay',
+            'semana': 'timeGridWeek',
             'mes': 'dayGridMonth'
         };
         
@@ -462,28 +462,67 @@ $eventos = $stmt->fetchAll();
             }));
             
             calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: vistaMap[vistaActual] || 'dayGridMonth',
+                initialView: vistaMap[vistaActual] || 'timeGridWeek',
                 initialDate: fechaActual,
                 headerToolbar: false,
                 locale: 'es',
                 height: 'auto',
                 contentHeight: 'auto',
+                slotDuration: '00:60:00',
+                slotLabelInterval: '00:60:00',
+                slotLabelFormat: {
+                    meridiem: false,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    meridiem: false
+                },
+                nowIndicator: true,
+                scrollTime: '09:00:00',
                 events: eventos,
                 dateClick: function(info) {
                     abrirModalNuevo(info.dateStr);
                 },
                 eventClick: function(info) {
                     editarEvento(info.event.id);
+                },
+                datesSet: function(info) {
+                    actualizarFecha(info.start, info.end, calendar.view.type);
                 }
             });
             
             calendar.render();
         });
         
+        function actualizarFecha(start, end, tipoVista) {
+            const fechaActualEl = document.getElementById('fechaActual');
+            const startDate = new Date(start);
+            const endDate = new Date(end);
+            endDate.setDate(endDate.getDate() - 1);
+            
+            if (tipoVista === 'timeGridDay' || tipoVista === 'dayGridDay') {
+                fechaActualEl.textContent = startDate.toLocaleDateString('es-ES', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            } else if (tipoVista === 'timeGridWeek' || tipoVista === 'dayGridWeek') {
+                const options = { day: 'numeric', month: 'short' };
+                fechaActualEl.textContent = startDate.toLocaleDateString('es-ES', options) + ' - ' + 
+                                          endDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+            } else if (tipoVista === 'dayGridMonth') {
+                fechaActualEl.textContent = startDate.toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'long'
+                });
+            }
+        }
+        
         function cambiarVista(vista) {
             if (calendar) {
                 calendar.changeView(vista);
                 actualizarBotones(vista);
+                actualizarFecha(calendar.view.currentStart, calendar.view.currentEnd, vista);
             }
         }
         
@@ -508,12 +547,14 @@ $eventos = $stmt->fetchAll();
                 } else {
                     calendar.prev();
                 }
+                actualizarFecha(calendar.view.currentStart, calendar.view.currentEnd, calendar.view.type);
             }
         }
         
         function irHoy() {
             if (calendar) {
                 calendar.today();
+                actualizarFecha(calendar.view.currentStart, calendar.view.currentEnd, calendar.view.type);
             }
         }
         
