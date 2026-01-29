@@ -90,6 +90,85 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['descargar_datos'])) {
         $error = 'No se pudo crear el archivo ZIP';
     }
 }
+
+// Procesar importación de datos
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['import_file'])) {
+    $file = $_FILES['import_file'];
+    $zip_file = $file['tmp_name'];
+    $zip = new ZipArchive();
+    
+    if ($zip->open($zip_file) === true) {
+        $temp_dir = '/tmp/pim_import_' . time();
+        mkdir($temp_dir);
+        $zip->extractTo($temp_dir);
+        $zip->close();
+        
+        $imported_count = 0;
+        
+        // Importar notas
+        if (file_exists($temp_dir . '/notas.json')) {
+            $notas = json_decode(file_get_contents($temp_dir . '/notas.json'), true);
+            foreach ($notas as $nota) {
+                $stmt = $pdo->prepare('INSERT INTO notas (usuario_id, titulo, contenido, color, creado_en, actualizado_en) VALUES (?, ?, ?, ?, ?, ?)');
+                if ($stmt->execute([$usuario_id, $nota['titulo'] ?? '', $nota['contenido'] ?? '', $nota['color'] ?? '#a8dadc', date('Y-m-d H:i:s'), date('Y-m-d H:i:s')])) {
+                    $imported_count++;
+                }
+            }
+        }
+        
+        // Importar tareas
+        if (file_exists($temp_dir . '/tareas.json')) {
+            $tareas = json_decode(file_get_contents($temp_dir . '/tareas.json'), true);
+            foreach ($tareas as $tarea) {
+                $stmt = $pdo->prepare('INSERT INTO tareas (usuario_id, titulo, descripcion, estado, prioridad, fecha_vencimiento, creado_en) VALUES (?, ?, ?, ?, ?, ?, ?)');
+                if ($stmt->execute([$usuario_id, $tarea['titulo'] ?? '', $tarea['descripcion'] ?? '', $tarea['estado'] ?? 'pendiente', $tarea['prioridad'] ?? 'normal', $tarea['fecha_vencimiento'] ?? null, date('Y-m-d H:i:s')])) {
+                    $imported_count++;
+                }
+            }
+        }
+        
+        // Importar eventos
+        if (file_exists($temp_dir . '/eventos.json')) {
+            $eventos = json_decode(file_get_contents($temp_dir . '/eventos.json'), true);
+            foreach ($eventos as $evento) {
+                $stmt = $pdo->prepare('INSERT INTO eventos (usuario_id, titulo, descripcion, fecha_inicio, fecha_fin, ubicacion, creado_en) VALUES (?, ?, ?, ?, ?, ?, ?)');
+                if ($stmt->execute([$usuario_id, $evento['titulo'] ?? '', $evento['descripcion'] ?? '', $evento['fecha_inicio'] ?? date('Y-m-d'), $evento['fecha_fin'] ?? date('Y-m-d'), $evento['ubicacion'] ?? '', date('Y-m-d H:i:s')])) {
+                    $imported_count++;
+                }
+            }
+        }
+        
+        // Importar contactos
+        if (file_exists($temp_dir . '/contactos.json')) {
+            $contactos = json_decode(file_get_contents($temp_dir . '/contactos.json'), true);
+            foreach ($contactos as $contacto) {
+                $stmt = $pdo->prepare('INSERT INTO contactos (usuario_id, nombre, email, telefono, empresa, notas, creado_en) VALUES (?, ?, ?, ?, ?, ?, ?)');
+                if ($stmt->execute([$usuario_id, $contacto['nombre'] ?? '', $contacto['email'] ?? '', $contacto['telefono'] ?? '', $contacto['empresa'] ?? '', $contacto['notas'] ?? '', date('Y-m-d H:i:s')])) {
+                    $imported_count++;
+                }
+            }
+        }
+        
+        // Importar links
+        if (file_exists($temp_dir . '/links.json')) {
+            $links = json_decode(file_get_contents($temp_dir . '/links.json'), true);
+            foreach ($links as $link) {
+                $stmt = $pdo->prepare('INSERT INTO links (usuario_id, titulo, url, descripcion, creado_en) VALUES (?, ?, ?, ?, ?)');
+                if ($stmt->execute([$usuario_id, $link['titulo'] ?? '', $link['url'] ?? '', $link['descripcion'] ?? '', date('Y-m-d H:i:s')])) {
+                    $imported_count++;
+                }
+            }
+        }
+        
+        $mensaje = "Se importaron correctamente $imported_count elementos";
+        
+        // Limpiar
+        array_map('unlink', glob($temp_dir . '/*'));
+        rmdir($temp_dir);
+    } else {
+        $error = 'El archivo ZIP no es válido o está corrupto';
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -192,6 +271,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['descargar_datos'])) {
                                     <button type="submit" name="descargar_datos" value="1" class="btn btn-primary">
                                         <i class="fas fa-download"></i> Descargar mis datos
                                     </button>
+                                </form>
+                                
+                                <hr style="margin: var(--spacing-lg) 0; border: none; border-top: 1px solid var(--border-color);">
+                                
+                                <h4 style="margin: var(--spacing-md) 0; font-size: 1.1em;">Importar datos</h4>
+                                <div style="background-color: var(--bg-secondary); padding: var(--spacing-md); border-radius: var(--border-radius); margin-bottom: var(--spacing-md);">
+                                    <p>Carga un archivo ZIP anteriormente exportado para restaurar tus datos. Se importarán:</p>
+                                    <ul style="margin: 0; padding-left: 20px;">
+                                        <li>Notas</li>
+                                        <li>Tareas</li>
+                                        <li>Eventos</li>
+                                        <li>Contactos</li>
+                                        <li>Enlaces</li>
+                                    </ul>
+                                </div>
+                                
+                                <form method="POST" enctype="multipart/form-data" onsubmit="return confirm('¿Importar datos desde el archivo ZIP? Se agregarán nuevos elementos a tu cuenta.');">
+                                    <div style="display: flex; gap: var(--spacing-md); align-items: flex-end;">
+                                        <div style="flex: 1;">
+                                            <label style="display: block; margin-bottom: var(--spacing-sm); font-weight: bold;">Archivo ZIP</label>
+                                            <input type="file" name="import_file" accept=".zip" required style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: var(--border-radius);">
+                                        </div>
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-upload"></i> Importar datos
+                                        </button>
+                                    </div>
                                 </form>
                             </div>
                         </div>
