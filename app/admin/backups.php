@@ -62,14 +62,40 @@ if (isset($_GET['delete']) && !empty($_GET['delete'])) {
     }
 }
 
-// Restaurar backup (preparación)
+// Restaurar backup
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'restaurar') {
+    $filename = basename($_POST['filename'] ?? '');
+    $filepath = $backup_dir . '/' . $filename;
+    
+    // Validar que el archivo existe y está en el directorio correcto
+    if (file_exists($filepath) && strpos(realpath($filepath), realpath($backup_dir)) === 0) {
+        $output = [];
+        $return_var = 0;
+        
+        // Ejecutar script de restauración
+        exec('bash /opt/PIM/bin/restore-db.sh ' . escapeshellarg($filepath) . ' 2>&1', $output, $return_var);
+        
+        if ($return_var === 0) {
+            $mensaje = 'Backup restaurado exitosamente: ' . htmlspecialchars($filename);
+        } else {
+            $error_msg = !empty($output) ? end($output) : 'Error desconocido';
+            $error = 'Error al restaurar el backup: ' . htmlspecialchars($error_msg);
+        }
+    } else {
+        $error = 'Archivo de backup no encontrado';
+    }
+}
+
+// Preparar modal de restauración
 $restore_available = false;
+$restore_filename = '';
 if (isset($_POST['action']) && $_POST['action'] === 'prepare_restore') {
     $filename = basename($_POST['filename'] ?? '');
     $filepath = $backup_dir . '/' . $filename;
     
     if (file_exists($filepath) && strpos(realpath($filepath), realpath($backup_dir)) === 0) {
         $restore_available = true;
+        $restore_filename = $filename;
     }
 }
 
@@ -226,6 +252,13 @@ function formatBytes($bytes) {
                                                     <a href="?download=<?= urlencode($backup['filename']) ?>" class="btn btn-sm btn-primary" title="Descargar">
                                                         <i class="fas fa-download"></i>
                                                     </a>
+                                                    <form method="POST" style="display: inline;" onsubmit="return confirm('¿Restaurar desde este backup? Se sobrescribirá la base de datos actual. Se creará un backup de seguridad automáticamente.');">
+                                                        <input type="hidden" name="action" value="restaurar">
+                                                        <input type="hidden" name="filename" value="<?= htmlspecialchars($backup['filename']) ?>">
+                                                        <button type="submit" class="btn btn-sm btn-warning" title="Restaurar">
+                                                            <i class="fas fa-redo"></i>
+                                                        </button>
+                                                    </form>
                                                     <button type="button" class="btn btn-sm btn-danger" onclick="confirmarBorrado('<?= htmlspecialchars(addslashes($backup['filename'])) ?>')">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
