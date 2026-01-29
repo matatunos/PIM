@@ -110,6 +110,8 @@ for ($i = 29; $i >= 0; $i--) {
             border-radius: var(--radius-lg);
             box-shadow: var(--shadow-md);
             transition: transform var(--transition-base);
+            display: block;
+            text-decoration: none;
         }
         
         .stat-card:hover {
@@ -352,7 +354,7 @@ for ($i = 29; $i >= 0; $i--) {
             <div class="content-area">
                 <!-- Estadísticas -->
                 <div class="stats-grid">
-                    <div class="stat-card">
+                    <a href="/app/tareas/index.php" class="stat-card stat-card-link">
                         <div class="stat-header">
                             <div class="stat-icon">
                                 <i class="fas fa-tasks"></i>
@@ -360,9 +362,9 @@ for ($i = 29; $i >= 0; $i--) {
                         </div>
                         <div class="stat-number"><?= $tareas_pendientes ?></div>
                         <div class="stat-label">Tareas Pendientes</div>
-                    </div>
+                    </a>
                     
-                    <div class="stat-card">
+                    <a href="/app/notas/index.php" class="stat-card stat-card-link">
                         <div class="stat-header">
                             <div class="stat-icon">
                                 <i class="fas fa-sticky-note"></i>
@@ -370,9 +372,9 @@ for ($i = 29; $i >= 0; $i--) {
                         </div>
                         <div class="stat-number"><?= $notas_totales ?></div>
                         <div class="stat-label">Notas Activas</div>
-                    </div>
+                    </a>
                     
-                    <div class="stat-card">
+                    <a href="/app/calendario/index.php" class="stat-card stat-card-link">
                         <div class="stat-header">
                             <div class="stat-icon">
                                 <i class="fas fa-calendar-alt"></i>
@@ -380,9 +382,9 @@ for ($i = 29; $i >= 0; $i--) {
                         </div>
                         <div class="stat-number"><?= $eventos_proximos ?></div>
                         <div class="stat-label">Eventos Próximos</div>
-                    </div>
+                    </a>
                     
-                    <div class="stat-card">
+                    <a href="/app/contactos/index.php" class="stat-card stat-card-link">
                         <div class="stat-header">
                             <div class="stat-icon">
                                 <i class="fas fa-address-book"></i>
@@ -390,7 +392,7 @@ for ($i = 29; $i >= 0; $i--) {
                         </div>
                         <div class="stat-number"><?= $contactos_totales ?></div>
                         <div class="stat-label">Contactos</div>
-                    </div>
+                    </a>
                     
                     <div class="stat-card">
                         <div class="stat-header">
