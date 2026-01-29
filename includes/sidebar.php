@@ -105,10 +105,10 @@
             </div>
             
             <div class="user-dropdown" id="userDropdown">
-                <div class="dropdown-item" id="miPerfilBtn">
+                <a href="/app/perfil/index.php" class="dropdown-item" style="display: flex; align-items: center; gap: var(--spacing-md); padding: 0.75rem var(--spacing-md); text-decoration: none; color: var(--text-secondary); cursor: pointer; transition: all var(--transition-fast);">
                     <i class="fas fa-user-cog"></i>
                     <span>Mi Perfil</span>
-                </div>
+                </a>
                 <div class="dropdown-item" id="changePasswordBtn">
                     <i class="fas fa-key"></i>
                     <span>Cambiar Contraseña</span>
@@ -139,7 +139,6 @@
         const profileToggle = document.getElementById('userProfileToggle');
         const dropdown = document.getElementById('userDropdown');
         const profileMenu = document.getElementById('userProfileMenu');
-        const miPerfilBtn = document.getElementById('miPerfilBtn');
         const changePasswordBtn = document.getElementById('changePasswordBtn');
         const downloadExtensionBtn = document.getElementById('downloadExtensionBtn');
         
@@ -160,18 +159,14 @@
             }
         });
         
-        // Mi Perfil button
-        if (miPerfilBtn) {
-            miPerfilBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                e.preventDefault();
+        // Cerrar dropdown cuando se hace clic en un link del dropdown
+        const dropdownLinks = dropdown.querySelectorAll('a');
+        dropdownLinks.forEach(link => {
+            link.addEventListener('click', function() {
                 profileToggle.classList.remove('active');
                 dropdown.classList.remove('active');
-                setTimeout(() => {
-                    window.location.href = '/app/perfil/index.php';
-                }, 100);
             });
-        }
+        });
         
         // Change password button
         if (changePasswordBtn) {
