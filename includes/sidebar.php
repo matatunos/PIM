@@ -162,14 +162,20 @@
         
         // Mi Perfil button
         if (miPerfilBtn) {
-            miPerfilBtn.addEventListener('click', function() {
+            miPerfilBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                profileToggle.classList.remove('active');
+                dropdown.classList.remove('active');
                 window.location.href = '/app/perfil/index.php';
             });
         }
         
         // Change password button
         if (changePasswordBtn) {
-            changePasswordBtn.addEventListener('click', function() {
+            changePasswordBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                profileToggle.classList.remove('active');
+                dropdown.classList.remove('active');
                 window.location.href = '/app/perfil/cambiar-contrasena.php';
             });
         }
@@ -277,14 +283,5 @@
                 });
             });
         }
-        
-        // Cerrar dropdown al hacer clic en cualquier item
-        const dropdownItems = document.querySelectorAll('.user-dropdown .dropdown-item');
-        dropdownItems.forEach(item => {
-            item.addEventListener('click', function() {
-                profileToggle.classList.remove('active');
-                dropdown.classList.remove('active');
-            });
-        });
     });
 </script>
