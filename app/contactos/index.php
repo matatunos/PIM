@@ -307,7 +307,7 @@ $contactos = $stmt->fetchAll();
         }
         .contactos-container[data-view="compacta"] .contacto-card {
             display: grid;
-            grid-template-columns: 1fr auto;
+            grid-template-columns: auto auto 1fr auto;
             align-items: center;
             gap: var(--spacing-md);
             padding: var(--spacing-md) var(--spacing-lg);
@@ -363,9 +363,26 @@ $contactos = $stmt->fetchAll();
             position: static;
             display: flex;
             gap: var(--spacing-xs);
-            grid-column: 2;
+            grid-column: 4;
             justify-content: flex-end;
             align-items: center;
+        }
+        
+        /* Checkbox para marcar contactos */
+        .contact-checkbox {
+            display: none;
+        }
+        .contact-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .contactos-container[data-view="compacta"] .contact-checkbox {
+            display: block;
+            grid-column: 1;
+        }
+        .contactos-container[data-view="compacta"] .contacto-header {
+            grid-column: 2 / 4;
         }
         
         /* Vista Contenido */
@@ -498,6 +515,10 @@ $contactos = $stmt->fetchAll();
                                 <?php if ($contacto['favorito']): ?>
                                     <i class="fas fa-star star-badge"></i>
                                 <?php endif; ?>
+                                
+                                <div class="contact-checkbox">
+                                    <input type="checkbox" class="contacto-select" data-contacto-id="<?= $contacto['id'] ?>" title="Marcar contacto">
+                                </div>
                                 
                                 <div class="contacto-actions">
                                     <button onclick="editarContacto(<?= $contacto['id'] ?>)" class="btn btn-ghost btn-icon btn-sm" title="Editar">
@@ -661,7 +682,10 @@ $contactos = $stmt->fetchAll();
         
         // Cargar vista guardada
         document.addEventListener('DOMContentLoaded', function() {
-            const savedView = localStorage.getItem('contactos-view') || 'mosaico';
+            // Detectar si es móvil y usar compacta por defecto
+            const isMobile = window.innerWidth <= 768;
+            const defaultView = isMobile ? 'compacta' : 'mosaico';
+            const savedView = localStorage.getItem('contactos-view') || defaultView;
             const container = document.getElementById('contactosContainer');
             if (container) {
                 container.setAttribute('data-view', savedView);
@@ -680,6 +704,32 @@ $contactos = $stmt->fetchAll();
             document.getElementById('formContacto').reset();
             document.getElementById('modalContacto').classList.add('active');
         }
+        
+        // Manejo de checkboxes de selección
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('.contacto-select');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const selectedIds = Array.from(document.querySelectorAll('.contacto-select:checked'))
+                        .map(cb => cb.dataset.contactoId);
+                    localStorage.setItem('contactos-seleccionados', JSON.stringify(selectedIds));
+                });
+            });
+            
+            // Restaurar selección previa
+            const savedSelection = localStorage.getItem('contactos-seleccionados');
+            if (savedSelection) {
+                try {
+                    const selectedIds = JSON.parse(savedSelection);
+                    selectedIds.forEach(id => {
+                        const checkbox = document.querySelector(`[data-contacto-id="${id}"]`);
+                        if (checkbox) checkbox.checked = true;
+                    });
+                } catch (e) {
+                    console.error('Error al restaurar selección:', e);
+                }
+            }
+        });
         
         function editarContacto(id) {
             const contacto = contactosData.find(c => c.id == id);
@@ -708,5 +758,6 @@ $contactos = $stmt->fetchAll();
             if (e.target === this) cerrarModal();
         });
     </script>
+    <script src="/assets/js/hamburger.js"></script>
 </body>
 </html>
