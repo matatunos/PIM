@@ -347,12 +347,20 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
             align-items: center;
             gap: var(--spacing-sm);
             padding: var(--spacing-sm) var(--spacing-lg);
-            border-left-width: 4px;
-            border-left-style: solid;
             background: var(--bg-secondary);
+            border-left: 3px solid;
             border-radius: var(--radius-md);
             min-height: 55px;
             position: relative;
+        }
+        .notas-container[data-view="lista"] .nota-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            border-radius: var(--radius-md) 0 0 var(--radius-md);
         }
         .notas-container[data-view="lista"] .nota-titulo {
             font-weight: 600;
