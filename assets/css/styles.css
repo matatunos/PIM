@@ -964,6 +964,15 @@ body {
         margin-left: 0;
     }
     
+    /* Espacio para el botón hamburguesa */
+    .content-area h1:first-child,
+    .content-area .page-header,
+    .content-area > h1,
+    .dashboard-header,
+    .page-title {
+        padding-left: 50px;
+    }
+    
     .search-box input {
         width: 200px;
     }
