@@ -269,6 +269,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['import_file'])) {
                                 </div>
                                 
                                 <form method="POST" onsubmit="return confirm('¿Descargar todos tus datos? Se generará un archivo ZIP con toda tu información.');">
+                                    <?= csrf_field() ?>
                                     <button type="submit" name="descargar_datos" value="1" class="btn btn-primary">
                                         <i class="fas fa-download"></i> Descargar mis datos
                                     </button>
@@ -289,6 +290,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['import_file'])) {
                                 </div>
                                 
                                 <form method="POST" enctype="multipart/form-data" onsubmit="return confirm('¿Importar datos desde el archivo ZIP? Se agregarán nuevos elementos a tu cuenta.');">
+                                    <?= csrf_field() ?>
                                     <div style="display: flex; gap: var(--spacing-md); align-items: flex-end;">
                                         <div style="flex: 1;">
                                             <label style="display: block; margin-bottom: var(--spacing-sm); font-weight: bold;">Archivo ZIP</label>

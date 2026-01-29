@@ -213,6 +213,7 @@ function getTipoLabel($tipo) {
                     <!-- Botón vaciar papelera -->
                     <div style="margin-bottom: var(--spacing-lg);">
                         <form method="POST" style="display: inline;">
+                            <?= csrf_field() ?>
                             <input type="hidden" name="action" value="vaciar_papelera">
                             <button type="submit" class="btn btn-danger" onclick="return confirm('¿Eliminar permanentemente todos los items antiguos (>30 días)?\n\nEsta acción no se puede deshacer.')">
                                 <i class="fas fa-times-circle"></i> Vaciar Papelera (>30 días)
@@ -263,6 +264,7 @@ function getTipoLabel($tipo) {
                                                 </td>
                                                 <td style="padding: var(--spacing-sm); text-align: center;">
                                                     <form method="POST" style="display: inline;">
+                                                        <?= csrf_field() ?>
                                                         <input type="hidden" name="action" value="restaurar">
                                                         <input type="hidden" name="tipo" value="<?= htmlspecialchars($tipo) ?>">
                                                         <input type="hidden" name="item_id" value="<?= $item['item_id'] ?>">
@@ -271,6 +273,7 @@ function getTipoLabel($tipo) {
                                                         </button>
                                                     </form>
                                                     <form method="POST" style="display: inline;">
+                                                        <?= csrf_field() ?>
                                                         <input type="hidden" name="action" value="borrar_permanente">
                                                         <input type="hidden" name="tipo" value="<?= htmlspecialchars($tipo) ?>">
                                                         <input type="hidden" name="item_id" value="<?= $item['item_id'] ?>">

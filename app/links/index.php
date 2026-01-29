@@ -584,6 +584,7 @@ foreach ($links as $link) {
         <div class="modal-content">
             <h2 style="margin-bottom: var(--spacing-lg);"><i class="fas fa-link"></i> Nuevo Link</h2>
             <form method="POST" class="form">
+                <?= csrf_field() ?>
                 <input type="hidden" name="action" value="crear">
                 <input type="hidden" name="icono" id="icono_seleccionado" value="fa-link">
                 <input type="hidden" name="color" id="color_seleccionado" value="#a8dadc">

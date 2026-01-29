@@ -613,6 +613,7 @@ $contactos = $stmt->fetchAll();
                 <span id="modal-title">Nuevo Contacto</span>
             </h2>
             <form method="POST" class="form" id="formContacto">
+                <?= csrf_field() ?>
                 <input type="hidden" name="action" id="form-action" value="crear">
                 <input type="hidden" name="id" id="contacto-id">
                 

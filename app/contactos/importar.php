@@ -222,6 +222,7 @@ $campos_disponibles = [
                         <p>Soporta archivos CSV de Google Contacts, iPhone u otros gestores de contactos.</p>
                         
                         <form method="POST" enctype="multipart/form-data">
+                            <?= csrf_field() ?>
                             <input type="hidden" name="paso" value="1">
                             
                             <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-lg); border: 2px dashed var(--border-color); border-radius: var(--radius-md); text-align: center;">
@@ -410,6 +411,7 @@ $campos_disponibles = [
                 <!-- PASO 2: Mapear columnas -->
                 <?php if ($paso === 2 && count($filas_preview) > 0): ?>
                 <form method="POST">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="paso" value="2">
                     
                     <div class="card" style="margin-bottom: var(--spacing-lg);">
@@ -475,6 +477,7 @@ $campos_disponibles = [
                 <!-- PASO 3: Confirmación -->
                 <?php if ($paso === 3): ?>
                 <form method="POST">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="paso" value="3">
                     <input type="hidden" name="confirmar" value="1">
                     

@@ -195,6 +195,7 @@ if ($paso !== 'configurar' && $paso !== 'completado' && $paso !== 'codigos') {
                                         Los códigos cambian cada 30 segundos. Introduce el código de 6 dígitos de tu app.
                                     </p>
                                     <form method="POST" action="2fa.php?paso=configurar">
+                                        <?= csrf_field() ?>
                                         <div class="form-group">
                                             <label for="code">Código de 6 dígitos</label>
                                             <input type="text" 
@@ -302,6 +303,7 @@ if ($paso !== 'configurar' && $paso !== 'completado' && $paso !== 'codigos') {
                                 <p>La autenticación de dos factores añade una capa adicional de seguridad a tu cuenta. Necesitarás tu contraseña y un código de tu teléfono para iniciar sesión.</p>
                                 
                                 <form method="POST">
+                                    <?= csrf_field() ?>
                                     <button type="submit" name="generar_secreto" class="btn btn-primary btn-lg">
                                         <i class="fas fa-shield-alt"></i>
                                         Habilitar 2FA
@@ -351,6 +353,7 @@ if ($paso !== 'configurar' && $paso !== 'completado' && $paso !== 'codigos') {
             </h2>
             <p>¿Estás seguro de que quieres desactivar la autenticación de dos factores? Tu cuenta será menos segura.</p>
             <form method="POST">
+                <?= csrf_field() ?>
                 <div class="form-group">
                     <label for="password_desactivar">Confirma tu contraseña</label>
                     <input type="password" id="password_desactivar" name="password" required>
@@ -377,6 +380,7 @@ if ($paso !== 'configurar' && $paso !== 'completado' && $paso !== 'codigos') {
             </h2>
             <p>Los códigos anteriores dejarán de funcionar. Asegúrate de guardar los nuevos códigos.</p>
             <form method="POST">
+                <?= csrf_field() ?>
                 <div class="form-group">
                     <label for="password_regenerar">Confirma tu contraseña</label>
                     <input type="password" id="password_regenerar" name="password" required>

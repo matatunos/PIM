@@ -283,6 +283,7 @@ function formatBytes($bytes) {
                     </div>
                     <div class="card-body">
                         <form method="POST" class="form">
+                            <?= csrf_field() ?>
                             <input type="hidden" name="action" value="guardar_config">
                             
                             <div class="form-row">
@@ -330,6 +331,7 @@ function formatBytes($bytes) {
     
     <!-- Formulario oculto para borrar archivos -->
     <form id="form-borrar" method="POST" style="display: none;">
+        <?= csrf_field() ?>
         <input type="hidden" name="action" value="borrar_archivo">
         <input type="hidden" name="archivo_id" id="archivo_id_input">
     </form>

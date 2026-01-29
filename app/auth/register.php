@@ -134,6 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $registration_enabled) {
                 <?php endif; ?>
                 
                 <form method="POST" class="auth-form" id="registerForm" novalidate>
+                    <?= csrf_field() ?>
                     <!-- Honeypot field (invisible para humanos, visible para bots) -->
                     <input type="text" name="website" style="display: none; position: absolute; left: -9999px;" tabindex="-1" autocomplete="off">
                     

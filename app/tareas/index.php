@@ -535,6 +535,7 @@ $listas = $stmt->fetchAll(PDO::FETCH_COLUMN);
         <div class="modal-content">
             <h2 style="margin-bottom: var(--spacing-lg);">Nueva Tarea</h2>
             <form method="POST" class="form">
+                <?= csrf_field() ?>
                 <input type="hidden" name="action" value="crear">
                 
                 <div class="form-group">
@@ -590,6 +591,7 @@ $listas = $stmt->fetchAll(PDO::FETCH_COLUMN);
         <div class="modal-content">
             <h2 style="margin-bottom: var(--spacing-lg);">Editar Tarea</h2>
             <form method="POST" class="form">
+                <?= csrf_field() ?>
                 <input type="hidden" name="action" value="editar">
                 <input type="hidden" id="editar-tarea-id" name="tarea_id">
                 

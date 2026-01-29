@@ -198,6 +198,7 @@ function formatBytes($bytes) {
                                 <p style="margin: 0; opacity: 0.9;">Realiza un backup completo de la BD y archivos ahora</p>
                             </div>
                             <form method="POST" style="display: inline;">
+                                <?= csrf_field() ?>
                                 <input type="hidden" name="action" value="crear_backup">
                                 <button type="submit" class="btn btn-light" onclick="return confirm('¿Crear backup ahora? Esto puede tomar algunos minutos.')">
                                     <i class="fas fa-download"></i> Crear Backup
@@ -263,6 +264,7 @@ function formatBytes($bytes) {
                                                         <i class="fas fa-download"></i>
                                                     </a>
                                                     <form method="POST" style="display: inline;" onsubmit="return confirm('¿Restaurar desde este backup? Se sobrescribirá la base de datos actual. Se creará un backup de seguridad automáticamente.');">
+                                                        <?= csrf_field() ?>
                                                         <input type="hidden" name="action" value="restaurar">
                                                         <input type="hidden" name="filename" value="<?= htmlspecialchars($backup['filename']) ?>">
                                                         <button type="submit" class="btn btn-sm btn-warning" title="Restaurar">

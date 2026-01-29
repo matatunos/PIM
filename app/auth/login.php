@@ -216,6 +216,7 @@ if (isset($_SESSION['temp_user_id']) && !$require_2fa) {
             <?php if ($require_2fa): ?>
                 <!-- Formulario 2FA -->
                 <form method="POST" class="auth-form">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="verify_2fa" value="1">
                     
                     <div class="form-group">
@@ -253,6 +254,7 @@ if (isset($_SESSION['temp_user_id']) && !$require_2fa) {
                 
                 <!-- Formulario de código de respaldo (oculto inicialmente) -->
                 <form method="POST" class="auth-form" id="backupForm" style="display: none; margin-top: var(--spacing-lg);">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="verify_2fa" value="1">
                     <input type="hidden" name="use_backup" value="1">
                     
@@ -290,6 +292,7 @@ if (isset($_SESSION['temp_user_id']) && !$require_2fa) {
             <?php else: ?>
                 <!-- Formulario de login normal -->
                 <form method="POST" class="auth-form">
+                    <?= csrf_field() ?>
                     <div class="form-group">
                         <label for="username">
                             <i class="fas fa-user"></i>

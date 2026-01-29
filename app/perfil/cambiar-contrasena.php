@@ -214,6 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?php endif; ?>
                     
                     <form method="POST" id="passwordForm" style="padding: var(--spacing-lg);">
+                        <?= csrf_field() ?>
                         <div class="form-group">
                             <label for="contrasena_actual">Contraseña Actual *</label>
                             <input type="password" id="contrasena_actual" name="contrasena_actual" required autofocus>

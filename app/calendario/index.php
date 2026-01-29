@@ -357,6 +357,7 @@ $eventos = $stmt->fetchAll();
             <h2 id="modal-title"><i class="fas fa-calendar-plus"></i> Nuevo Evento</h2>
             
             <form id="formEvento" method="POST">
+                <?= csrf_field() ?>
                 <input type="hidden" name="action" id="form-action" value="crear">
                 <input type="hidden" name="id" id="evento-id">
                 

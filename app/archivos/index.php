@@ -665,6 +665,7 @@ function getFileIcon($tipo_mime) {
                 Subir Archivo(s)
             </h2>
             <form method="POST" enctype="multipart/form-data" class="form" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+                <?= csrf_field() ?>
                 <div style="flex: 1; overflow-y: auto; padding-right: var(--spacing-md);">
                     <div class="upload-zone" onclick="document.getElementById('archivos').click()">
                         <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: var(--primary); margin-bottom: var(--spacing-md);"></i>
@@ -719,6 +720,7 @@ function getFileIcon($tipo_mime) {
                 Editar Etiquetas
             </h2>
             <form method="POST" class="form">
+                <?= csrf_field() ?>
                 <input type="hidden" name="action" value="editar_etiquetas">
                 <input type="hidden" id="editar-archivo-id" name="archivo_id">
                 

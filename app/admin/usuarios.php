@@ -420,6 +420,7 @@ $stats = $stmt->fetch();
                 <span id="modal-title">Nuevo Usuario</span>
             </h2>
             <form method="POST" class="form">
+                <?= csrf_field() ?>
                 <input type="hidden" name="action" id="form-action" value="crear">
                 <input type="hidden" name="id" id="usuario-id">
                 

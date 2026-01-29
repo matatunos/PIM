@@ -104,6 +104,7 @@ $rate_limit_attempts = intval($configs['rate_limit_attempts']) ?: 5;
                     </div>
                     <div class="card-body">
                         <form method="POST">
+                            <?= csrf_field() ?>
                             <div class="form-group">
                                 <div style="display: flex; align-items: center; gap: var(--spacing-md);">
                                     <input type="checkbox" 
