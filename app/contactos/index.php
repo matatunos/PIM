@@ -307,7 +307,7 @@ $contactos = $stmt->fetchAll();
         }
         .contactos-container[data-view="compacta"] .contacto-card {
             display: grid;
-            grid-template-columns: auto auto 1fr auto;
+            grid-template-columns: 1fr auto;
             align-items: center;
             gap: var(--spacing-md);
             padding: var(--spacing-md) var(--spacing-lg);
@@ -363,26 +363,35 @@ $contactos = $stmt->fetchAll();
             position: static;
             display: flex;
             gap: var(--spacing-xs);
-            grid-column: 4;
             justify-content: flex-end;
             align-items: center;
         }
         
-        /* Checkbox para marcar contactos */
-        .contact-checkbox {
+        /* Icono de llamada en vista compacta */
+        .contacto-call-btn {
             display: none;
         }
-        .contact-checkbox input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
+        .contactos-container[data-view="compacta"] .contacto-call-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .contactos-container[data-view="compacta"] .contact-checkbox {
-            display: block;
-            grid-column: 1;
+        .contacto-call-btn a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--success);
+            color: white;
+            text-decoration: none;
+            transition: all var(--transition-fast);
+            font-size: 1rem;
         }
-        .contactos-container[data-view="compacta"] .contacto-header {
-            grid-column: 2 / 4;
+        .contacto-call-btn a:hover {
+            background: #5ed496;
+            transform: scale(1.1);
         }
         
         /* Vista Contenido */
@@ -516,10 +525,6 @@ $contactos = $stmt->fetchAll();
                                     <i class="fas fa-star star-badge"></i>
                                 <?php endif; ?>
                                 
-                                <div class="contact-checkbox">
-                                    <input type="checkbox" class="contacto-select" data-contacto-id="<?= $contacto['id'] ?>" title="Marcar contacto">
-                                </div>
-                                
                                 <div class="contacto-actions">
                                     <button onclick="editarContacto(<?= $contacto['id'] ?>)" class="btn btn-ghost btn-icon btn-sm" title="Editar">
                                         <i class="fas fa-edit"></i>
@@ -531,6 +536,14 @@ $contactos = $stmt->fetchAll();
                                         <i class="fas fa-trash"></i>
                                     </a>
                                 </div>
+                                
+                                <?php if ($contacto['telefono']): ?>
+                                    <div class="contacto-call-btn">
+                                        <a href="tel:<?= htmlspecialchars($contacto['telefono']) ?>" title="Llamar a <?= htmlspecialchars($contacto['telefono']) ?>">
+                                            <i class="fas fa-phone"></i>
+                                        </a>
+                                    </div>
+                                <?php endif; ?>
                                 
                                 <div class="contacto-header">
                                     <div class="contacto-avatar">
@@ -704,32 +717,6 @@ $contactos = $stmt->fetchAll();
             document.getElementById('formContacto').reset();
             document.getElementById('modalContacto').classList.add('active');
         }
-        
-        // Manejo de checkboxes de selección
-        document.addEventListener('DOMContentLoaded', function() {
-            const checkboxes = document.querySelectorAll('.contacto-select');
-            checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const selectedIds = Array.from(document.querySelectorAll('.contacto-select:checked'))
-                        .map(cb => cb.dataset.contactoId);
-                    localStorage.setItem('contactos-seleccionados', JSON.stringify(selectedIds));
-                });
-            });
-            
-            // Restaurar selección previa
-            const savedSelection = localStorage.getItem('contactos-seleccionados');
-            if (savedSelection) {
-                try {
-                    const selectedIds = JSON.parse(savedSelection);
-                    selectedIds.forEach(id => {
-                        const checkbox = document.querySelector(`[data-contacto-id="${id}"]`);
-                        if (checkbox) checkbox.checked = true;
-                    });
-                } catch (e) {
-                    console.error('Error al restaurar selección:', e);
-                }
-            }
-        });
         
         function editarContacto(id) {
             const contacto = contactosData.find(c => c.id == id);
