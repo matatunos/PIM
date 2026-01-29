@@ -299,6 +299,75 @@ $contactos = $stmt->fetchAll();
             align-items: center;
         }
         
+        /* Vista Compacta */
+        .contactos-container[data-view="compacta"] .contactos-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        .contactos-container[data-view="compacta"] .contacto-card {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md) var(--spacing-lg);
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--gray-200);
+            border-radius: 0;
+            box-shadow: none;
+            position: relative;
+            min-height: auto;
+        }
+        .contactos-container[data-view="compacta"] .contacto-card:first-child {
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+        .contactos-container[data-view="compacta"] .contacto-card:last-child {
+            border-bottom: none;
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+        }
+        .contactos-container[data-view="compacta"] .contacto-card:hover {
+            background: var(--bg-secondary);
+            box-shadow: none;
+        }
+        .contactos-container[data-view="compacta"] .contacto-header {
+            margin: 0;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: var(--spacing-md);
+            grid-column: 1;
+        }
+        .contactos-container[data-view="compacta"] .contacto-avatar {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .contactos-container[data-view="compacta"] .contacto-info h3 {
+            margin: 0;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+        .contactos-container[data-view="compacta"] .contacto-empresa {
+            display: none;
+        }
+        .contactos-container[data-view="compacta"] .contacto-detalles {
+            display: none;
+        }
+        .contactos-container[data-view="compacta"] .star-badge {
+            position: relative;
+            top: auto;
+            right: auto;
+        }
+        .contactos-container[data-view="compacta"] .contacto-actions {
+            position: static;
+            display: flex;
+            gap: var(--spacing-xs);
+            grid-column: 2;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        
         /* Vista Contenido */
         .contactos-container[data-view="contenido"] .contactos-grid {
             display: grid;
@@ -399,6 +468,9 @@ $contactos = $stmt->fetchAll();
                         </button>
                         <button class="view-btn" onclick="cambiarVista('lista')" title="Lista" style="border: none; border-right: 1px solid var(--border-color);">
                             <i class="fas fa-list"></i>
+                        </button>
+                        <button class="view-btn" onclick="cambiarVista('compacta')" title="Compacta" style="border: none; border-right: 1px solid var(--border-color);">
+                            <i class="fas fa-bars"></i>
                         </button>
                         <button class="view-btn" onclick="cambiarVista('contenido')" title="Contenido" style="border: none; border-right: 1px solid var(--border-color);">
                             <i class="fas fa-align-left"></i>
@@ -594,7 +666,7 @@ $contactos = $stmt->fetchAll();
             if (container) {
                 container.setAttribute('data-view', savedView);
                 document.querySelectorAll('.view-btn').forEach((btn, idx) => {
-                    const views = ['mosaico', 'lista', 'contenido', 'detalles'];
+                    const views = ['mosaico', 'lista', 'compacta', 'contenido', 'detalles'];
                     if (views[idx] === savedView) {
                         btn.classList.add('active');
                     }
