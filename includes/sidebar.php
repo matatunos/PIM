@@ -67,6 +67,15 @@
             </a>
         </div>
         
+        <!-- IA & Chat Section -->
+        <div class="nav-section">
+            <div class="nav-section-title">IA & Chat</div>
+            <a href="/app/ai-assistant.php" class="nav-link <?= strpos($_SERVER['PHP_SELF'], '/ai-assistant') !== false ? 'active' : '' ?>" title="Chat con IA powered by Open WebUI">
+                <i class="fas fa-brain" style="color: #667eea;"></i>
+                Chat IA
+            </a>
+        </div>
+        
         <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin'): ?>
         <div class="nav-section">
             <div class="nav-section-title">Administración</div>

@@ -1,4 +1,4 @@
-# 2FA Setup - Guía de Diagnóstico
+scarga# 2FA Setup - Guía de Diagnóstico
 
 ## Estado Actual
 

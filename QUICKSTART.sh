@@ -1,0 +1,42 @@
+#!/bin/bash
+# Quick Start - Integración PIM + Open WebUI
+# Ejecuta esto para comenzar rápidamente
+
+echo ""
+echo "╔═════════════════════════════════════════════════════════════════════════╗"
+echo "║  QUICK START: PIM + Open WebUI Integration                             ║"
+echo "╚═════════════════════════════════════════════════════════════════════════╝"
+echo ""
+
+cd /opt/PIM || exit 1
+
+echo "📋 Opciones disponibles:"
+echo ""
+echo "1. Instalación Automática (RECOMENDADO)"
+echo "   $ sudo bash bin/setup-openwebui-sync.sh"
+echo ""
+echo "2. Acceder al Chat IA"
+echo "   URL: http://localhost/app/ai-assistant.php"
+echo "   O desde menú: Sidebar → IA & Chat"
+echo ""
+echo "3. Configurar Open WebUI (Admin)"
+echo "   URL: http://localhost/app/admin/configuracion.php"
+echo ""
+echo "4. Probar sincronización manual"
+echo "   $ sudo bash bin/sync-openwebui.sh"
+echo ""
+echo "5. Ver logs de sincronización"
+echo "   $ tail -f logs/sync-openwebui.log"
+echo ""
+echo "6. Verificar instalación"
+echo "   $ bash bin/verify-openwebui-setup.sh"
+echo ""
+echo "7. Ver documentación completa"
+echo "   $ cat OPEN_WEBUI_INTEGRATION.md"
+echo ""
+echo "═════════════════════════════════════════════════════════════════════════════"
+echo ""
+echo "🚀 EMPEZAR AHORA:"
+echo ""
+echo "   $ sudo bash bin/setup-openwebui-sync.sh"
+echo ""

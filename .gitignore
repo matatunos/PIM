@@ -9,3 +9,9 @@
 .env
 .idea/
 .DS_Store
+
+# Archivos temporales de sincronización
+logs/last_*.json
+*.bak
+info.php
+.env.backup

@@ -9,6 +9,14 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // ==========================================
+// Verificar si el registro está habilitado
+// ==========================================
+$stmt = $pdo->prepare('SELECT valor FROM config_sitio WHERE clave = ?');
+$stmt->execute(['registration_enabled']);
+$config = $stmt->fetch();
+$registration_enabled = $config && $config['valor'] === '1';
+
+// ==========================================
 // Verificar si IP está bloqueada
 // ==========================================
 $ip = $_SERVER['REMOTE_ADDR'];
@@ -350,7 +358,14 @@ if (isset($_SESSION['temp_user_id']) && !$require_2fa) {
                 </form>
                 
                 <div class="auth-footer">
-                    <p>¿No tienes cuenta? <a href="register.php">Regístrate aquí</a></p>
+                    <?php if ($registration_enabled): ?>
+                        <p>¿No tienes cuenta? <a href="register.php">Regístrate aquí</a></p>
+                    <?php else: ?>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                            <i class="fas fa-info-circle"></i>
+                            El registro está deshabilitado. Contacta al administrador.
+                        </p>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
         </div>

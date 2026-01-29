@@ -37,57 +37,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $registration_enabled) {
         $max_attempts = (int)($antibot_config['rate_limit_attempts'] ?? 5);
         $error = "Demasiados intentos de registro. Intenta más tarde. (Máximo $max_attempts intentos por hora)";
     }
-    // Validaciones normales
+    // Validaciones de campos vacíos
     elseif (empty($username) || empty($email) || empty($password)) {
         logAttempt('register', $pdo);
         $error = 'Por favor completa todos los campos obligatorios';
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    }
+    // Validar email
+    elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         logAttempt('register', $pdo);
         $error = 'Email inválido';
-    } elseif (strlen($username) < 3) {
+    }
+    // Validar longitud username
+    elseif (strlen($username) < 3) {
         logAttempt('register', $pdo);
         $error = 'El usuario debe tener al menos 3 caracteres';
-    } else {
-        // Validación de contraseña segura
+    }
+    // Validación de contraseña segura
+    else {
         $password_check = validate_password($password);
         if (!$password_check['valid']) {
             logAttempt('register', $pdo);
             $error = implode('. ', $password_check['errors']);
-        } elseif ($password !== $password_confirm) {
+        }
+        // Verificar que contraseñas coinciden
+        elseif ($password !== $password_confirm) {
             logAttempt('register', $pdo);
             $error = 'Las contraseñas no coinciden';
         }
-    // Verificar reCAPTCHA si está habilitado
-    elseif ($antibot_config['recaptcha_enabled'] === '1' && !validateRecaptcha($_POST['g-recaptcha-token'] ?? '', $pdo)) {
-        logAttempt('register', $pdo);
-        $error = 'Verificación de reCAPTCHA fallida. Intenta de nuevo.';
-
-    } else {
-        try {
-            $stmt = $pdo->prepare('SELECT id FROM usuarios WHERE username = ? OR email = ?');
-            $stmt->execute([$username, $email]);
-            
-            if ($stmt->fetch()) {
-                logAttempt('register', $pdo);
-                $error = 'El usuario o email ya están registrados';
-            } else {
-                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-                $stmt = $pdo->prepare('INSERT INTO usuarios (username, email, nombre_completo, password) VALUES (?, ?, ?, ?)');
-                $stmt->execute([$username, $email, $nombre_completo, $hashed_password]);
-                
-                $success = 'Cuenta creada exitosamente. Redirigiendo...';
-                
-                $user_id = $pdo->lastInsertId();
-                $_SESSION['user_id'] = $user_id;
-                $_SESSION['username'] = $username;
-                $_SESSION['nombre_completo'] = $nombre_completo;
-                $_SESSION['rol'] = 'user';
-                
-                header('Refresh: 2; url=/index.php');
-            }
-        } catch (PDOException $e) {
+        // Verificar reCAPTCHA si está habilitado
+        elseif ($antibot_config['recaptcha_enabled'] === '1' && !validateRecaptcha($_POST['g-recaptcha-token'] ?? '', $pdo)) {
             logAttempt('register', $pdo);
-            $error = 'Error al crear la cuenta. Intenta de nuevo.';
+            $error = 'Verificación de reCAPTCHA fallida. Intenta de nuevo.';
+        }
+        // Crear cuenta si todo es válido
+        else {
+            try {
+                $stmt = $pdo->prepare('SELECT id FROM usuarios WHERE username = ? OR email = ?');
+                $stmt->execute([$username, $email]);
+                
+                if ($stmt->fetch()) {
+                    logAttempt('register', $pdo);
+                    $error = 'El usuario o email ya están registrados';
+                } else {
+                    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                    $stmt = $pdo->prepare('INSERT INTO usuarios (username, email, nombre_completo, password) VALUES (?, ?, ?, ?)');
+                    $stmt->execute([$username, $email, $nombre_completo, $hashed_password]);
+                    
+                    $success = 'Cuenta creada exitosamente. Redirigiendo...';
+                    
+                    $user_id = $pdo->lastInsertId();
+                    $_SESSION['user_id'] = $user_id;
+                    $_SESSION['username'] = $username;
+                    $_SESSION['nombre_completo'] = $nombre_completo;
+                    $_SESSION['rol'] = 'user';
+                    
+                    header('Refresh: 2; url=/index.php');
+                }
+            } catch (PDOException $e) {
+                logAttempt('register', $pdo);
+                $error = 'Error al crear la cuenta. Intenta de nuevo.';
+            }
         }
     }
 }

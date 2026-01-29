@@ -19,6 +19,10 @@ $user = $_ENV['DB_USER'] ?? 'pim_user';
 $pass = $_ENV['DB_PASS'] ?? '';
 $charset = $_ENV['DB_CHARSET'] ?? 'utf8mb4';
 
+// Constantes para Open WebUI Integration
+define('JWT_SECRET', $_ENV['JWT_SECRET'] ?? 'default-unsafe-secret');
+define('OPENWEBUI_API_KEY', $_ENV['OPENWEBUI_API_KEY'] ?? '');
+
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 $options = [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,

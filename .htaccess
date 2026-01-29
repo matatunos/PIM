@@ -92,6 +92,6 @@ LimitRequestBody 10485760
     php_value max_execution_time 30
     php_value max_input_time 30
     php_value memory_limit 128M
-    php_value post_max_size 10M
-    php_value upload_max_filesize 10M
+    php_value post_max_size 100M
+    php_value upload_max_filesize 100M
 </IfModule>

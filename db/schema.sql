@@ -278,3 +278,62 @@ CREATE TABLE IF NOT EXISTS user_sessions (
     INDEX idx_user (user_id),
     INDEX idx_last_activity (last_activity)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- ==========================================
+-- OPEN WEBUI INTEGRATION - Configuración
+-- ==========================================
+CREATE TABLE IF NOT EXISTS configuracion_ia (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    clave VARCHAR(100) NOT NULL UNIQUE,
+    valor TEXT,
+    tipo VARCHAR(50) DEFAULT 'string' COMMENT 'string, int, bool, json',
+    descripcion TEXT,
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_clave (clave)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Inserciones de configuración predeterminada
+INSERT INTO configuracion_ia (clave, valor, tipo, descripcion) VALUES
+('openwebui_host', '192.168.1.19', 'string', 'Host/IP de Open WebUI (ej: 192.168.1.19)'),
+('openwebui_port', '3000', 'int', 'Puerto de Open WebUI (ej: 3000, 8000, 11434)'),
+('sync_interval_minutes', '5', 'int', 'Intervalo de sincronización en minutos'),
+('sync_enabled', '0', 'bool', 'Si la sincronización automática está habilitada (0=deshabilitado, 1=habilitado)'),
+('sync_documents', '1', 'bool', 'Sincronizar documentos/archivos (0=no, 1=sí)'),
+('sync_notes', '1', 'bool', 'Sincronizar notas (0=no, 1=sí)')
+ON DUPLICATE KEY UPDATE valor = VALUES(valor);
+
+-- ==========================================
+-- OPEN WEBUI INTEGRATION - Sesiones de Chat
+-- ==========================================
+CREATE TABLE IF NOT EXISTS chat_sessions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    titulo VARCHAR(255),
+    resumen TEXT COMMENT 'Resumen breve de la conversación',
+    modelo VARCHAR(100) COMMENT 'Modelo de IA usado (ej: llama2, mistral)',
+    tokens_utilizados INT DEFAULT 0 COMMENT 'Tokens consumidos en la sesión',
+    activo BOOLEAN DEFAULT 1,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    INDEX idx_usuario (usuario_id),
+    INDEX idx_activo (activo),
+    INDEX idx_creado (creado_en)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ==========================================
+-- OPEN WEBUI INTEGRATION - Historial de Sincronización
+-- ==========================================
+CREATE TABLE IF NOT EXISTS sync_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tipo ENUM('documento','nota') DEFAULT 'documento',
+    origen_id INT COMMENT 'ID del documento/nota en PIM',
+    status ENUM('success','failed','pending') DEFAULT 'pending',
+    mensaje TEXT,
+    documentos_procesados INT DEFAULT 0,
+    errores_count INT DEFAULT 0,
+    duracion_segundos FLOAT DEFAULT 0,
+    sincronizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_tipo (tipo),
+    INDEX idx_status (status),
+    INDEX idx_sincronizado (sincronizado_en)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
