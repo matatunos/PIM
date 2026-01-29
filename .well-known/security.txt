@@ -1,0 +1,10 @@
+# PIM Security Contact Information
+# RFC 9116 - https://securitytxt.org/
+
+Contact: mailto:security@pim.local
+Preferred-Languages: es, en
+Canonical: https://pim.local/.well-known/security.txt
+Policy: https://pim.local/security-policy.html
+
+# If you find a security vulnerability, please report it responsibly.
+# We appreciate your help in keeping PIM secure!

@@ -47,16 +47,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $registration_enabled) {
     } elseif (strlen($username) < 3) {
         logAttempt('register', $pdo);
         $error = 'El usuario debe tener al menos 3 caracteres';
-    } elseif (strlen($password) < 8) {
-        logAttempt('register', $pdo);
-        $error = 'La contraseña debe tener al menos 8 caracteres';
-    } elseif (!preg_match('/[A-Z]/', $password) || !preg_match('/[a-z]/', $password) || !preg_match('/[0-9]/', $password)) {
-        logAttempt('register', $pdo);
-        $error = 'La contraseña debe incluir mayúsculas, minúsculas y números';
-    } elseif ($password !== $password_confirm) {
-        logAttempt('register', $pdo);
-        $error = 'Las contraseñas no coinciden';
-    }
+    } else {
+        // Validación de contraseña segura
+        $password_check = validate_password($password);
+        if (!$password_check['valid']) {
+            logAttempt('register', $pdo);
+            $error = implode('. ', $password_check['errors']);
+        } elseif ($password !== $password_confirm) {
+            logAttempt('register', $pdo);
+            $error = 'Las contraseñas no coinciden';
+        }
     // Verificar reCAPTCHA si está habilitado
     elseif ($antibot_config['recaptcha_enabled'] === '1' && !validateRecaptcha($_POST['g-recaptcha-token'] ?? '', $pdo)) {
         logAttempt('register', $pdo);

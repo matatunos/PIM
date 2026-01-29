@@ -86,8 +86,12 @@
                 <i class="fas fa-folder-cog"></i>
                 Gestión de Archivos
             </a>
+            <a href="/app/admin/security.php" class="nav-link <?= strpos($_SERVER['PHP_SELF'], '/admin/security') !== false ? 'active' : '' ?>">
+                <i class="fas fa-shield-alt text-danger"></i>
+                Panel de Seguridad
+            </a>
             <a href="/app/admin/auditoria.php" class="nav-link <?= strpos($_SERVER['PHP_SELF'], '/admin/auditoria') !== false ? 'active' : '' ?>">
-                <i class="fas fa-shield-alt"></i>
+                <i class="fas fa-clipboard-list"></i>
                 Auditoría y Logs
             </a>
             <a href="/app/admin/configuracion.php" class="nav-link <?= strpos($_SERVER['PHP_SELF'], '/admin/configuracion') !== false ? 'active' : '' ?>">

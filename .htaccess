@@ -1,11 +1,97 @@
-# Permitir acceso a archivos del PIM
+# ==================================================
+# SEGURIDAD AVANZADA - PIM v2.5.0
+# ==================================================
+
+# Deshabilitar listado de directorios
 Options -Indexes
 
 # Proteger archivos sensibles
-<FilesMatch "\.(htaccess|htpasswd|ini|phps|fla|psd|log|sh|sql)$">
-    Order Allow,Deny
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+<FilesMatch "\.(env|sql|log|bak|old|swp|htpasswd|ini|conf|sh|phps|fla|psd)$">
+    Order allow,deny
     Deny from all
 </FilesMatch>
 
 # Redirigir favicon
 RedirectMatch 404 /favicon.ico
+
+# Headers de seguridad adicionales (si mod_headers está disponible)
+<IfModule mod_headers.c>
+    # Prevenir clickjacking
+    Header always set X-Frame-Options "DENY"
+    
+    # Prevenir MIME-type sniffing
+    Header always set X-Content-Type-Options "nosniff"
+    
+    # Habilitar XSS Protection
+    Header always set X-XSS-Protection "1; mode=block"
+    
+    # Referrer Policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    
+    # Permissions Policy
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=(), usb=()"
+    
+    # Prevenir caching de páginas sensibles
+    <FilesMatch "\.(php)$">
+        Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+        Header always set Pragma "no-cache"
+    </FilesMatch>
+    
+    # Remover información del servidor
+    Header always unset X-Powered-By
+    Header always unset Server
+</IfModule>
+
+# Ocultar versión de Apache
+ServerSignature Off
+
+# Limitar tamaño de requests (10MB)
+LimitRequestBody 10485760
+
+# Prevenir hotlinking y ataques comunes
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Forzar HTTPS (descomentar si tienes SSL)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+    
+    # Bloquear user agents maliciosos comunes
+    RewriteCond %{HTTP_USER_AGENT} ^$ [OR]
+    RewriteCond %{HTTP_USER_AGENT} (libwww-perl|wget|python|nikto|scan|sqlmap) [NC]
+    RewriteRule ^(.*)$ - [F,L]
+    
+    # Bloquear requests con métodos peligrosos
+    RewriteCond %{REQUEST_METHOD} ^(TRACE|DELETE|TRACK) [NC]
+    RewriteRule ^(.*)$ - [F,L]
+    
+    # Proteger contra path traversal
+    RewriteCond %{QUERY_STRING} (\.\./|\.\.\\) [NC,OR]
+    RewriteCond %{QUERY_STRING} ^.*(globals|encode|config|loopback).* [NC]
+    RewriteRule ^(.*)$ - [F,L]
+    
+    # Bloquear SQL injection en URL
+    RewriteCond %{QUERY_STRING} (\<|%3C).*script.*(\>|%3E) [NC,OR]
+    RewriteCond %{QUERY_STRING} GLOBALS(=|\[|\%[0-9A-Z]{0,2}) [OR]
+    RewriteCond %{QUERY_STRING} _REQUEST(=|\[|\%[0-9A-Z]{0,2}) [OR]
+    RewriteCond %{QUERY_STRING} union.*select.*\( [NC,OR]
+    RewriteCond %{QUERY_STRING} concat.*\( [NC]
+    RewriteRule ^(.*)$ - [F,L]
+</IfModule>
+
+# Protección adicional para PHP
+<IfModule mod_php.c>
+    php_flag display_errors off
+    php_flag log_errors on
+    php_flag expose_php off
+    php_value max_execution_time 30
+    php_value max_input_time 30
+    php_value memory_limit 128M
+    php_value post_max_size 10M
+    php_value upload_max_filesize 10M
+</IfModule>

@@ -8,6 +8,22 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// ==========================================
+// Verificar si IP está bloqueada
+// ==========================================
+$ip = $_SERVER['REMOTE_ADDR'];
+try {
+    $stmt = $pdo->prepare('SELECT * FROM ip_blocklist WHERE ip_address = ? AND (blocked_until IS NULL OR blocked_until > NOW())');
+    $stmt->execute([$ip]);
+    if ($stmt->fetch()) {
+        security_log('BLOCKED_IP_ACCESS', "IP bloqueada intentó acceder", null);
+        http_response_code(403);
+        die('Acceso denegado. Su IP ha sido bloqueada por actividad sospechosa.');
+    }
+} catch (Exception $e) {
+    // La tabla puede no existir aún
+}
+
 // Si ya está autenticado, redirigir al dashboard
 if (isset($_SESSION['user_id'])) {
     redirect('/index.php');
@@ -19,7 +35,6 @@ $require_2fa = false;
 // ==========================================
 // Rate Limiting para prevenir fuerza bruta
 // ==========================================
-$ip = $_SERVER['REMOTE_ADDR'];
 $rate_limit_key = 'login_attempts_' . md5($ip);
 $max_attempts = 5;
 $lockout_time = 900; // 15 minutos
@@ -162,14 +177,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['verify_2fa']) && !$i
                 $attempts['count']++;
                 $remaining = $max_attempts - $attempts['count'];
                 
+                // Log de seguridad
+                security_log('LOGIN_FAIL', "Login fallido para: $username");
+                
+                // Mensaje genérico para no revelar si el usuario existe
                 if ($remaining > 0) {
-                    $error = "Usuario o contraseña incorrectos. Te quedan $remaining intentos.";
+                    $error = "Credenciales incorrectas. Te quedan $remaining intentos.";
                 } else {
                     $minutes = ceil($lockout_time / 60);
                     $error = "Demasiados intentos fallidos. Cuenta bloqueada por $minutes minutos.";
+                    security_log('ACCOUNT_LOCKOUT', "IP bloqueada por exceso de intentos: $username");
                 }
                 
-                // Log fallido
+                // Log fallido en tabla de acceso
                 if ($user) {
                     $stmt = $pdo->prepare('INSERT INTO logs_acceso (usuario_id, tipo_evento, descripcion, exitoso, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?)');
                     $stmt->execute([$user['id'], 'login_failed', 'Contraseña incorrecta', 0, $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT'] ?? '']);
