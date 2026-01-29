@@ -350,23 +350,6 @@ for ($i = 29; $i >= 0; $i--) {
             </div>
             
             <div class="content-area">
-                <!-- Alerta 2FA si no está habilitado -->
-                <?php if (!$usuario['totp_enabled']): ?>
-                <div style="background: var(--warning-light); border-left: 4px solid var(--warning); padding: var(--spacing-lg); border-radius: var(--radius-md); margin-bottom: var(--spacing-xl); display: flex; align-items: center; gap: var(--spacing-md);">
-                    <i class="fas fa-shield-alt" style="font-size: 2rem; color: var(--warning);"></i>
-                    <div style="flex: 1;">
-                        <strong style="color: var(--text-primary);">Protege tu cuenta con autenticación de dos factores</strong>
-                        <p style="margin: var(--spacing-xs) 0 0; color: var(--text-secondary);">
-                            Añade una capa adicional de seguridad usando tu teléfono
-                        </p>
-                    </div>
-                    <a href="/app/perfil/2fa.php" class="btn btn-warning">
-                        <i class="fas fa-lock"></i>
-                        Habilitar 2FA
-                    </a>
-                </div>
-                <?php endif; ?>
-                
                 <!-- Estadísticas -->
                 <div class="stats-grid">
                     <div class="stat-card">
