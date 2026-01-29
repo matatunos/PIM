@@ -290,38 +290,69 @@
                 });
             });
         }
-        
-        // Hamburger menu functionality
+    });
+</script>
+
+<!-- Script separado para el hamburger menu -->
+<script>
+(function() {
+    function initHamburger() {
         const hamburger = document.getElementById('hamburger-menu');
         const sidebar = document.querySelector('.sidebar');
         
-        if (hamburger && sidebar) {
-            hamburger.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                this.classList.toggle('active');
-                sidebar.classList.toggle('active');
-            });
-            
-            // Close sidebar when clicking outside
-            document.addEventListener('click', function(e) {
-                if (sidebar.classList.contains('active') && 
-                    !sidebar.contains(e.target) && 
-                    !hamburger.contains(e.target)) {
-                    hamburger.classList.remove('active');
+        if (!hamburger || !sidebar) {
+            console.log('Hamburger: elementos no encontrados');
+            return;
+        }
+        
+        // Remover listeners previos clonando el elemento
+        const newHamburger = hamburger.cloneNode(true);
+        hamburger.parentNode.replaceChild(newHamburger, hamburger);
+        
+        // Añadir click listener
+        newHamburger.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.toggle('active');
+            sidebar.classList.toggle('active');
+            console.log('Hamburger clicked, sidebar active:', sidebar.classList.contains('active'));
+        });
+        
+        // Touch support para móviles
+        newHamburger.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            this.classList.toggle('active');
+            sidebar.classList.toggle('active');
+        });
+        
+        // Cerrar al hacer click fuera
+        document.addEventListener('click', function(e) {
+            if (sidebar.classList.contains('active') && 
+                !sidebar.contains(e.target) && 
+                !newHamburger.contains(e.target)) {
+                newHamburger.classList.remove('active');
+                sidebar.classList.remove('active');
+            }
+        });
+        
+        // Cerrar al hacer click en un link
+        sidebar.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    newHamburger.classList.remove('active');
                     sidebar.classList.remove('active');
                 }
             });
-            
-            // Close sidebar when clicking a link
-            sidebar.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', function() {
-                    if (window.innerWidth <= 768) {
-                        hamburger.classList.remove('active');
-                        sidebar.classList.remove('active');
-                    }
-                });
-            });
-        }
-    });
+        });
+        
+        console.log('Hamburger menu inicializado correctamente');
+    }
+    
+    // Ejecutar cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initHamburger);
+    } else {
+        initHamburger();
+    }
+})();
 </script>

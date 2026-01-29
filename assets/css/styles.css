@@ -951,10 +951,13 @@ body {
     
     .sidebar {
         transform: translateX(-100%);
+        z-index: 9999;
+        box-shadow: none;
     }
     
     .sidebar.active {
         transform: translateX(0);
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
     }
     
     .main-content {
