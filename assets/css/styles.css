@@ -551,6 +551,50 @@ body {
     font-size: 1.1rem;
 }
 
+.nav-item-group {
+    position: relative;
+}
+
+.nav-sublinks {
+    display: none;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: var(--radius-md);
+    margin: 4px 0;
+    padding: 4px 0;
+    overflow: hidden;
+}
+
+.nav-sublink {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: 0.6rem var(--spacing-lg);
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    transition: all var(--transition-fast);
+    font-weight: 400;
+}
+
+.nav-sublink:hover {
+    background: rgba(0, 0, 0, 0.08);
+    color: var(--text-primary);
+    padding-left: calc(var(--spacing-lg) + 4px);
+}
+
+.nav-sublink.active {
+    background: rgba(0, 0, 0, 0.1);
+    color: var(--primary);
+    font-weight: 500;
+    padding-left: calc(var(--spacing-lg) + 4px);
+}
+
+.nav-sublink i {
+    width: 16px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
 .nav-badge {
     margin-left: auto;
     padding: 0.25rem 0.5rem;

@@ -2,55 +2,327 @@
 require_once '../../includes/auth_check.php';
 require_once '../../config/database.php';
 
-$mensaje = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
-    $archivo = $_FILES['archivo']['tmp_name'];
-    if (($handle = fopen($archivo, 'r')) !== false) {
-        $primera = true;
-        $importados = 0;
-        while (($data = fgetcsv($handle, 1000, ',')) !== false) {
-            if ($primera) { $primera = false; continue; }
-            $nombre = $data[0] ?? '';
-            $apellido = $data[1] ?? '';
-            $email = $data[2] ?? '';
-            $telefono = $data[3] ?? '';
-            $direccion = $data[4] ?? '';
-            $notas = $data[5] ?? '';
-            $stmt = $pdo->prepare('INSERT INTO contactos (usuario_id, nombre, apellido, email, telefono, direccion, notas) VALUES (?, ?, ?, ?, ?, ?, ?)');
-            $stmt->execute([$_SESSION['user_id'], $nombre, $apellido, $email, $telefono, $direccion, $notas]);
-            $importados++;
+$usuario_id = $_SESSION['user_id'];
+$mensaje = $error = '';
+$paso = isset($_POST['paso']) ? (int)$_POST['paso'] : 1;
+$filas_preview = [];
+$mapeo = [];
+
+// Procesar archivo CSV
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo']) && $paso === 1) {
+    if ($_FILES['archivo']['error'] === UPLOAD_ERR_OK) {
+        $archivo_temp = $_FILES['archivo']['tmp_name'];
+        
+        // Leer primeras líneas del CSV
+        if (($handle = fopen($archivo_temp, 'r')) !== false) {
+            $count = 0;
+            while (($fila = fgetcsv($handle, 1000, ',')) !== false && $count < 5) {
+                $fila = array_map('trim', $fila);
+                $filas_preview[] = $fila;
+                $count++;
+            }
+            fclose($handle);
+            
+            // Guardar archivo temporalmente en sesión
+            $_SESSION['csv_temp_data'] = [];
+            if (($handle = fopen($archivo_temp, 'r')) !== false) {
+                while (($fila = fgetcsv($handle, 1000, ',')) !== false) {
+                    $_SESSION['csv_temp_data'][] = array_map('trim', $fila);
+                }
+                fclose($handle);
+            }
+            
+            if (count($filas_preview) > 0) {
+                $paso = 2; // Ir a mapeo
+            } else {
+                $error = 'El archivo CSV no contiene datos';
+            }
+        } else {
+            $error = 'No se pudo leer el archivo';
         }
-        fclose($handle);
-        $mensaje = "Contactos importados: $importados";
     } else {
-        $mensaje = 'No se pudo leer el archivo.';
+        $error = 'Error al cargar el archivo';
     }
 }
+
+// Procesar mapeo y previsualización
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $paso === 2 && isset($_POST['mapeo'])) {
+    $mapeo = $_POST['mapeo'];
+    $_SESSION['csv_mapeo'] = $mapeo;
+    $paso = 3; // Ir a confirmación
+}
+
+// Importar contactos
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $paso === 3 && isset($_POST['confirmar'])) {
+    $mapeo = $_SESSION['csv_mapeo'] ?? [];
+    $datos = $_SESSION['csv_temp_data'] ?? [];
+    
+    $importados = 0;
+    $errores = 0;
+    
+    // Saltamos la primera línea si tiene encabezados
+    $inicio = isset($_POST['tiene_encabezados']) ? 1 : 0;
+    
+    for ($i = $inicio; $i < count($datos); $i++) {
+        $fila = $datos[$i];
+        
+        $nombre = '';
+        $apellido = '';
+        $email = '';
+        $telefono = '';
+        $telefono_alt = '';
+        $empresa = '';
+        $cargo = '';
+        $direccion = '';
+        $ciudad = '';
+        $pais = '';
+        $notas = '';
+        
+        // Mapear columnas
+        foreach ($mapeo as $idx_columna => $tipo_campo) {
+            if (!empty($tipo_campo) && isset($fila[$idx_columna])) {
+                $valor = $fila[$idx_columna];
+                
+                switch ($tipo_campo) {
+                    case 'nombre': $nombre = $valor; break;
+                    case 'apellido': $apellido = $valor; break;
+                    case 'email': $email = $valor; break;
+                    case 'telefono': $telefono = $valor; break;
+                    case 'telefono_alt': $telefono_alt = $valor; break;
+                    case 'empresa': $empresa = $valor; break;
+                    case 'cargo': $cargo = $valor; break;
+                    case 'direccion': $direccion = $valor; break;
+                    case 'ciudad': $ciudad = $valor; break;
+                    case 'pais': $pais = $valor; break;
+                    case 'notas': $notas = $valor; break;
+                }
+            }
+        }
+        
+        // Validar que al menos nombre y email
+        if (empty($nombre)) {
+            $errores++;
+            continue;
+        }
+        
+        // Validar email si existe
+        if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errores++;
+            continue;
+        }
+        
+        // Verificar duplicado
+        $stmt = $pdo->prepare('SELECT id FROM contactos WHERE usuario_id = ? AND email = ? AND borrado_en IS NULL LIMIT 1');
+        $stmt->execute([$usuario_id, $email]);
+        if (!empty($email) && $stmt->fetch()) {
+            $errores++;
+            continue;
+        }
+        
+        // Insertar
+        try {
+            $stmt = $pdo->prepare('INSERT INTO contactos (usuario_id, nombre, apellido, email, telefono, telefono_alt, empresa, cargo, direccion, ciudad, pais, notas) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $stmt->execute([$usuario_id, $nombre, $apellido, $email, $telefono, $telefono_alt, $empresa, $cargo, $direccion, $ciudad, $pais, $notas]);
+            $importados++;
+        } catch (Exception $e) {
+            $errores++;
+        }
+    }
+    
+    $mensaje = "Importación completada: $importados contactos importados, $errores errores/duplicados";
+    unset($_SESSION['csv_temp_data']);
+    unset($_SESSION['csv_mapeo']);
+    $paso = 1; // Volver al inicio
+}
+
+// Campos disponibles para mapeo
+$campos_disponibles = [
+    '' => '-- No importar --',
+    'nombre' => 'Nombre *',
+    'apellido' => 'Apellido',
+    'email' => 'Email',
+    'telefono' => 'Teléfono',
+    'telefono_alt' => 'Teléfono Alternativo',
+    'empresa' => 'Empresa',
+    'cargo' => 'Cargo',
+    'direccion' => 'Dirección',
+    'ciudad' => 'Ciudad',
+    'pais' => 'País',
+    'notas' => 'Notas'
+];
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Importar Contactos</title>
-    <link rel="stylesheet" href="../../assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../../assets/css/styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importar Contactos - PIM</title>
+    <link rel="stylesheet" href="/assets/css/styles.css">
     <link rel="stylesheet" href="/assets/fonts/fontawesome/css/all.min.css">
 </head>
 <body>
-<?php include_once '../../includes/navbar.php'; ?>
-<div class="container mt-4">
-    <h2><i class="fas fa-address-book"></i> Importar Contactos</h2>
-    <?php if ($mensaje): ?>
-        <div class="alert alert-info"><?= $mensaje ?></div>
-    <?php endif; ?>
-    <form method="post" enctype="multipart/form-data">
-        <div class="mb-3">
-            <label for="archivo" class="form-label">Archivo CSV exportado (Google/iPhone)</label>
-            <input type="file" class="form-control" id="archivo" name="archivo" accept=".csv" required>
+    <div class="app-container">
+        <?php include '../../includes/sidebar.php'; ?>
+        
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="top-bar-left">
+                    <h1 class="page-title"><i class="fas fa-file-import"></i> Importar Contactos</h1>
+                </div>
+            </div>
+            
+            <div class="content-area">
+                <?php if ($mensaje): ?>
+                    <div class="alert alert-success"><i class="fas fa-check-circle"></i> <?= htmlspecialchars($mensaje) ?></div>
+                <?php endif; ?>
+                
+                <?php if ($error): ?>
+                    <div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> <?= htmlspecialchars($error) ?></div>
+                <?php endif; ?>
+                
+                <!-- PASO 1: Cargar archivo -->
+                <?php if ($paso === 1): ?>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 style="margin: 0;"><i class="fas fa-upload"></i> Paso 1: Cargar Archivo CSV</h2>
+                    </div>
+                    <div class="card-body">
+                        <p>Soporta archivos CSV de Google Contacts, iPhone u otros gestores de contactos.</p>
+                        
+                        <form method="POST" enctype="multipart/form-data">
+                            <input type="hidden" name="paso" value="1">
+                            
+                            <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-lg); border: 2px dashed var(--border-color); border-radius: var(--radius-md); text-align: center;">
+                                <label style="cursor: pointer;">
+                                    <input type="file" name="archivo" accept=".csv" required style="display: none;" onchange="document.getElementById('filename').textContent = this.files[0].name">
+                                    <i class="fas fa-cloud-upload-alt" style="font-size: 3em; color: var(--primary); margin-bottom: var(--spacing-md); display: block;"></i>
+                                    <p style="margin: 0;">Haz clic o arrastra un archivo CSV aquí</p>
+                                    <p id="filename" style="margin: var(--spacing-sm) 0 0 0; color: var(--text-secondary); font-size: 0.9em;">Ningún archivo seleccionado</p>
+                                </label>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: var(--spacing-md);">
+                                <i class="fas fa-arrow-right"></i> Siguiente
+                            </button>
+                        </form>
+                        
+                        <div class="card" style="background: #f0f8ff; border-left: 4px solid var(--info);">
+                            <div class="card-body">
+                                <h4 style="margin-top: 0;"><i class="fas fa-info-circle"></i> ¿Cómo exportar tus contactos?</h4>
+                                <ul style="margin: 0; padding-left: 20px;">
+                                    <li><strong>Google Contacts:</strong> Contactos > Más > Exportar → Selecciona tus contactos → Exportar como vCard</li>
+                                    <li><strong>iPhone/iCloud:</strong> Abre el contacto → Compartir → Guardar como CSV</li>
+                                    <li><strong>Outlook:</strong> Archivo → Abrir y exportar → Exportar a archivo → Archivo CSV</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <!-- PASO 2: Mapear columnas -->
+                <?php if ($paso === 2 && count($filas_preview) > 0): ?>
+                <form method="POST">
+                    <input type="hidden" name="paso" value="2">
+                    
+                    <div class="card" style="margin-bottom: var(--spacing-lg);">
+                        <div class="card-header">
+                            <h2 style="margin: 0;"><i class="fas fa-columns"></i> Paso 2: Mapear Columnas</h2>
+                        </div>
+                        <div class="card-body">
+                            <p>Hemos encontrado <?= count($_SESSION['csv_temp_data']) ?> registros en el archivo.</p>
+                            <p>Selecciona a cuál campo corresponde cada columna del archivo.</p>
+                            
+                            <div style="overflow-x: auto; margin-bottom: var(--spacing-lg);">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background: var(--bg-secondary); border-bottom: 2px solid var(--border-color);">
+                                            <th style="padding: var(--spacing-md); text-align: left;">Columna</th>
+                                            <?php for ($i = 0; $i < count($filas_preview[0]); $i++): ?>
+                                                <th style="padding: var(--spacing-md); text-align: left;">Columna <?= $i + 1 ?></th>
+                                            <?php endfor; ?>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr style="border-bottom: 1px solid var(--border-color);">
+                                            <td style="padding: var(--spacing-md); font-weight: 600;">Mapear a:</td>
+                                            <?php for ($i = 0; $i < count($filas_preview[0]); $i++): ?>
+                                                <td style="padding: var(--spacing-md);">
+                                                    <select name="mapeo[<?= $i ?>]" class="form-control" style="padding: var(--spacing-sm); border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                                                        <?php foreach ($campos_disponibles as $valor => $label): ?>
+                                                            <option value="<?= htmlspecialchars($valor) ?>"><?= htmlspecialchars($label) ?></option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </td>
+                                            <?php endfor; ?>
+                                        </tr>
+                                        <?php foreach ($filas_preview as $fila): ?>
+                                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                                <td style="padding: var(--spacing-md); font-size: 0.9em; color: var(--text-secondary);">Ej.:</td>
+                                                <?php foreach ($fila as $valor): ?>
+                                                    <td style="padding: var(--spacing-md); font-size: 0.9em;">
+                                                        <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">
+                                                            <?= htmlspecialchars(substr($valor, 0, 30)) ?>
+                                                        </code>
+                                                    </td>
+                                                <?php endforeach; ?>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div style="display: flex; gap: var(--spacing-md);">
+                                <button type="submit" name="action" value="next" class="btn btn-primary">
+                                    <i class="fas fa-arrow-right"></i> Siguiente
+                                </button>
+                                <a href="?paso=1" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Atrás
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <?php endif; ?>
+                
+                <!-- PASO 3: Confirmación -->
+                <?php if ($paso === 3): ?>
+                <form method="POST">
+                    <input type="hidden" name="paso" value="3">
+                    <input type="hidden" name="confirmar" value="1">
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 style="margin: 0;"><i class="fas fa-check-circle"></i> Paso 3: Confirmación</h2>
+                        </div>
+                        <div class="card-body">
+                            <div style="background: #f0f8ff; padding: var(--spacing-lg); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg);">
+                                <h4 style="margin-top: 0;">Resumen de importación:</h4>
+                                <ul style="margin: 0; padding-left: 20px;">
+                                    <li>Total de registros a importar: <strong><?= count($_SESSION['csv_temp_data']) - 1 ?></strong></li>
+                                    <li>Los contactos duplicados (por email) serán ignorados</li>
+                                    <li>Se requiere al menos el nombre de cada contacto</li>
+                                </ul>
+                            </div>
+                            
+                            <p style="color: var(--text-secondary); font-size: 0.9em;">
+                                <i class="fas fa-info-circle"></i> Verifica que el mapeo sea correcto antes de continuar.
+                            </p>
+                            
+                            <div style="display: flex; gap: var(--spacing-md);">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-download"></i> Importar Contactos
+                                </button>
+                                <a href="?paso=2" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Atrás
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <?php endif; ?>
+            </div>
         </div>
-        <button type="submit" class="btn btn-primary"><i class="fas fa-file-import"></i> Importar</button>
-    </form>
-    <p class="mt-3 text-muted">El archivo debe tener columnas: nombre, apellido, email, teléfono, dirección, notas.</p>
-</div>
+    </div>
 </body>
 </html>

@@ -20,10 +20,20 @@
         
         <div class="nav-section">
             <div class="nav-section-title">Productividad</div>
-            <a href="/app/tareas/index.php" class="nav-link <?= strpos($_SERVER['PHP_SELF'], '/tareas/') !== false ? 'active' : '' ?>">
-                <i class="fas fa-tasks"></i>
-                Tareas
-            </a>
+            <div class="nav-item-group">
+                <a href="/app/tareas/index.php" class="nav-link <?= strpos($_SERVER['PHP_SELF'], '/tareas/') !== false ? 'active' : '' ?>">
+                    <i class="fas fa-tasks"></i>
+                    Tareas
+                </a>
+                <div class="nav-sublinks" style="display: <?= strpos($_SERVER['PHP_SELF'], '/tareas/') !== false ? 'block' : 'none' ?>;">
+                    <a href="/app/tareas/index.php" class="nav-sublink <?= $_SERVER['REQUEST_URI'] === '/app/tareas/index.php' ? 'active' : '' ?>">
+                        <i class="fas fa-list"></i> Lista
+                    </a>
+                    <a href="/app/tareas/kanban.php" class="nav-sublink <?= strpos($_SERVER['REQUEST_URI'], 'kanban') !== false ? 'active' : '' ?>">
+                        <i class="fas fa-th"></i> Kanban
+                    </a>
+                </div>
+            </div>
             <a href="/app/notas/index.php" class="nav-link <?= strpos($_SERVER['PHP_SELF'], '/notas/') !== false ? 'active' : '' ?>">
                 <i class="fas fa-sticky-note"></i>
                 Notas
