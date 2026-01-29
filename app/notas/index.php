@@ -342,7 +342,7 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
         }
         .notas-container[data-view="lista"] .nota-card {
             display: grid;
-            grid-template-columns: 40px 1fr 150px;
+            grid-template-columns: 40px 100px 1fr 100px;
             grid-template-rows: auto auto;
             align-items: start;
             gap: var(--spacing-sm);
@@ -357,7 +357,7 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
         .notas-container[data-view="lista"] .nota-titulo {
             font-weight: 600;
             font-size: 0.95rem;
-            grid-column: 2;
+            grid-column: 3;
             grid-row: 1;
         }
         .notas-container[data-view="lista"] .nota-contenido {
@@ -367,7 +367,7 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
             display: flex;
             gap: var(--spacing-xs);
             flex-wrap: wrap;
-            grid-column: 2;
+            grid-column: 2 / 4;
             grid-row: 2;
             align-self: start;
         }
@@ -376,19 +376,19 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
             padding: 0.3rem 0.6rem;
         }
         .notas-container[data-view="lista"] .nota-footer {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--text-secondary);
             white-space: nowrap;
-            grid-column: 3;
+            grid-column: 2;
             grid-row: 1;
-            text-align: right;
+            text-align: left;
         }
         .notas-container[data-view="lista"] .nota-actions {
             opacity: 1;
             display: flex;
             gap: var(--spacing-xs);
-            grid-column: 3;
-            grid-row: 2;
+            grid-column: 4;
+            grid-row: 1 / 3;
             justify-content: flex-end;
             align-items: flex-start;
         }
