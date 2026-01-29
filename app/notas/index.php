@@ -27,8 +27,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $stmt->execute([$etiqueta]);
                 $etiqueta_id = $stmt->fetchColumn();
                 
-                $stmt = $pdo->prepare('INSERT INTO nota_etiqueta (nota_id, etiqueta_id) VALUES (?, ?)');
-                $stmt->execute([$nota_id, $etiqueta_id]);
+                if ($etiqueta_id) {
+                    $stmt = $pdo->prepare('INSERT INTO nota_etiqueta (nota_id, etiqueta_id) VALUES (?, ?)');
+                    $stmt->execute([$nota_id, $etiqueta_id]);
+                }
             }
         }
         
@@ -62,8 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $stmt->execute([$etiqueta]);
                 $etiqueta_id = $stmt->fetchColumn();
                 
-                $stmt = $pdo->prepare('INSERT INTO nota_etiqueta (nota_id, etiqueta_id) VALUES (?, ?)');
-                $stmt->execute([$id, $etiqueta_id]);
+                if ($etiqueta_id) {
+                    $stmt = $pdo->prepare('INSERT INTO nota_etiqueta (nota_id, etiqueta_id) VALUES (?, ?)');
+                    $stmt->execute([$nota_id, $etiqueta_id]);
+                }
             }
         }
         
