@@ -16,13 +16,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $output = [];
     $return_var = 0;
     
-    // Ejecutar script de backup
-    exec('/opt/PIM/bin/backup-db.sh ' . escapeshellarg($backup_dir) . ' 30 2>&1', $output, $return_var);
+    // Ejecutar script de backup con redirección de errores
+    exec('bash /opt/PIM/bin/backup-db.sh ' . escapeshellarg($backup_dir) . ' 30 2>&1', $output, $return_var);
     
     if ($return_var === 0) {
-        $mensaje = 'Backup creado exitosamente. ' . end($output);
+        // El backup se creó exitosamente
+        $mensaje = 'Backup creado exitosamente';
     } else {
-        $error = 'Error al crear el backup. Por favor revisa los logs.';
+        // Mostrar el último error del output
+        $error_msg = !empty($output) ? end($output) : 'Error desconocido al crear el backup';
+        $error = 'Error al crear el backup: ' . htmlspecialchars($error_msg);
     }
 }
 
