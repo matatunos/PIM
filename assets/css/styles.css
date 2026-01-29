@@ -865,6 +865,12 @@ body {
     padding: 8px;
     gap: 6px;
     margin-right: 12px;
+    z-index: 1001;
+    position: relative;
+}
+
+.hamburger-menu:hover {
+    opacity: 0.7;
 }
 
 .hamburger-menu span {
@@ -873,6 +879,7 @@ body {
     background-color: var(--text-primary);
     border-radius: 2px;
     transition: all var(--transition-fast);
+    display: block;
 }
 
 .hamburger-menu.active span:nth-child(1) {
@@ -893,7 +900,7 @@ body {
 
 @media (max-width: 768px) {
     .hamburger-menu {
-        display: flex;
+        display: flex !important;
     }
     
     .sidebar {

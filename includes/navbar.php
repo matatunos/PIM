@@ -2,10 +2,10 @@
 <?php require_once __DIR__.'/lang.php'; ?>
 <nav class="navbar-glass">
   <div class="navbar-container">
-    <button id="hamburger-menu" class="hamburger-menu" title="Menú">
-      <span></span>
-      <span></span>
-      <span></span>
+    <button id="hamburger-menu" class="hamburger-menu" title="Menú" style="display: none; flex-direction: column; background: none; border: none; cursor: pointer; padding: 8px; gap: 6px; margin-right: 12px;">
+      <span style="width: 24px; height: 3px; background-color: var(--text-primary); border-radius: 2px; display: block;"></span>
+      <span style="width: 24px; height: 3px; background-color: var(--text-primary); border-radius: 2px; display: block;"></span>
+      <span style="width: 24px; height: 3px; background-color: var(--text-primary); border-radius: 2px; display: block;"></span>
     </button>
     <a href="/index.php" class="navbar-brand"><i class="fas fa-th-large"></i> PIM</a>
     <ul class="navbar-menu">
@@ -24,3 +24,21 @@
     </ul>
   </div>
 </nav>
+
+<script>
+// Mostrar hamburger en mobile
+function mostrarHamburguerMobile() {
+    const hamburger = document.getElementById('hamburger-menu');
+    if (window.innerWidth <= 768) {
+        hamburger.style.display = 'flex';
+    } else {
+        hamburger.style.display = 'none';
+    }
+}
+
+// Ejecutar al cargar
+mostrarHamburguerMobile();
+
+// Ejecutar al cambiar tamaño
+window.addEventListener('resize', mostrarHamburguerMobile);
+</script>
