@@ -78,6 +78,7 @@ if (function_exists('opcache_get_status')) {
 
 require_once '../../includes/lang.php';
 ?>
+<?php require_once '../../includes/lang.php'; ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -88,13 +89,11 @@ require_once '../../includes/lang.php';
     <link rel="stylesheet" href="../../assets/css/styles.css">
 </head>
 <body>
-    <?php include '../../includes/navbar.php'; ?>
-    
-    <div class="container-fluid">
-        <div class="row">
-            <?php include '../../includes/sidebar.php'; ?>
-            
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+    <div class="app-container">
+        <?php include '../../includes/sidebar.php'; ?>
+        
+        <div class="main-content">
+            <main class="px-md-4">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">⚡ Performance y Optimización</h1>
                 </div>
