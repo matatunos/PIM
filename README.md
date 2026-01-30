@@ -834,8 +834,7 @@ Documentación detallada y guías disponibles en:
 | Documento | Contenido |
 |-----------|-----------|
 | [📖 Manual de Usuario](docs/manual-usuario.md) | Guía completa de todas las funciones |
-| [� Docker](docs/DOCKER.md) | Despliegue con Docker Compose |
-| [�🚀 Inicio Rápido](QUICK_START.md) | Empezar en 5 minutos |
+| [� Docker](docs/DOCKER.md) | Despliegue con Docker Compose || [📅 CalDAV/CardDAV](docs/CALDAV_CARDDAV.md) | Sincronización con dispositivos || [�🚀 Inicio Rápido](QUICK_START.md) | Empezar en 5 minutos |
 | [🧩 Extensión Chrome](CHROME_EXTENSION_SETUP.md) | Instalación y configuración |
 | [🤖 Integración IA](docs/OPENWEBUI_INTEGRATION.md) | Configurar Ollama/Open WebUI |
 | [🔐 Autenticación 2FA](TESTING_2FA.md) | Configurar dos factores |
@@ -924,8 +923,8 @@ Se espera profesionalismo y respeto en todas las interacciones.
 - [x] Protección anti-bot
 
 ### 🔄 En desarrollo
+- [x] Sincronización CalDAV/CardDAV
 - [ ] Docker Compose para deploy rápido
-- [ ] Sincronización CalDAV/CardDAV
 - [ ] Búsqueda avanzada con filtros
 - [ ] Webhooks y automatizaciones
 - [ ] Estadísticas y reportes
