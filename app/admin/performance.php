@@ -75,10 +75,7 @@ $opcacheStats = null;
 if (function_exists('opcache_get_status')) {
     $opcacheStats = opcache_get_status();
 }
-
-require_once '../../includes/lang.php';
 ?>
-<?php require_once '../../includes/lang.php'; ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
