@@ -133,9 +133,9 @@ if (function_exists('opcache_get_status')) {
                     </div>
                 </div>
                 
-                <div class="row">
                 <!-- Sistema de Caché -->
-                <div class="col-md-12 mb-4">
+                <div class="row mb-4">
+                    <div class="col-md-12">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <span><i class="fas fa-database me-2"></i>Sistema de Caché</span>
@@ -190,7 +190,7 @@ if (function_exists('opcache_get_status')) {
                 </div>
                 
                 <!-- Stats de Base de Datos -->
-                <div class="row">
+                <div class="row mb-4">
                     <div class="col-md-6 mb-4">
                         <div class="card">
                             <div class="card-header">
