@@ -138,7 +138,7 @@ if (function_exists('opcache_get_status')) {
                 <div class="col-md-12 mb-4">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-database"></i> Sistema de Caché</h5>
+                        <span><i class="fas fa-database me-2"></i>Sistema de Caché</span>
                         <div class="btn-group btn-group-inline">
                             <form method="POST">
                                 <input type="hidden" name="accion" value="clear_expired">
@@ -194,7 +194,7 @@ if (function_exists('opcache_get_status')) {
                     <div class="col-md-6 mb-4">
                         <div class="card">
                             <div class="card-header">
-                                <h5 class="mb-0"><i class="fas fa-database"></i> Tablas Más Grandes</h5>
+                                <i class="fas fa-table me-2"></i>Tablas Más Grandes
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -229,7 +229,7 @@ if (function_exists('opcache_get_status')) {
                     <div class="col-md-6 mb-4">
                         <div class="card">
                             <div class="card-header">
-                                <h5 class="mb-0"><i class="fas fa-sitemap"></i> Índices por Tabla</h5>
+                                <i class="fas fa-list-ol me-2"></i>Índices por Tabla
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive table-scroll">
