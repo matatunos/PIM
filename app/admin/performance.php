@@ -225,10 +225,10 @@ if (function_exists('opcache_get_status')) {
                                     </tbody>
                                 </table>
                             </div>
-                                </div>
-                            </div>
                         </div>
-                        
+                    </div>
+                    
+                    <div class="col-md-12">
                         <div class="card">
                             <div class="card-header">
                                 <h3 style="margin: 0;"><i class="fas fa-list-ol"></i> Índices por Tabla</h3>
@@ -253,11 +253,12 @@ if (function_exists('opcache_get_status')) {
                                             </td>
                                         </tr>
                                         <?php endforeach; ?>
-                                            </div>
-                                        </div>
                                     </tbody>
                                 </table>
                             </div>
+                        </div>
+                    </div>
+                </div>
                         </div>
                     </div>
                 </div>
