@@ -102,42 +102,50 @@ if (function_exists('opcache_get_status')) {
                     <div class="alert alert-success"><?= $mensaje ?></div>
                 <?php endif; ?>
                 
-                <!-- Estadísticas de Caché -->
-                <div class="row mb-4">
-                    <div class="col-md-12">
-                        <div class="card">
-                            <div class="card-header d-flex justify-content-between">
-                                <h5>💾 Sistema de Caché</h5>
-                                <div>
-                                    <form method="POST" style="display: inline;">
-                                        <input type="hidden" name="accion" value="clear_expired">
-                                        <button type="submit" class="btn btn-sm btn-warning">Limpiar Expirados</button>
-                                    </form>
-                                    <form method="POST" style="display: inline;">
-                                        <input type="hidden" name="accion" value="clear_cache">
-                                        <button type="submit" class="btn btn-sm btn-danger">Limpiar Todo</button>
-                                    </form>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="row text-center mb-3">
-                                    <div class="col-md-3">
-                                        <h3><?= $cacheStats['total_files'] ?></h3>
-                                        <small class="text-muted">Archivos totales</small>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <h3><?= round($cacheStats['total_size'] / 1024 / 1024, 2) ?> MB</h3>
-                                        <small class="text-muted">Tamaño total</small>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <h3><?= $cacheStats['expired'] ?></h3>
-                                        <small class="text-muted">Expirados</small>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <h3><?= $cacheStats['total_files'] - $cacheStats['expired'] ?></h3>
-                                        <small class="text-muted">Válidos</small>
-                                    </div>
-                                </div>
+                <!-- Estadísticas principales -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-primary"><i class="fas fa-file"></i></div>
+                        <div class="stat-value"><?= $cacheStats['total_files'] ?></div>
+                        <div class="stat-label">Archivos en caché</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-info"><i class="fas fa-hdd"></i></div>
+                        <div class="stat-value"><?= round($cacheStats['total_size'] / 1024 / 1024, 2) ?> MB</div>
+                        <div class="stat-label">Tamaño total</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-success"><i class="fas fa-check-circle"></i></div>
+                        <div class="stat-value"><?= $cacheStats['total_files'] - $cacheStats['expired'] ?></div>
+                        <div class="stat-label">Caché válido</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-warning"><i class="fas fa-clock"></i></div>
+                        <div class="stat-value"><?= $cacheStats['expired'] ?></div>
+                        <div class="stat-label">Expirados</div>
+                    </div>
+                </div>
+                
+                <!-- Sistema de Caché -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-database"></i> Sistema de Caché</h5>
+                        <div class="btn-group btn-group-inline">
+                            <form method="POST">
+                                <input type="hidden" name="accion" value="clear_expired">
+                                <button type="submit" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-broom"></i> Limpiar Expirados
+                                </button>
+                            </form>
+                            <form method="POST">
+                                <input type="hidden" name="accion" value="clear_cache">
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i> Limpiar Todo
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card-body">
                                 
                                 <table class="table table-sm">
                                     <thead>
@@ -157,7 +165,7 @@ if (function_exists('opcache_get_status')) {
                                             <td><?= round($stats['size'] / 1024, 2) ?> KB</td>
                                             <td><?= $stats['expired'] ?></td>
                                             <td>
-                                                <form method="POST" style="display: inline;">
+                                                <form method="POST" class="d-inline">
                                                     <input type="hidden" name="accion" value="clear_cache">
                                                     <input type="hidden" name="namespace" value="<?= $ns ?>">
                                                     <button type="submit" class="btn btn-xs btn-outline-danger">Limpiar</button>
@@ -173,14 +181,15 @@ if (function_exists('opcache_get_status')) {
                 </div>
                 
                 <!-- Stats de Base de Datos -->
-                <div class="row mb-4">
-                    <div class="col-md-6">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
                         <div class="card">
                             <div class="card-header">
-                                <h5>🗄️ Tablas Más Grandes</h5>
+                                <h5 class="mb-0"><i class="fas fa-database"></i> Tablas Más Grandes</h5>
                             </div>
                             <div class="card-body">
-                                <table class="table table-sm">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover">
                                     <thead>
                                         <tr>
                                             <th>Tabla</th>
@@ -203,16 +212,19 @@ if (function_exists('opcache_get_status')) {
                                     </tbody>
                                 </table>
                             </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="col-md-6">
+                    <div class="col-md-6 mb-4">
                         <div class="card">
                             <div class="card-header">
-                                <h5>📊 Índices por Tabla</h5>
+                                <h5 class="mb-0"><i class="fas fa-sitemap"></i> Índices por Tabla</h5>
                             </div>
                             <div class="card-body">
-                                <table class="table table-sm">
+                                <div class="table-responsive table-scroll">
+                                    <table class="table table-sm table-hover">
                                     <thead>
                                         <tr>
                                             <th>Tabla</th>
@@ -230,6 +242,8 @@ if (function_exists('opcache_get_status')) {
                                             </td>
                                         </tr>
                                         <?php endforeach; ?>
+                                            </div>
+                                        </div>
                                     </tbody>
                                 </table>
                             </div>
@@ -239,31 +253,33 @@ if (function_exists('opcache_get_status')) {
                 
                 <!-- OPcache Stats -->
                 <?php if ($opcacheStats): ?>
-                <div class="row mb-4">
-                    <div class="col-md-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5>⚙️ OPcache Status</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row text-center">
-                                    <div class="col-md-3">
-                                        <h3><?= $opcacheStats['opcache_enabled'] ? '✅ Activo' : '❌ Inactivo' ?></h3>
-                                        <small class="text-muted">Estado</small>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <h3><?= round($opcacheStats['memory_usage']['used_memory'] / 1024 / 1024, 2) ?> MB</h3>
-                                        <small class="text-muted">Memoria usada</small>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <h3><?= $opcacheStats['opcache_statistics']['num_cached_scripts'] ?></h3>
-                                        <small class="text-muted">Scripts cacheados</small>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <h3><?= round($opcacheStats['opcache_statistics']['opcache_hit_rate'], 2) ?>%</h3>
-                                        <small class="text-muted">Hit rate</small>
-                                    </div>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-bolt"></i> OPcache Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <div class="stat-icon <?= $opcacheStats['opcache_enabled'] ? 'stat-icon-success' : 'stat-icon-danger' ?>">
+                                    <i class="fas fa-<?= $opcacheStats['opcache_enabled'] ? 'check-circle' : 'times-circle' ?>"></i>
                                 </div>
+                                <div class="stat-value"><?= $opcacheStats['opcache_enabled'] ? 'Activo' : 'Inactivo' ?></div>
+                                <div class="stat-label">Estado</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-icon stat-icon-info"><i class="fas fa-memory"></i></div>
+                                <div class="stat-value"><?= round($opcacheStats['memory_usage']['used_memory'] / 1024 / 1024, 2) ?> MB</div>
+                                <div class="stat-label">Memoria usada</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-icon stat-icon-primary"><i class="fas fa-file-code"></i></div>
+                                <div class="stat-value"><?= $opcacheStats['opcache_statistics']['num_cached_scripts'] ?></div>
+                                <div class="stat-label">Scripts cacheados</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-icon stat-icon-success"><i class="fas fa-chart-line"></i></div>
+                                <div class="stat-value"><?= round($opcacheStats['opcache_statistics']['opcache_hit_rate'], 2) ?>%</div>
+                                <div class="stat-label">Hit rate</div>
                             </div>
                         </div>
                     </div>
@@ -272,28 +288,22 @@ if (function_exists('opcache_get_status')) {
                 
                 <!-- Queries Lentas -->
                 <?php if (!empty($slowQueries)): ?>
-                <div class="row mb-4">
-                    <div class="col-md-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5>🐌 Queries Lentas (últimas 20)</h5>
-                            </div>
-                            <div class="card-body">
-                                <pre style="max-height: 300px; overflow-y: auto;"><?php foreach ($slowQueries as $query) echo htmlspecialchars($query); ?></pre>
-                            </div>
-                        </div>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-stopwatch"></i> Queries Lentas (últimas 20)</h5>
+                    </div>
+                    <div class="card-body">
+                        <pre class="code-block"><?php foreach ($slowQueries as $query) echo htmlspecialchars($query); ?></pre>
                     </div>
                 </div>
                 <?php endif; ?>
                 
                 <!-- Recomendaciones -->
-                <div class="row mb-4">
-                    <div class="col-md-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5>💡 Recomendaciones</h5>
-                            </div>
-                            <div class="card-body">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-lightbulb"></i> Recomendaciones</h5>
+                    </div>
+                    <div class="card-body">
                                 <ul>
                                     <?php if (!$opcacheStats || !$opcacheStats['opcache_enabled']): ?>
                                     <li class="text-danger">⚠️ <strong>Activa OPcache</strong> en php.ini para mejor rendimiento</li>

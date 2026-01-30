@@ -1207,3 +1207,36 @@ body {
     .grid-cols-3,
     .grid-cols-4 { grid-template-columns: 1fr; }
 }
+
+/* ==========================================
+   Performance Dashboard
+   ========================================== */
+
+.stat-icon-primary { color: var(--primary); }
+.stat-icon-info { color: var(--info); }
+.stat-icon-success { color: var(--success); }
+.stat-icon-warning { color: var(--warning); }
+.stat-icon-danger { color: var(--danger); }
+
+.table-scroll {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.code-block {
+    max-height: 300px;
+    overflow-y: auto;
+    background: var(--bg-secondary);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    font-family: 'Courier New', monospace;
+}
+
+.btn-group-inline form {
+    display: inline;
+    margin-left: 8px;
+}
+
+.btn-group-inline form:first-child {
+    margin-left: 0;
+}
