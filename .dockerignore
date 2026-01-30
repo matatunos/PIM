@@ -1,0 +1,56 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Docker
+.dockerignore
+Dockerfile
+docker-compose.yml
+.docker
+
+# Archivos de configuración local
+.env
+.env.local
+.env.*.local
+
+# Logs y temporales
+*.log
+logs/*
+!logs/.gitkeep
+tmp/*
+!tmp/.gitkeep
+
+# Assets pesados (se generan o suben en runtime)
+assets/uploads/*
+!assets/uploads/.gitkeep
+
+# Node modules (si usas npm)
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Backups
+*.sql.gz
+*.sql.bak
+backups/
+
+# Tests
+tests/
+phpunit.xml
+.phpunit.result.cache
+
+# Documentation
+docs/screenshots/*.png
+README.md
+*.md
+!docs/manual-usuario.md

@@ -1,0 +1,122 @@
+version: '3.8'
+
+services:
+  # MariaDB Database
+  db:
+    image: mariadb:10.11
+    container_name: pim-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${DB_NAME:-pim_db}
+      MYSQL_USER: ${DB_USER:-pim_user}
+      MYSQL_PASSWORD: ${DB_PASS:-pim_password}
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./db/migration_security.sql:/docker-entrypoint-initdb.d/02-migration.sql:ro
+    networks:
+      - pim-network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PHP + Apache Web Server
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pim-web
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:80"
+    environment:
+      DB_HOST: db
+      DB_NAME: ${DB_NAME:-pim_db}
+      DB_USER: ${DB_USER:-pim_user}
+      DB_PASS: ${DB_PASS:-pim_password}
+      DB_CHARSET: utf8mb4
+      APP_ENV: ${APP_ENV:-production}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-key}
+      OPENWEBUI_API_KEY: ${OPENWEBUI_API_KEY:-}
+      OPENWEBUI_URL: ${OPENWEBUI_URL:-http://openwebui:3000}
+      OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
+    volumes:
+      - ./:/var/www/html
+      - uploads_data:/var/www/html/assets/uploads
+      - logs_data:/var/www/html/logs
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - pim-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Ollama (Opcional - para IA local)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: pim-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - pim-network
+    profiles:
+      - ai
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Open WebUI (Opcional - para interfaz de IA)
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: pim-openwebui
+    restart: unless-stopped
+    ports:
+      - "3000:8080"
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+      WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY:-change-this-webui-secret}
+      WEBUI_AUTH: ${WEBUI_AUTH:-true}
+    volumes:
+      - openwebui_data:/app/backend/data
+    depends_on:
+      - ollama
+    networks:
+      - pim-network
+    profiles:
+      - ai
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  pim-network:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local
+  uploads_data:
+    driver: local
+  logs_data:
+    driver: local
+  ollama_data:
+    driver: local
+  openwebui_data:
+    driver: local

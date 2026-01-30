@@ -504,7 +504,32 @@ PIM es una aplicación web **autoalojada** para gestionar tu información person
 
 ## 🚀 Instalación
 
-### Requisitos
+### Opción 1: Docker 🐳 (Recomendado)
+
+```bash
+# 1. Clonar repositorio
+git clone https://github.com/matatunos/PIM.git
+cd PIM
+
+# 2. Iniciar con script automático
+./docker-start.sh
+
+# 3. Acceder
+# http://localhost:8080
+# Usuario: admin / Contraseña: admin123 (CAMBIAR)
+```
+
+📖 **Documentación completa**: [docs/DOCKER.md](docs/DOCKER.md)
+
+**Servicios incluidos**:
+- ✅ PHP 8.2 + Apache
+- ✅ MariaDB 10.11
+- ✅ Ollama (opcional)
+- ✅ Open WebUI (opcional)
+
+### Opción 2: Instalación Manual
+
+#### Requisitos
 
 | Requisito | Versión mínima |
 |-----------|----------------|
@@ -513,7 +538,7 @@ PIM es una aplicación web **autoalojada** para gestionar tu información person
 | Apache/Nginx | 2.4+ / 1.18+ |
 | Extensiones PHP | pdo, pdo_mysql, json, mbstring, zip |
 
-### Instalación rápida
+#### Instalación rápida
 
 ```bash
 # 1. Clonar repositorio
@@ -524,23 +549,19 @@ cd PIM
 mysql -u root -p < db/schema.sql
 
 # 3. Configurar conexión
-cp config/database.php.example config/database.php
-nano config/database.php
+cp .env.example .env
+nano .env
 
-# 4. Configurar aplicación
-cp config/config.php.example config/config.php
-nano config/config.php
-
-# 5. Configurar permisos
+# 4. Configurar permisos
 chmod 755 -R .
 chmod 777 -R assets/uploads logs
 
-# 6. Acceder
+# 5. Acceder
 # http://tu-servidor/PIM
 # Usuario: admin / Contraseña: admin123 (CAMBIAR)
 ```
 
-### Instalación con script de setup
+#### Instalación con script de setup
 
 ```bash
 # Script automático (recomendado)
@@ -560,12 +581,6 @@ ssl_certificate_key /etc/letsencrypt/live/tu-dominio.com/privkey.pem;
 
 # Renovación automática
 0 12 * * * certbot renew --quiet
-```
-
-### Con Docker (próximamente)
-
-```bash
-docker-compose up -d
 ```
 
 ---
@@ -819,7 +834,8 @@ Documentación detallada y guías disponibles en:
 | Documento | Contenido |
 |-----------|-----------|
 | [📖 Manual de Usuario](docs/manual-usuario.md) | Guía completa de todas las funciones |
-| [🚀 Inicio Rápido](QUICK_START.md) | Empezar en 5 minutos |
+| [� Docker](docs/DOCKER.md) | Despliegue con Docker Compose |
+| [�🚀 Inicio Rápido](QUICK_START.md) | Empezar en 5 minutos |
 | [🧩 Extensión Chrome](CHROME_EXTENSION_SETUP.md) | Instalación y configuración |
 | [🤖 Integración IA](docs/OPENWEBUI_INTEGRATION.md) | Configurar Ollama/Open WebUI |
 | [🔐 Autenticación 2FA](TESTING_2FA.md) | Configurar dos factores |
