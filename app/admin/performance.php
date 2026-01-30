@@ -95,6 +95,9 @@ if (function_exists('opcache_get_status')) {
                 <div class="top-bar-left">
                     <h1 class="page-title"><i class="fas fa-tachometer-alt"></i> Performance y Optimización</h1>
                 </div>
+                <div class="top-bar-right">
+                    <span class="badge bg-primary">Monitoring</span>
+                </div>
             </div>
             
             <div class="content-area">

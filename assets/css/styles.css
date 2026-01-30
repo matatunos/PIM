@@ -1302,10 +1302,11 @@ body {
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: white;
     border-radius: var(--radius-lg);
-    padding: var(--spacing-lg);
-    margin-bottom: 15px;
+    padding: var(--spacing-md);
+    margin-bottom: 0;
     box-shadow: var(--shadow-md);
     transition: transform var(--transition-base);
+    text-align: center;
 }
 
 .stat-card:hover {
@@ -1330,6 +1331,7 @@ body {
 }
 
 .stat-number {
-    font-size: 2rem;
+    font-size: 1.75rem;
     font-weight: bold;
+    margin-bottom: 0.25rem;
 }
