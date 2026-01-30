@@ -49,8 +49,8 @@ Sistema completo de notas con:
 - Soporte completo de Markdown (títulos, listas, código, enlaces, imágenes)
 - Almacenamiento automático de borradores
 - Historial de cambios
-- Compartir notas (próximamente)
-- Exportar a PDF (próximamente)
+- Colores y etiquetas personalizadas
+- Fijado de notas importantes
 
 **Acciones rápidas**:
 - `Ctrl+N` - Nueva nota

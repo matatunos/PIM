@@ -415,8 +415,8 @@ PIM es una aplicación web **autoalojada** para gestionar tu información person
 ║  │  │     - ✅ Autenticación 2FA                                          │     │    ║
 ║  │  │                                                                     │     │    ║
 ║  │  │     ### Pendiente:                                                  │     │    ║
-║  │  │     - 🔄 App móvil (PWA)                                            │     │    ║
 ║  │  │     - 🔄 Sincronización CalDAV                                      │     │    ║
+║  │  │     - 🔄 Búsqueda avanzada                                          │     │    ║
 ║  │  │                                                                     │     │    ║
 ║  │  │     ### Próxima tarea:                                              │     │    ║
 ║  │  │     Según tu nota "Reunión lunes", debes revisar el planning Q2.    │     │    ║
@@ -818,7 +818,7 @@ Documentación detallada y guías disponibles en:
 
 | Documento | Contenido |
 |-----------|-----------|
-| [📖 Manual de Usuario](docs/manual-usuario.html) | Guía completa con screenshots |
+| [📖 Manual de Usuario](docs/manual-usuario.md) | Guía completa de todas las funciones |
 | [🚀 Inicio Rápido](QUICK_START.md) | Empezar en 5 minutos |
 | [🧩 Extensión Chrome](CHROME_EXTENSION_SETUP.md) | Instalación y configuración |
 | [🤖 Integración IA](docs/OPENWEBUI_INTEGRATION.md) | Configurar Ollama/Open WebUI |
@@ -908,19 +908,18 @@ Se espera profesionalismo y respeto en todas las interacciones.
 - [x] Protección anti-bot
 
 ### 🔄 En desarrollo
-- [ ] App móvil responsiva (PWA)
 - [ ] Docker Compose para deploy rápido
 - [ ] Sincronización CalDAV/CardDAV
-- [ ] Exportación a PDF/CSV
-- [ ] Backups automáticos en cloud
+- [ ] Búsqueda avanzada con filtros
+- [ ] Webhooks y automatizaciones
+- [ ] Estadísticas y reportes
 
 ### 🎯 Planificado
-- [ ] Sistema de plugins/extensiones
-- [ ] Búsqueda avanzada con filtros
-- [ ] Versionado de notas (historial)
-- [ ] Compartir notas/contactos con otros usuarios
-- [ ] Integración con Nextcloud
-- [ ] Modo offline
+- [ ] Más temas visuales
+- [ ] Soporte para más idiomas
+- [ ] Mejoras de rendimiento
+- [ ] Más integraciones de IA
+- [ ] Nuevos módulos especializados
 
 ---
 
