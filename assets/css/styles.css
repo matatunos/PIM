@@ -1335,3 +1335,30 @@ body {
     font-weight: bold;
     margin-bottom: 0.25rem;
 }
+
+/* ==========================================
+   Grid System (Bootstrap-like)
+   ========================================== */
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -10px;
+}
+
+.col-md-3, .col-md-6, .col-md-12 {
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+
+.col-md-3 { width: 25%; }
+.col-md-6 { width: 50%; }
+.col-md-12 { width: 100%; }
+
+@media (max-width: 992px) {
+    .col-md-3, .col-md-6 { width: 50%; }
+}
+
+@media (max-width: 768px) {
+    .col-md-3, .col-md-6 { width: 100%; }
+}
