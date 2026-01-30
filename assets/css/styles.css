@@ -739,6 +739,53 @@ body {
     color: var(--text-secondary);
 }
 
+.version-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    margin-top: var(--spacing-md);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+}
+
+.version-badge {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--text-secondary);
+}
+
+.version-badge i {
+    color: var(--primary);
+}
+
+.btn-update {
+    background: transparent;
+    border: none;
+    color: var(--primary);
+    cursor: pointer;
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+    font-size: 0.9rem;
+}
+
+.btn-update:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-update.checking {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
 /* ==========================================
    Contenido Principal
    ========================================== */

@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/../version.php'; ?>
 <!-- Botón hamburguesa para móviles (visible solo en pantallas pequeñas) -->
 <button id="hamburger-menu" class="hamburger-btn" aria-label="Abrir menú">
     <span></span>
@@ -146,6 +147,16 @@
                     <span>Cerrar Sesión</span>
                 </div>
             </div>
+        </div>
+        
+        <div class="version-info">
+            <div class="version-badge">
+                <i class="fas fa-code-branch"></i>
+                <span id="currentVersion">v<?= PIM_VERSION ?></span>
+            </div>
+            <button id="checkUpdateBtn" class="btn-update" title="Verificar actualizaciones">
+                <i class="fas fa-sync-alt"></i>
+            </button>
         </div>
     </div>
 </aside>
@@ -304,6 +315,93 @@
                         modal.remove();
                     }
                 });
+            });
+        }
+        
+        // Check Update Button
+        const checkUpdateBtn = document.getElementById('checkUpdateBtn');
+        if (checkUpdateBtn) {
+            checkUpdateBtn.addEventListener('click', async function() {
+                const btn = this;
+                const icon = btn.querySelector('i');
+                
+                btn.classList.add('checking');
+                btn.disabled = true;
+                
+                try {
+                    const response = await fetch('/api/version.php?action=check');
+                    const data = await response.json();
+                    
+                    btn.classList.remove('checking');
+                    btn.disabled = false;
+                    
+                    if (data.update_available) {
+                        // Mostrar modal de actualización disponible
+                        const modal = document.createElement('div');
+                        modal.style.cssText = `
+                            position: fixed;
+                            top: 0; left: 0; right: 0; bottom: 0;
+                            background: rgba(0,0,0,0.5);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            z-index: 2000;
+                        `;
+                        
+                        modal.innerHTML = `
+                            <div style="
+                                background: white;
+                                padding: 2rem;
+                                border-radius: 8px;
+                                max-width: 500px;
+                                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                            ">
+                                <h3 style="margin-bottom: 1rem; color: #2c3e50;">
+                                    <i class="fas fa-rocket" style="color: #667eea;"></i>
+                                    Actualización Disponible
+                                </h3>
+                                <div style="margin-bottom: 1.5rem; color: #7f8c8d; line-height: 1.6;">
+                                    <p><strong>Versión actual:</strong> ${data.current_version}</p>
+                                    <p><strong>Nueva versión:</strong> ${data.latest_version}</p>
+                                </div>
+                                <div style="display: flex; gap: 1rem;">
+                                    <button onclick="window.open('${data.release_url}', '_blank')" style="
+                                        flex: 1;
+                                        padding: 0.75rem 1.5rem;
+                                        background: #667eea;
+                                        color: white;
+                                        border: none;
+                                        border-radius: 6px;
+                                        cursor: pointer;
+                                        font-weight: 600;
+                                    ">Ver Actualización</button>
+                                    <button onclick="this.closest('div').parentElement.parentElement.remove()" style="
+                                        flex: 1;
+                                        padding: 0.75rem 1.5rem;
+                                        background: #e0e0e0;
+                                        color: #2c3e50;
+                                        border: none;
+                                        border-radius: 6px;
+                                        cursor: pointer;
+                                        font-weight: 600;
+                                    ">Cerrar</button>
+                                </div>
+                            </div>
+                        `;
+                        
+                        document.body.appendChild(modal);
+                        modal.addEventListener('click', (e) => {
+                            if (e.target === modal) modal.remove();
+                        });
+                    } else {
+                        // Ya está actualizado
+                        alert(`✅ Estás usando la última versión (${data.current_version})`);
+                    }
+                } catch (error) {
+                    btn.classList.remove('checking');
+                    btn.disabled = false;
+                    alert('❌ Error al verificar actualizaciones');
+                }
             });
         }
     });
