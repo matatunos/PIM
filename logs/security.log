@@ -1,1 +1,4 @@
-2026-01-29 22:37:23 | LOGIN_FAIL | IP: ::1 | User: N/A | Login fallido para: admin | URI: /app/auth/login.php
+2026-01-29 22:37:23 | LOGIN_FAIL | IP: ::1 | User: N/A | Login fallido para: admin | URI: /app/auth/login.php2026-01-29 23:03:54 | SQLI_ATTEMPT | IP: 192.168.1.24 | User: 1 | Posible SQLi detectado: #ffb5a7 | URI: /app/notas/index.php2026-01-30 06:58:54 | LOGIN_FAIL | IP: 192.168.1.24 | User: N/A | Login fallido para: admin | URI: /app/auth/login.php2026-01-30 07:06:27 | SQLI_ATTEMPT | IP: 192.168.1.24 | User: 1 | Posible SQLi detectado: #d4c5f9 | URI: /app/notas/index.php2026-01-30 07:06:27 | SQLI_ATTEMPT | IP: 192.168.1.24 | User: 1 | Posible SQLi detectado: # 🛡️ Despliegue de Agentes Wazuh
+
+**Fecha:** 30 de enero de 2026  
+**Manager:** 192.168.1.13 | URI: /app/notas/index.php

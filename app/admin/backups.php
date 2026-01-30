@@ -193,17 +193,17 @@ function formatBytes($bytes) {
                 <?php endif; ?>
                 
                 <!-- Botón de backup manual -->
-                <div class="card" style="margin-bottom: var(--spacing-lg); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white;">
+                <div class="card" style="margin-bottom: var(--spacing-lg); background: linear-gradient(135deg, var(--pastel-blue) 0%, var(--pastel-lavender) 100%); border: none;">
                     <div class="card-body">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <h3 style="margin: 0 0 5px 0; color: white;"><i class="fas fa-database"></i> Crear Backup Manual</h3>
-                                <p style="margin: 0; opacity: 0.9;">Realiza un backup completo de la BD y archivos ahora</p>
+                                <h3 style="margin: 0 0 5px 0; color: var(--text-primary);"><i class="fas fa-database"></i> Crear Backup Manual</h3>
+                                <p style="margin: 0; color: var(--text-secondary);">Realiza un backup completo de la BD y archivos ahora</p>
                             </div>
                             <form method="POST" style="display: inline;">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="action" value="crear_backup">
-                                <button type="submit" class="btn btn-light" onclick="return confirm('¿Crear backup ahora? Esto puede tomar algunos minutos.')">
+                                <button type="submit" class="btn btn-primary" onclick="return confirm('¿Crear backup ahora? Esto puede tomar algunos minutos.')">
                                     <i class="fas fa-download"></i> Crear Backup
                                 </button>
                             </form>
@@ -252,7 +252,7 @@ function formatBytes($bytes) {
                                         <?php foreach ($backups as $backup): ?>
                                             <tr style="border-bottom: 1px solid var(--border-color);">
                                                 <td style="padding: var(--spacing-sm);">
-                                                    <code style="background-color: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 0.9em;">
+                                                    <code style="background-color: var(--gray-100); padding: 2px 6px; border-radius: 3px; font-size: 0.9em;">
                                                         <?= htmlspecialchars($backup['filename']) ?>
                                                     </code>
                                                 </td>
@@ -300,7 +300,7 @@ function formatBytes($bytes) {
                     </div>
                     <div class="card-body">
                         <p><strong>Para activar backups automáticos con cron, ejecuta en terminal:</strong></p>
-                        <div style="background: #f5f5f5; padding: var(--spacing-md); border-radius: 5px; margin-bottom: var(--spacing-md); font-family: monospace; overflow-x: auto;">
+                        <div style="background: var(--gray-100); padding: var(--spacing-md); border-radius: 5px; margin-bottom: var(--spacing-md); font-family: monospace; overflow-x: auto;">
                             sudo /opt/PIM/bin/cron-setup.sh daily
                         </div>
                         <p><strong>Opciones disponibles:</strong></p>
@@ -320,7 +320,7 @@ function formatBytes($bytes) {
                         <h2 style="margin: 0;"><i class="fas fa-file-alt"></i> Últimas Líneas del Log</h2>
                     </div>
                     <div class="card-body">
-                        <div style="background: #1e1e1e; color: #d4d4d4; padding: var(--spacing-md); border-radius: 5px; font-family: 'Courier New', monospace; font-size: 0.9em; max-height: 300px; overflow-y: auto;">
+                        <div style="background: var(--gray-800); color: var(--gray-200); padding: var(--spacing-md); border-radius: 5px; font-family: 'Courier New', monospace; font-size: 0.9em; max-height: 300px; overflow-y: auto;">
                             <?php foreach ($recent_logs as $line): ?>
                                 <div><?= htmlspecialchars(trim($line)) ?></div>
                             <?php endforeach; ?>

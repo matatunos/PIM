@@ -24,12 +24,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         if (!empty($_POST['etiquetas'])) {
             $etiquetas = array_filter(array_map('trim', explode(',', $_POST['etiquetas'])));
             foreach ($etiquetas as $etiqueta) {
-                $stmt = $pdo->prepare('INSERT IGNORE INTO etiquetas (nombre) VALUES (?)');
-                $stmt->execute([$etiqueta]);
-                
-                $stmt = $pdo->prepare('SELECT id FROM etiquetas WHERE nombre = ?');
-                $stmt->execute([$etiqueta]);
+                // Buscar si existe la etiqueta para este usuario
+                $stmt = $pdo->prepare('SELECT id FROM etiquetas WHERE nombre = ? AND usuario_id = ?');
+                $stmt->execute([$etiqueta, $usuario_id]);
                 $etiqueta_id = $stmt->fetchColumn();
+                
+                // Si no existe, crearla
+                if (!$etiqueta_id) {
+                    $stmt = $pdo->prepare('INSERT INTO etiquetas (usuario_id, nombre, color) VALUES (?, ?, ?)');
+                    $stmt->execute([$usuario_id, $etiqueta, '#2196f3']);
+                    $etiqueta_id = $pdo->lastInsertId();
+                }
                 
                 if ($etiqueta_id) {
                     $stmt = $pdo->prepare('INSERT INTO nota_etiqueta (nota_id, etiqueta_id) VALUES (?, ?)');
@@ -61,12 +66,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         if (!empty($_POST['etiquetas'])) {
             $etiquetas = array_filter(array_map('trim', explode(',', $_POST['etiquetas'])));
             foreach ($etiquetas as $etiqueta) {
-                $stmt = $pdo->prepare('INSERT IGNORE INTO etiquetas (nombre) VALUES (?)');
-                $stmt->execute([$etiqueta]);
-                
-                $stmt = $pdo->prepare('SELECT id FROM etiquetas WHERE nombre = ?');
-                $stmt->execute([$etiqueta]);
+                // Buscar si existe la etiqueta para este usuario
+                $stmt = $pdo->prepare('SELECT id FROM etiquetas WHERE nombre = ? AND usuario_id = ?');
+                $stmt->execute([$etiqueta, $usuario_id]);
                 $etiqueta_id = $stmt->fetchColumn();
+                
+                // Si no existe, crearla
+                if (!$etiqueta_id) {
+                    $stmt = $pdo->prepare('INSERT INTO etiquetas (usuario_id, nombre, color) VALUES (?, ?, ?)');
+                    $stmt->execute([$usuario_id, $etiqueta, '#2196f3']);
+                    $etiqueta_id = $pdo->lastInsertId();
+                }
                 
                 if ($etiqueta_id) {
                     $stmt = $pdo->prepare('INSERT INTO nota_etiqueta (nota_id, etiqueta_id) VALUES (?, ?)');
@@ -155,13 +165,12 @@ if (!empty($filtro_etiqueta)) {
     });
 }
 
-// Obtener todas las etiquetas
-$stmt = $pdo->prepare('SELECT DISTINCT e.nombre FROM etiquetas e 
-                       INNER JOIN nota_etiqueta ne ON e.id = ne.etiqueta_id
-                       INNER JOIN notas n ON ne.nota_id = n.id
-                       WHERE n.usuario_id = ? ORDER BY e.nombre');
+// Obtener todas las etiquetas del usuario
+$stmt = $pdo->prepare('SELECT id, nombre, color FROM etiquetas WHERE usuario_id = ? ORDER BY nombre');
 $stmt->execute([$usuario_id]);
-$todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
+$todas_etiquetas_full = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$todas_etiquetas = array_column($todas_etiquetas_full, 'nombre');
+$etiquetas_json = json_encode($todas_etiquetas_full);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -173,6 +182,107 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
     <link rel="stylesheet" href="/assets/fonts/fontawesome/css/all.min.css">
     <script src="/assets/js/marked.min.js"></script>
     <style>
+        /* Estilos para selector de etiquetas */
+        .etiquetas-selector {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-sm);
+            background: var(--bg-primary);
+            min-height: 44px;
+            cursor: text;
+        }
+        .etiquetas-selector:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+        .etiquetas-selected {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-xs);
+            margin-bottom: var(--spacing-xs);
+        }
+        .etiqueta-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: var(--primary);
+            color: white;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .etiqueta-tag .remove-tag {
+            cursor: pointer;
+            opacity: 0.7;
+            font-size: 0.9rem;
+            line-height: 1;
+        }
+        .etiqueta-tag .remove-tag:hover {
+            opacity: 1;
+        }
+        .etiquetas-input-wrapper {
+            position: relative;
+        }
+        .etiquetas-input {
+            border: none;
+            outline: none;
+            width: 100%;
+            padding: 4px;
+            font-size: 0.95rem;
+            background: transparent;
+        }
+        .etiquetas-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        .etiquetas-dropdown.show {
+            display: block;
+        }
+        .etiqueta-option {
+            padding: var(--spacing-sm) var(--spacing-md);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            transition: background 0.15s;
+        }
+        .etiqueta-option:hover, .etiqueta-option.highlighted {
+            background: var(--gray-100);
+        }
+        .etiqueta-option.selected {
+            background: var(--primary-light);
+        }
+        .etiqueta-option .color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .etiqueta-option.create-new {
+            border-top: 1px solid var(--border-color);
+            color: var(--primary);
+            font-weight: 500;
+        }
+        .etiqueta-option.create-new i {
+            color: var(--primary);
+        }
+        .etiqueta-option.no-results {
+            color: var(--text-muted);
+            font-style: italic;
+            cursor: default;
+        }
+        
         .notas-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -678,6 +788,181 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
 <body>
     <script>
         const notasData = <?= json_encode($notas, JSON_UNESCAPED_UNICODE) ?>;
+        const todasEtiquetas = <?= $etiquetas_json ?>;
+        let etiquetasSeleccionadas = [];
+        let highlightedIndex = -1;
+        
+        // === SELECTOR DE ETIQUETAS ===
+        function initEtiquetasSelector() {
+            const input = document.getElementById('etiquetas-input');
+            const dropdown = document.getElementById('etiquetas-dropdown');
+            const selectedContainer = document.getElementById('etiquetas-selected');
+            const hiddenInput = document.getElementById('etiquetas');
+            
+            if (!input) return;
+            
+            // Click en el contenedor enfoca el input
+            document.getElementById('etiquetas-selector').addEventListener('click', () => input.focus());
+            
+            // Mostrar dropdown al enfocar
+            input.addEventListener('focus', () => {
+                renderDropdown(input.value);
+                dropdown.classList.add('show');
+            });
+            
+            // Filtrar al escribir
+            input.addEventListener('input', () => {
+                highlightedIndex = -1;
+                renderDropdown(input.value);
+                dropdown.classList.add('show');
+            });
+            
+            // Navegación con teclado
+            input.addEventListener('keydown', (e) => {
+                const options = dropdown.querySelectorAll('.etiqueta-option:not(.no-results)');
+                
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    highlightedIndex = Math.min(highlightedIndex + 1, options.length - 1);
+                    updateHighlight(options);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    highlightedIndex = Math.max(highlightedIndex - 1, 0);
+                    updateHighlight(options);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (highlightedIndex >= 0 && options[highlightedIndex]) {
+                        options[highlightedIndex].click();
+                    } else if (input.value.trim()) {
+                        // Crear nueva etiqueta si hay texto
+                        agregarEtiqueta(input.value.trim());
+                        input.value = '';
+                        renderDropdown('');
+                    }
+                } else if (e.key === 'Backspace' && !input.value && etiquetasSeleccionadas.length > 0) {
+                    // Eliminar última etiqueta con Backspace
+                    const ultima = etiquetasSeleccionadas[etiquetasSeleccionadas.length - 1];
+                    eliminarEtiqueta(ultima);
+                } else if (e.key === 'Escape') {
+                    dropdown.classList.remove('show');
+                    input.blur();
+                }
+            });
+            
+            // Cerrar dropdown al hacer clic fuera
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.etiquetas-selector')) {
+                    dropdown.classList.remove('show');
+                }
+            });
+        }
+        
+        function renderDropdown(filtro) {
+            const dropdown = document.getElementById('etiquetas-dropdown');
+            const filtroLower = filtro.toLowerCase().trim();
+            
+            let html = '';
+            let hayResultados = false;
+            let existeExacta = false;
+            
+            todasEtiquetas.forEach((etiq, idx) => {
+                const nombre = etiq.nombre;
+                const color = etiq.color || '#2196f3';
+                const yaSeleccionada = etiquetasSeleccionadas.includes(nombre);
+                
+                if (nombre.toLowerCase() === filtroLower) {
+                    existeExacta = true;
+                }
+                
+                if (!filtroLower || nombre.toLowerCase().includes(filtroLower)) {
+                    hayResultados = true;
+                    html += `<div class="etiqueta-option ${yaSeleccionada ? 'selected' : ''}" onclick="toggleEtiqueta('${nombre.replace(/'/g, "\\'")}')">
+                        <span class="color-dot" style="background: ${color}"></span>
+                        <span>${nombre}</span>
+                        ${yaSeleccionada ? '<i class="fas fa-check" style="margin-left: auto; color: var(--success);"></i>' : ''}
+                    </div>`;
+                }
+            });
+            
+            // Opción para crear nueva etiqueta si no existe exacta
+            if (filtroLower && !existeExacta) {
+                html += `<div class="etiqueta-option create-new" onclick="agregarEtiqueta('${filtroLower.replace(/'/g, "\\'")}'); document.getElementById('etiquetas-input').value = ''; renderDropdown('');">
+                    <i class="fas fa-plus"></i>
+                    <span>Crear "${filtro.trim()}"</span>
+                </div>`;
+            }
+            
+            if (!hayResultados && !filtroLower) {
+                html = '<div class="etiqueta-option no-results">No hay etiquetas. Escribe para crear una.</div>';
+            }
+            
+            dropdown.innerHTML = html;
+            highlightedIndex = -1;
+        }
+        
+        function updateHighlight(options) {
+            options.forEach((opt, idx) => {
+                opt.classList.toggle('highlighted', idx === highlightedIndex);
+            });
+            if (options[highlightedIndex]) {
+                options[highlightedIndex].scrollIntoView({ block: 'nearest' });
+            }
+        }
+        
+        function toggleEtiqueta(nombre) {
+            if (etiquetasSeleccionadas.includes(nombre)) {
+                eliminarEtiqueta(nombre);
+            } else {
+                agregarEtiqueta(nombre);
+            }
+            document.getElementById('etiquetas-input').value = '';
+            renderDropdown('');
+        }
+        
+        function agregarEtiqueta(nombre) {
+            if (!nombre || etiquetasSeleccionadas.includes(nombre)) return;
+            
+            etiquetasSeleccionadas.push(nombre);
+            actualizarEtiquetasUI();
+            
+            // Si es nueva, añadirla al array de todas las etiquetas
+            if (!todasEtiquetas.find(e => e.nombre.toLowerCase() === nombre.toLowerCase())) {
+                todasEtiquetas.push({ nombre: nombre, color: '#2196f3' });
+            }
+        }
+        
+        function eliminarEtiqueta(nombre) {
+            etiquetasSeleccionadas = etiquetasSeleccionadas.filter(e => e !== nombre);
+            actualizarEtiquetasUI();
+        }
+        
+        function actualizarEtiquetasUI() {
+            const container = document.getElementById('etiquetas-selected');
+            const hiddenInput = document.getElementById('etiquetas');
+            
+            container.innerHTML = etiquetasSeleccionadas.map(nombre => {
+                const etiq = todasEtiquetas.find(e => e.nombre === nombre);
+                const color = etiq?.color || '#2196f3';
+                return `<span class="etiqueta-tag" style="background: ${color}">
+                    ${nombre}
+                    <span class="remove-tag" onclick="event.stopPropagation(); eliminarEtiqueta('${nombre.replace(/'/g, "\\'")}')">&times;</span>
+                </span>`;
+            }).join('');
+            
+            hiddenInput.value = etiquetasSeleccionadas.join(', ');
+        }
+        
+        function setEtiquetasFromString(str) {
+            etiquetasSeleccionadas = str ? str.split(', ').map(e => e.trim()).filter(e => e) : [];
+            actualizarEtiquetasUI();
+        }
+        
+        function limpiarEtiquetas() {
+            etiquetasSeleccionadas = [];
+            actualizarEtiquetasUI();
+        }
+        
+        // === FIN SELECTOR DE ETIQUETAS ===
         
         // Vista system
         function cambiarVista(tipo) {
@@ -716,6 +1001,9 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
             document.getElementById('color_seleccionado').value = '#a8dadc';
             document.querySelectorAll('.color-option').forEach(el => el.classList.remove('selected'));
             document.querySelector('.color-option').classList.add('selected');
+            // Limpiar etiquetas seleccionadas
+            limpiarEtiquetas();
+            document.getElementById('etiquetas-input').value = '';
             document.getElementById('modalNota').classList.add('active');
         }
         
@@ -797,7 +1085,9 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
             document.getElementById('nota-id').value = nota.id;
             document.getElementById('titulo').value = nota.titulo || '';
             document.getElementById('contenido').value = nota.contenido;
-            document.getElementById('etiquetas').value = nota.etiquetas || '';
+            // Cargar etiquetas en el selector
+            setEtiquetasFromString(nota.etiquetas || '');
+            document.getElementById('etiquetas-input').value = '';
             document.getElementById('color_seleccionado').value = nota.color;
             
             document.querySelectorAll('.color-option').forEach(el => {
@@ -975,6 +1265,9 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
         }
         
         document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar selector de etiquetas
+            initEtiquetasSelector();
+            
             const modalNota = document.getElementById('modalNota');
             if (modalNota) {
                 modalNota.addEventListener('click', function(e) {
@@ -1183,8 +1476,16 @@ $todas_etiquetas = $stmt->fetchAll(PDO::FETCH_COLUMN);
                 </div>
                 
                 <div class="form-group">
-                    <label for="etiquetas">Etiquetas (separadas por comas)</label>
-                    <input type="text" id="etiquetas" name="etiquetas" placeholder="trabajo, personal, ideas">
+                    <label for="etiquetas">Etiquetas</label>
+                    <input type="hidden" id="etiquetas" name="etiquetas" value="">
+                    <div class="etiquetas-selector" id="etiquetas-selector">
+                        <div class="etiquetas-selected" id="etiquetas-selected"></div>
+                        <div class="etiquetas-input-wrapper">
+                            <input type="text" id="etiquetas-input" class="etiquetas-input" placeholder="Buscar o crear etiqueta..." autocomplete="off">
+                            <div class="etiquetas-dropdown" id="etiquetas-dropdown"></div>
+                        </div>
+                    </div>
+                    <small style="color: var(--text-muted);">Selecciona etiquetas existentes o escribe para crear nuevas</small>
                 </div>
                 
                 <div class="form-group">
