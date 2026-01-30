@@ -141,7 +141,7 @@ if (function_exists('opcache_get_status')) {
                     <div class="col-md-12">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="fas fa-database me-2"></i>Sistema de Caché</span>
+                        <h2 style="margin: 0;"><i class="fas fa-database"></i> Sistema de Caché</h2>
                         <div class="btn-group btn-group-inline">
                             <form method="POST">
                                 <input type="hidden" name="accion" value="clear_expired">
@@ -197,7 +197,7 @@ if (function_exists('opcache_get_status')) {
                     <div class="col-md-6 mb-4">
                         <div class="card">
                             <div class="card-header">
-                                <i class="fas fa-table me-2"></i>Tablas Más Grandes
+                                <h3 style="margin: 0;"><i class="fas fa-table"></i> Tablas Más Grandes</h3>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -232,7 +232,7 @@ if (function_exists('opcache_get_status')) {
                     <div class="col-md-6 mb-4">
                         <div class="card">
                             <div class="card-header">
-                                <i class="fas fa-list-ol me-2"></i>Índices por Tabla
+                                <h3 style="margin: 0;"><i class="fas fa-list-ol"></i> Índices por Tabla</h3>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive table-scroll">
@@ -269,7 +269,7 @@ if (function_exists('opcache_get_status')) {
                     <div class="col-md-12">
                         <div class="card">
                             <div class="card-header">
-                                <i class="fas fa-bolt me-2"></i>OPcache Status
+                                <h3 style="margin: 0;"><i class="fas fa-bolt"></i> OPcache Status</h3>
                             </div>
                             <div class="card-body">
                                 <div class="row text-center">
@@ -304,7 +304,7 @@ if (function_exists('opcache_get_status')) {
                     <div class="col-md-12">
                         <div class="card">
                             <div class="card-header">
-                                <i class="fas fa-stopwatch me-2"></i>Queries Lentas (últimas 20)
+                                <h3 style="margin: 0;"><i class="fas fa-stopwatch"></i> Queries Lentas (últimas 20)</h3>
                             </div>
                             <div class="card-body">
                                 <pre class="code-block"><?php foreach ($slowQueries as $query) echo htmlspecialchars($query); ?></pre>
@@ -319,7 +319,7 @@ if (function_exists('opcache_get_status')) {
                     <div class="col-md-12">
                         <div class="card">
                             <div class="card-header">
-                                <i class="fas fa-lightbulb me-2"></i>Recomendaciones
+                                <h3 style="margin: 0;"><i class="fas fa-lightbulb"></i> Recomendaciones</h3>
                             </div>
                             <div class="card-body">
                                 <ul>
