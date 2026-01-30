@@ -195,8 +195,8 @@ if (function_exists('opcache_get_status')) {
                 
                 <!-- Stats de Base de Datos -->
                 <div class="row mb-4">
-                    <div class="col-md-6">
-                        <div class="card">
+                    <div class="col-md-12">
+                        <div class="card mb-4">
                             <div class="card-header">
                                 <h3 style="margin: 0;"><i class="fas fa-table"></i> Tablas Más Grandes</h3>
                             </div>
@@ -228,9 +228,7 @@ if (function_exists('opcache_get_status')) {
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="col-md-6">
+                        
                         <div class="card">
                             <div class="card-header">
                                 <h3 style="margin: 0;"><i class="fas fa-list-ol"></i> Índices por Tabla</h3>
