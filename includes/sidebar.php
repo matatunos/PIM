@@ -67,15 +67,6 @@
             </a>
         </div>
         
-        <!-- IA & Chat Section -->
-        <div class="nav-section">
-            <div class="nav-section-title">IA & Chat</div>
-            <a href="/app/ai-assistant.php" class="nav-link <?= strpos($_SERVER['PHP_SELF'], '/ai-assistant') !== false ? 'active' : '' ?>" title="Chat con IA powered by Open WebUI">
-                <i class="fas fa-brain" style="color: #667eea;"></i>
-                Chat IA
-            </a>
-        </div>
-        
         <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin'): ?>
         <div class="nav-section">
             <div class="nav-section-title">Administración</div>
@@ -102,6 +93,18 @@
             <a href="/app/admin/auditoria.php" class="nav-link <?= strpos($_SERVER['PHP_SELF'], '/admin/auditoria') !== false ? 'active' : '' ?>">
                 <i class="fas fa-clipboard-list"></i>
                 Auditoría y Logs
+            </a>
+            <a href="/app/admin/performance.php" class="nav-link <?= strpos($_SERVER['PHP_SELF'], '/admin/performance') !== false ? 'active' : '' ?>">
+                <i class="fas fa-tachometer-alt text-success"></i>
+                Performance
+            </a>
+            <a href="/app/admin/webhooks.php" class="nav-link <?= strpos($_SERVER['PHP_SELF'], '/admin/webhooks') !== false ? 'active' : '' ?>">
+                <i class="fas fa-webhook"></i>
+                Webhooks
+            </a>
+            <a href="/app/admin/automatizaciones.php" class="nav-link <?= strpos($_SERVER['PHP_SELF'], '/admin/automatizaciones') !== false ? 'active' : '' ?>">
+                <i class="fas fa-robot"></i>
+                Automatizaciones
             </a>
             <a href="/app/admin/configuracion.php" class="nav-link <?= strpos($_SERVER['PHP_SELF'], '/admin/configuracion') !== false ? 'active' : '' ?>">
                 <i class="fas fa-cogs"></i>
@@ -144,116 +147,8 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Footer con versión -->
-        <?php require_once __DIR__ . '/../version.php'; ?>
-        <div class="sidebar-version" id="sidebarVersion">
-            <a href="<?= PIM_GITHUB_URL ?>" target="_blank" rel="noopener" class="version-link">
-                <i class="fab fa-github"></i>
-                <span>PIM v<?= PIM_VERSION ?></span>
-            </a>
-            <div id="updateBadge" class="update-badge" style="display: none;" title="Actualización disponible">
-                <i class="fas fa-arrow-circle-up"></i>
-            </div>
-        </div>
     </div>
 </aside>
-
-<style>
-.sidebar-version {
-    padding: var(--spacing-sm) var(--spacing-md);
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-sm);
-}
-.version-link {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    color: var(--text-muted);
-    text-decoration: none;
-    font-size: 0.75rem;
-    transition: color 0.2s;
-}
-.version-link:hover {
-    color: var(--primary);
-}
-.version-link i {
-    font-size: 1rem;
-}
-.update-badge {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    background: var(--success);
-    color: white;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.7rem;
-    cursor: pointer;
-    animation: pulse 2s infinite;
-}
-.update-badge:hover {
-    background: var(--primary);
-}
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
-}
-.update-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s;
-}
-.update-modal.active {
-    opacity: 1;
-    visibility: visible;
-}
-.update-modal-content {
-    background: var(--bg-primary);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-xl);
-    max-width: 450px;
-    width: 90%;
-    box-shadow: var(--shadow-lg);
-}
-.update-modal h3 {
-    margin-bottom: var(--spacing-md);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    color: var(--success);
-}
-.update-info {
-    background: var(--bg-secondary);
-    padding: var(--spacing-md);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--spacing-lg);
-}
-.update-info p {
-    margin: var(--spacing-xs) 0;
-    font-size: 0.9rem;
-}
-.update-notes {
-    max-height: 150px;
-    overflow-y: auto;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    white-space: pre-wrap;
-}
-</style>
 
 <script>
     // User Profile Menu Toggle
@@ -475,67 +370,5 @@
     } else {
         initHamburger();
     }
-})();
-
-// Verificar actualizaciones
-(function() {
-    function checkForUpdates() {
-        fetch('/api/version.php?action=check')
-            .then(r => r.json())
-            .then(data => {
-                if (data.update_available) {
-                    const badge = document.getElementById('updateBadge');
-                    if (badge) {
-                        badge.style.display = 'flex';
-                        badge.title = 'Nueva versión disponible: v' + data.latest_version;
-                        badge.onclick = function() {
-                            showUpdateModal(data);
-                        };
-                    }
-                }
-            })
-            .catch(err => console.log('No se pudo verificar actualizaciones'));
-    }
-    
-    function showUpdateModal(data) {
-        // Eliminar modal existente
-        const existing = document.getElementById('updateModal');
-        if (existing) existing.remove();
-        
-        const modal = document.createElement('div');
-        modal.id = 'updateModal';
-        modal.className = 'update-modal';
-        modal.innerHTML = `
-            <div class="update-modal-content">
-                <h3><i class="fas fa-gift"></i> ¡Nueva versión disponible!</h3>
-                <div class="update-info">
-                    <p><strong>Versión actual:</strong> v${data.current_version}</p>
-                    <p><strong>Nueva versión:</strong> v${data.latest_version}</p>
-                    ${data.published_at ? '<p><strong>Publicada:</strong> ' + new Date(data.published_at).toLocaleDateString('es-ES') + '</p>' : ''}
-                </div>
-                ${data.release_notes ? '<div class="update-notes"><strong>Notas:</strong><br>' + data.release_notes.substring(0, 500) + '</div>' : ''}
-                <div style="display: flex; gap: var(--spacing-md); margin-top: var(--spacing-lg);">
-                    <a href="${data.release_url || data.github_url}" target="_blank" class="btn btn-primary" style="flex: 1; text-align: center;">
-                        <i class="fab fa-github"></i> Ver en GitHub
-                    </a>
-                    <button type="button" class="btn btn-ghost" onclick="document.getElementById('updateModal').classList.remove('active')">
-                        Cerrar
-                    </button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modal);
-        
-        // Mostrar con animación
-        requestAnimationFrame(() => modal.classList.add('active'));
-        
-        // Cerrar al hacer clic fuera
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) this.classList.remove('active');
-        });
-    }
-    
-    // Verificar al cargar (con delay para no bloquear)
-    setTimeout(checkForUpdates, 2000);
 })();
 </script>
