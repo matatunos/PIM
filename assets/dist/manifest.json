@@ -1,0 +1,15 @@
+{
+    "generated": "2026-01-30 11:22:08",
+    "files": {
+        "app.min.css": {
+            "hash": "c82b1753bc3d12e97a2b699afc5d2fb2",
+            "size": 22699,
+            "url": "assets\/dist\/app.min.css?v=c82b1753"
+        },
+        "app.min.js": {
+            "hash": "eace117869f2a8b452237cfa7448d947",
+            "size": 43514,
+            "url": "assets\/dist\/app.min.js?v=eace1178"
+        }
+    }
+}
