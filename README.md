@@ -707,7 +707,16 @@ PIM/
 - **Logs completos** - Seguimiento de ejecuciones y errores
 - [📋 Documentación Webhooks](docs/WEBHOOKS_AUTOMATIZACIONES.md)
 
-### 💾 Base de datos confiable
+### � Optimización de Rendimiento
+- **Sistema de caché** - Caché basado en archivos con namespaces (queries, views, data, search)
+- **25+ índices de BD** - Índices compuestos en todas las tablas principales
+- **Minificación assets** - CSS/JS combinados y minificados (-30% tamaño)
+- **OPcache** - Bytecode PHP precompilado en memoria
+- **Dashboard admin** - Monitoreo en tiempo real de caché, queries lentas, OPcache
+- **Mejora típica** - 86% más rápido (850ms → 120ms), 78% menos queries
+- [📋 Documentación Performance](docs/PERFORMANCE.md)
+
+### �💾 Base de datos confiable
 - **MariaDB 10.5+** - Transacciones ACID garantizadas
 - **Backups automatizados** - Scripts para respaldar toda la información
 - **Migraciones** - Control de versiones del esquema
@@ -933,6 +942,7 @@ Se espera profesionalismo y respeto en todas las interacciones.
 - [x] Sincronización CalDAV/CardDAV
 - [x] Docker Compose para deploy rápido
 - [x] Webhooks y automatizaciones
+- [x] Mejoras de rendimiento (caché, índices, minificación)
 
 ### 🔄 En desarrollo
 - [ ] Búsqueda avanzada con filtros
@@ -941,7 +951,6 @@ Se espera profesionalismo y respeto en todas las interacciones.
 ### 🎯 Planificado
 - [ ] Más temas visuales
 - [ ] Soporte para más idiomas
-- [ ] Mejoras de rendimiento
 - [ ] Más integraciones de IA
 - [ ] Nuevos módulos especializados
 
