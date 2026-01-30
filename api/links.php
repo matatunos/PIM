@@ -1,6 +1,23 @@
 <?php
 require_once '../config/config.php';
 
+// Función para autenticar por token de API
+function autenticarPorToken($pdo) {
+    $token = $_SERVER['HTTP_X_PIM_TOKEN'] ?? null;
+    
+    if ($token) {
+        $stmt = $pdo->prepare('SELECT id FROM usuarios WHERE api_token = ? AND activo = 1');
+        $stmt->execute([$token]);
+        $usuario = $stmt->fetch();
+        
+        if ($usuario) {
+            return $usuario['id'];
+        }
+    }
+    
+    return null;
+}
+
 // Verificar si es una solicitud POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Headers JSON
@@ -9,14 +26,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Obtener datos
     $data = json_decode(file_get_contents('php://input'), true);
 
-    // Validar token de sesión o autenticación
-    if (!isset($_SESSION['user_id'])) {
+    // Validar autenticación: primero token, luego sesión
+    $usuario_id = autenticarPorToken($pdo);
+    
+    if (!$usuario_id && isset($_SESSION['user_id'])) {
+        $usuario_id = $_SESSION['user_id'];
+    }
+    
+    if (!$usuario_id) {
         http_response_code(401);
-        echo json_encode(['error' => 'No autenticado']);
+        echo json_encode(['error' => 'No autenticado. Descarga la extensión desde tu PIM.']);
         exit;
     }
-
-    $usuario_id = $_SESSION['user_id'];
 
     // Crear categoría
     if (isset($data['action']) && $data['action'] === 'crear_categoria') {
@@ -98,13 +119,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'get_categories') {
     header('Content-Type: application/json');
     
-    if (!isset($_SESSION['user_id'])) {
+    // Autenticación: token o sesión
+    $usuario_id = autenticarPorToken($pdo);
+    if (!$usuario_id && isset($_SESSION['user_id'])) {
+        $usuario_id = $_SESSION['user_id'];
+    }
+    
+    if (!$usuario_id) {
         http_response_code(401);
         echo json_encode(['error' => 'No autenticado']);
         exit;
     }
-
-    $usuario_id = $_SESSION['user_id'];
 
     try {
         $stmt = $pdo->prepare('SELECT DISTINCT categoria FROM links WHERE usuario_id = ? ORDER BY categoria');
@@ -130,13 +155,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     
     $data = json_decode(file_get_contents('php://input'), true);
     
-    if (!isset($_SESSION['user_id'])) {
+    // Autenticación: token o sesión
+    $usuario_id = autenticarPorToken($pdo);
+    if (!$usuario_id && isset($_SESSION['user_id'])) {
+        $usuario_id = $_SESSION['user_id'];
+    }
+    
+    if (!$usuario_id) {
         http_response_code(401);
         echo json_encode(['error' => 'No autenticado']);
         exit;
     }
     
-    $usuario_id = $_SESSION['user_id'];
     $link_id = $data['id'] ?? null;
     
     if (!$link_id) {
@@ -197,13 +227,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     
     $data = json_decode(file_get_contents('php://input'), true);
     
-    if (!isset($_SESSION['user_id'])) {
+    // Autenticación: token o sesión
+    $usuario_id = autenticarPorToken($pdo);
+    if (!$usuario_id && isset($_SESSION['user_id'])) {
+        $usuario_id = $_SESSION['user_id'];
+    }
+    
+    if (!$usuario_id) {
         http_response_code(401);
         echo json_encode(['error' => 'No autenticado']);
         exit;
     }
-    
-    $usuario_id = $_SESSION['user_id'];
     
     // Eliminar categoría
     if (isset($data['action']) && $data['action'] === 'eliminar_categoria') {

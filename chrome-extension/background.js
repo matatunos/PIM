@@ -57,7 +57,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     }
 
     // Guardar automáticamente
-    guardarLink(config.pimConfig.url, {
+    guardarLink(config.pimConfig, {
         titulo: title,
         url: url,
         descripcion: '',
@@ -68,13 +68,20 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 });
 
 // Función para guardar link
-async function guardarLink(baseUrl, linkData) {
+async function guardarLink(pimConfig, linkData) {
     try {
-        const response = await fetch(`${baseUrl}/api/links.php`, {
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+        
+        // Añadir token si existe
+        if (pimConfig.token) {
+            headers['X-PIM-Token'] = pimConfig.token;
+        }
+        
+        const response = await fetch(`${pimConfig.url}/api/links.php`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: headers,
             credentials: 'include',
             body: JSON.stringify(linkData)
         });
@@ -109,9 +116,9 @@ async function guardarLink(baseUrl, linkData) {
 // Responder a mensajes del content script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'guardarLink') {
-        const config = chrome.storage.local.get('pimConfig', (result) => {
+        chrome.storage.local.get('pimConfig', (result) => {
             if (result.pimConfig) {
-                guardarLink(result.pimConfig.url, request.linkData);
+                guardarLink(result.pimConfig, request.linkData);
             }
         });
     }

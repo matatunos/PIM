@@ -14,7 +14,20 @@ let selectedColor = '#a8dadc';
 let selectedIcon = 'fa-link';
 
 // Inicializar
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Si existe configuración preestablecida (extensión descargada desde PIM)
+    if (typeof PIM_PRECONFIG !== 'undefined' && PIM_PRECONFIG.url && PIM_PRECONFIG.token) {
+        // Guardar configuración automáticamente
+        await chrome.storage.local.set({
+            pimConfig: {
+                url: PIM_PRECONFIG.url,
+                token: PIM_PRECONFIG.token,
+                username: PIM_PRECONFIG.username
+            }
+        });
+        console.log('PIM: Configuración preestablecida aplicada para', PIM_PRECONFIG.username);
+    }
+    
     cargarConfiguracion();
     setupColorPicker();
     setupIconPicker();
@@ -27,9 +40,21 @@ async function cargarConfiguracion() {
     if (!config.pimConfig || !config.pimConfig.url) {
         mostrarVista('configView');
     } else {
+        // Mostrar usuario conectado si existe
+        if (config.pimConfig.username) {
+            mostrarUsuario(config.pimConfig.username);
+        }
         mostrarVista('saveView');
         cargarDatosPagina();
         cargarCategorias();
+    }
+}
+
+// Mostrar usuario conectado
+function mostrarUsuario(username) {
+    const header = document.querySelector('.popup-header h3');
+    if (header) {
+        header.innerHTML = `<i class="icon-link"></i> Guardar Link <small style="opacity:0.7;font-size:11px;display:block;">👤 ${username}</small>`;
     }
 }
 
@@ -78,8 +103,14 @@ async function cargarCategorias() {
     if (!config.pimConfig) return;
     
     try {
+        const headers = {};
+        if (config.pimConfig.token) {
+            headers['X-PIM-Token'] = config.pimConfig.token;
+        }
+        
         const response = await fetch(`${config.pimConfig.url}/api/links.php?action=get_categories`, {
             method: 'GET',
+            headers: headers,
             credentials: 'include'
         });
         
@@ -153,11 +184,16 @@ linkForm.addEventListener('submit', async (e) => {
     mostrarLoading(true);
     
     try {
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+        if (config.pimConfig.token) {
+            headers['X-PIM-Token'] = config.pimConfig.token;
+        }
+        
         const response = await fetch(`${config.pimConfig.url}/api/links.php`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: headers,
             credentials: 'include',
             body: JSON.stringify(formData)
         });
