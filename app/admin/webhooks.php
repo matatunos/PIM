@@ -125,7 +125,7 @@ foreach ($eventos as $evento) {
 
                 <p class="text-muted mb-4">
                     Los webhooks te permiten recibir notificaciones HTTP cuando ocurren eventos en PIM.
-                    <a href="../../docs/WEBHOOKS_AUTOMATIZACIONES.md" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-book"></i> Ver documentación</a>
+                    <a href="../../docs/viewer.php?doc=WEBHOOKS_AUTOMATIZACIONES.md" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-book"></i> Ver documentación</a>
                 </p>
 
                 <!-- Lista de webhooks -->
