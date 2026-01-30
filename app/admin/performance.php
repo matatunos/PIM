@@ -259,9 +259,6 @@ if (function_exists('opcache_get_status')) {
                         </div>
                     </div>
                 </div>
-                        </div>
-                    </div>
-                </div>
                 
                 <!-- OPcache Stats -->
                 <?php if ($opcacheStats): ?>
