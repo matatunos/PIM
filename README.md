@@ -695,8 +695,17 @@ PIM/
 ### 📊 API REST con Documentación
 - **Endpoints completos** - Para notas, contactos, tareas, eventos, links
 - **Autenticación por Bearer Token** - Compatible con postman/curl
-- **WebHooks** - Notificaciones en tiempo real
 - **CORS configurado** - Integración con aplicaciones externas
+
+### ⚡ Webhooks y Automatizaciones
+- **Webhooks HTTP** - Notifica eventos a URLs externas (Slack, Discord, etc.)
+- **Motor de automatización** - Ejecuta acciones basadas en condiciones
+- **15+ eventos** - Disparadores para notas, contactos, tareas, calendario, archivos
+- **5 tipos de acción** - Webhook, notificación, email, modificar entidad, crear entidad
+- **8 operadores** - igual, contiene, mayor, menor, vacío, etc.
+- **Firmas HMAC** - Seguridad con SHA-256 signature
+- **Logs completos** - Seguimiento de ejecuciones y errores
+- [📋 Documentación Webhooks](docs/WEBHOOKS_AUTOMATIZACIONES.md)
 
 ### 💾 Base de datos confiable
 - **MariaDB 10.5+** - Transacciones ACID garantizadas
@@ -921,12 +930,12 @@ Se espera profesionalismo y respeto en todas las interacciones.
 - [x] Integración con Ollama/Open WebUI
 - [x] API REST con autenticación por token
 - [x] Protección anti-bot
+- [x] Sincronización CalDAV/CardDAV
+- [x] Docker Compose para deploy rápido
+- [x] Webhooks y automatizaciones
 
 ### 🔄 En desarrollo
-- [x] Sincronización CalDAV/CardDAV
-- [ ] Docker Compose para deploy rápido
 - [ ] Búsqueda avanzada con filtros
-- [ ] Webhooks y automatizaciones
 - [ ] Estadísticas y reportes
 
 ### 🎯 Planificado
