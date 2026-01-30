@@ -94,7 +94,7 @@ $eventos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                 <p class="text-muted mb-4">
                     Las automatizaciones ejecutan acciones cuando se cumplen condiciones específicas.
-                    <a href="../../docs/AUTOMATIZACIONES.md" target="_blank">Ver documentación</a>
+                    <a href="../../docs/WEBHOOKS_AUTOMATIZACIONES.md" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-book"></i> Ver documentación</a>
                 </p>
 
                 <!-- Lista de automatizaciones -->
