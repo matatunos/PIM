@@ -1,0 +1,183 @@
+📅 PIM - Calendario de Eventos
+═══════════════════════════════════════════════════════════════════
+
+DESCRIPCIÓN:
+Calendario completo con eventos, recordatorios y múltiples vistas.
+Integración con tareas y contactos para una planificación completa.
+
+VISTAS DISPONIBLES:
+
+1️⃣ VISTA MENSUAL (Recomendada)
+
+   ┌─────────────────────────────────────────────────┐
+   │ ◀ Enero 2026 ▶          [+ Nuevo evento]       │
+   ├──────────────────────────────────────────────────┤
+   │  Lun   Mar   Mié   Jue   Vie   Sáb   Dom       │
+   │ ────────────────────────────────────────────   │
+   │              1     2     3     4     5         │
+   │                                                │
+   │   6     7  ▓8▓    9    10    11    12         │
+   │         (Reunión)                             │
+   │                                                │
+   │  13  ░14░   15    16  ▒17▒   18    19         │
+   │  (Dentista)           (Deploy)                 │
+   │                                                │
+   │  20    21    22    23  ▓24▓   25    26         │
+   │                      (Sprint)                  │
+   │                                                │
+   │  27    28    29    ●30●  31                   │
+   │                   ████████  (Hoy)             │
+   │                  ▓▓▓▓▓▓▓▓ (SSL exp)           │
+   └──────────────────────────────────────────────────┘
+
+2️⃣ VISTA SEMANAL
+
+   Semana del 27 de enero - 02 de febrero
+   ┌────────────────────────────────────────────┐
+   │ Lun 27 │ Mar 28 │ Mié 29 │ Jue 30 │ Vie 31│
+   ├────────────────────────────────────────────┤
+   │09:00   │        │        │████████│        │
+   │        │        │        │Standup │        │
+   │        │        │        │        │        │
+   │12:00   │        │        │        │        │
+   │        │        │        │        │        │
+   │14:00   │        │        │████████│        │
+   │        │        │        │Review  │        │
+   │        │        │        │cliente │        │
+   │17:00   │        │        │████████│        │
+   │        │        │        │1:1 con │        │
+   │        │        │        │manager │        │
+   └────────────────────────────────────────────┘
+
+3️⃣ VISTA DIARIA
+
+   📅 Jueves, 30 de enero de 2026
+   
+   ┌──────────────────────────────────────────┐
+   │ Eventos de hoy                           │
+   ├──────────────────────────────────────────┤
+   │                                          │
+   │ 09:00 - 10:00 ▓ Standup diario          │
+   │ ├─ 📍 Sala virtual                      │
+   │ ├─ 👥 Equipo completo                   │
+   │ ├─ 🔔 Recordatorio en 10 min            │
+   │ ├─ 📝 "Revisar progreso sprint"         │
+   │ └─ 📎 Documento: standup_template.doc   │
+   │                                          │
+   │ 14:00 - 15:30 ░ Review con cliente     │
+   │ ├─ 📍 Oficina                           │
+   │ ├─ 👥 Juan Martínez, Ana García        │
+   │ ├─ 🔔 Recordador en 30 min              │
+   │ ├─ 📝 "Presentar progreso Q1"           │
+   │ ├─ 📎 Presentación: Q1_Review.pptx      │
+   │ └─ 🎥 Zoom: https://zoom.us/j/...      │
+   │                                          │
+   │ 17:00 - 17:30 ▒ 1:1 con manager       │
+   │ ├─ 📍 Teams                             │
+   │ ├─ 👥 Carlos Ruiz                       │
+   │ ├─ 🔔 Recordatorio en 5 min             │
+   │ ├─ 📝 "Feedback 360, nuevas metas"      │
+   │ └─ 📎 OneNote: OneNote_Feedback.one     │
+   │                                          │
+   └──────────────────────────────────────────┘
+
+CREAR EVENTO:
+
+Modal "Nuevo Evento":
+├─ Título (requerido)
+├─ Descripción (Markdown)
+├─ Inicio (date + time)
+├─ Fin (date + time)
+├─ Ubicación
+├─ Color/Categoría
+│  ├─ 🔵 Reunión
+│  ├─ 📅 Evento
+│  ├─ 🎯 Objetivo
+│  ├─ 🎉 Celebración
+│  └─ 📌 Recordatorio
+├─ Recordatorio
+│  ├─ Sin recordatorio
+│  ├─ 5 minutos antes
+│  ├─ 10 minutos antes
+│  ├─ 30 minutos antes
+│  ├─ 1 hora antes
+│  ├─ 1 día antes
+│  └─ Personalizado
+├─ Participantes (👥)
+│  └─ Contactos para invitar
+├─ Recurrencia
+│  ├─ No recurrente
+│  ├─ Diariamente
+│  ├─ Semanalmente
+│  ├─ Mensualmente
+│  ├─ Anualmente
+│  └─ Personalizado
+├─ Conferencia (opcional)
+│  ├─ Zoom
+│  ├─ Google Meet
+│  ├─ Teams
+│  └─ URL personalizada
+├─ Archivos adjuntos
+└─ [✓ Crear evento]
+
+CARACTERÍSTICAS:
+
+1. COLORES POR CATEGORÍA
+   ├─ 🔵 Azul - Reuniones de trabajo
+   ├─ 🟢 Verde - Eventos personales
+   ├─ 🟡 Amarillo - Recordatorios
+   ├─ 🔴 Rojo - Urgente/Vencimientos
+   └─ 🟣 Púrpura - Eventos especiales
+
+2. SINCRONIZACIÓN
+   ├─ Sincronización con tareas (mostrar tareas vencidas)
+   ├─ Integración con contactos (mostrar cumpleaños)
+   ├─ Exportar a iCalendar (.ics)
+   └─ Importar calendarios externos (próximamente)
+
+3. BÚSQUEDA Y FILTROS
+   ├─ Buscar eventos por título
+   ├─ Filtrar por categoría
+   ├─ Filtrar por participante
+   ├─ Mostrar/ocultar categorías
+   └─ Vista de próximos eventos
+
+4. NOTIFICACIONES
+   ├─ Notificación del navegador
+   ├─ Notificación en PIM
+   ├─ Email de recordatorio
+   └─ SMS (próximamente)
+
+5. VISTAS ADICIONALES
+   ├─ Agenda (lista de próximos eventos)
+   ├─ Mes (vista actual)
+   ├─ Semana
+   ├─ Día
+   └─ Año
+
+ATAJOS DE TECLADO:
+├─ Ctrl+N - Nuevo evento
+├─ N - Siguiente mes
+├─ P - Mes anterior
+├─ T - Hoy
+├─ V - Cambiar vista
+├─ / - Búsqueda
+└─ ? - Atajos
+
+ESTADÍSTICAS:
+├─ Total eventos: 12
+├─ Este mes: 8
+├─ Próximas 2 semanas: 5
+├─ Eventos hoy: 3
+├─ Con recordatorio: 10
+└─ Recurrentes: 2
+
+EXPORTACIÓN:
+├─ Descargar como .ics
+├─ Imprimir calendario
+├─ Compartir evento (próximamente)
+└─ Agregar a Google Calendar (próximamente)
+
+═══════════════════════════════════════════════════════════════════
+Última actualización: 30/01/2026
+Versión: PIM 2.1.0

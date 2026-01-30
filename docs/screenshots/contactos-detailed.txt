@@ -1,0 +1,214 @@
+👥 PIM - Gestión de Contactos
+═══════════════════════════════════════════════════════════════════
+
+DESCRIPCIÓN:
+Base de datos completa de contactos con importación de VCF,
+información detallada y gestión de relaciones.
+
+INTERFAZ PRINCIPAL:
+
+1️⃣ LISTA DE CONTACTOS (Izquierda)
+
+   ┌──────────────────────────┐
+   │ 🔍 Buscar contacto...     │
+   ├──────────────────────────┤
+   │ [Todos]  [A]  [B]...[Z]  │
+   │                          │
+   │ ┌─────────────────────┐  │
+   │ │ 👤 Ana García    ⭐ │  │
+   │ │    ana@empresa... │  │
+   │ └─────────────────────┘  │
+   │                          │
+   │ ┌─────────────────────┐  │
+   │ │ 👤 Carlos Ruiz      │  │
+   │ │    carlos@tech.io   │  │
+   │ └─────────────────────┘  │
+   │                          │
+   │ ┌─────────────────────┐  │
+   │ │ 👤 Juan Martínez ● │  │ ← Seleccionado
+   │ │    juan@techcorp... │  │
+   │ └─────────────────────┘  │
+   │                          │
+   │ ┌─────────────────────┐  │
+   │ │ 👤 Laura Sánchez    │  │
+   │ │    laura@design.co  │  │
+   │ └─────────────────────┘  │
+   │                          │
+   │ ┌─────────────────────┐  │
+   │ │ 👤 María López      │  │
+   │ │    maria@email.com  │  │
+   │ └─────────────────────┘  │
+   │                          │
+   │ ┌─────────────────────┐  │
+   │ │ 👤 Pedro Fernández  │  │
+   │ │    pedro@startup... │  │
+   │ └─────────────────────┘  │
+   │                          │
+   │ ▼ Mostrar más (156 total)│
+   └──────────────────────────┘
+
+2️⃣ PANEL DE DETALLES (Derecha)
+
+   ┌─────────────────────────────────────┐
+   │ Juan Martínez              ⭐ ✏️ 🗑️  │
+   ├─────────────────────────────────────┤
+   │                                     │
+   │        ┌──────────────┐             │
+   │        │              │             │
+   │        │    👤 JM     │             │
+   │        │              │             │
+   │        └──────────────┘             │
+   │                                     │
+   │  Director de Tecnología             │
+   │  TechCorp S.L.                      │
+   │                                     │
+   ├─────────────────────────────────────┤
+   │ INFORMACIÓN DE CONTACTO              │
+   ├─────────────────────────────────────┤
+   │                                     │
+   │  📧 Email                           │
+   │  ├─ juan@techcorp.es (trabajo)     │
+   │  └─ juan.martinez@personal.com     │
+   │                                     │
+   │  📱 Teléfono                        │
+   │  ├─ +34 612 345 678 (móvil)        │
+   │  └─ +34 91 123 4567 (trabajo)      │
+   │                                     │
+   │  🏢 Empresa                         │
+   │     TechCorp S.L.                   │
+   │                                     │
+   │  🏠 Dirección                       │
+   │     Calle Mayor 123                 │
+   │     28001 Madrid, España            │
+   │                                     │
+   │  🌐 Sitio web                       │
+   │     linkedin.com/in/juanm           │
+   │                                     │
+   │  🏷️ Categoría                       │
+   │     Cliente / Proveedor / Amigo     │
+   │                                     │
+   │  📅 Agregado                        │
+   │     25 de noviembre de 2025         │
+   │                                     │
+   ├─────────────────────────────────────┤
+   │ NOTAS                               │
+   ├─────────────────────────────────────┤
+   │                                     │
+   │  Contacto desde conferencia 2025    │
+   │  Interesado en colaboración.        │
+   │  Seguimiento: febrero de 2026.      │
+   │                                     │
+   ├─────────────────────────────────────┤
+   │ ETIQUETAS                           │
+   ├─────────────────────────────────────┤
+   │  [VIP] [Cliente] [Posible Partner]  │
+   │                                     │
+   ├─────────────────────────────────────┤
+   │ HISTORIAL DE INTERACCIONES          │
+   ├─────────────────────────────────────┤
+   │  30/01/2026 - Llamada telefónica   │
+   │  28/01/2026 - Email enviado        │
+   │  15/01/2026 - Reunión en oficina   │
+   │                                     │
+   │ [✏️ Editar]  [🗑️ Eliminar]         │
+   └─────────────────────────────────────┘
+
+ACCIONES:
+
+1. CREAR CONTACTO
+   [➕ Nuevo Contacto] abre modal:
+   ├─ Nombre (requerido)
+   ├─ Apellido
+   ├─ Título/Puesto
+   ├─ Empresa
+   ├─ Email(s)
+   ├─ Teléfono(s)
+   ├─ Dirección
+   ├─ Sitio web
+   ├─ Foto (upload o Gravatar)
+   ├─ Categoría
+   ├─ Etiquetas
+   ├─ Notas
+   └─ [✓ Guardar]
+
+2. EDITAR CONTACTO
+   Haz clic en [✏️ Editar]
+   - Todos los campos editables
+   - Historial de cambios
+   - [✓ Guardar] [✕ Descartar]
+
+3. IMPORTAR CONTACTOS
+   [📥 Importar] → Selecciona archivo .vcf
+   ├─ Previsualizar contactos
+   ├─ Seleccionar cuáles importar
+   ├─ Detecta duplicados
+   └─ [✓ Importar] (156 contactos)
+
+4. EXPORTAR CONTACTOS
+   [📤 Exportar] → Elige formato:
+   ├─ VCF (vCard - compatible con otros)
+   ├─ CSV (Excel/Sheets)
+   ├─ JSON (copia de seguridad)
+   └─ PDF (lista imprimible)
+
+5. BÚSQUEDA Y FILTROS
+   ├─ Buscar por nombre/email
+   ├─ Filtrar por empresa
+   ├─ Filtrar por categoría
+   ├─ Filtrar por etiqueta
+   ├─ Mostrar favoritos (⭐)
+   └─ Ordenar por (nombre/empresa/fecha)
+
+6. OPERACIONES EN LOTE
+   ├─ Seleccionar múltiples (Ctrl+click)
+   ├─ Agregar etiqueta a todos
+   ├─ Cambiar categoría
+   ├─ Exportar seleccionados
+   └─ Eliminar seleccionados
+
+CAMPOS DISPONIBLES:
+├─ Nombre/Apellido (requerido)
+├─ Título/Puesto
+├─ Empresa
+├─ Email (ilimitados)
+├─ Teléfono (ilimitados)
+├─ Dirección completa
+├─ Sitio web/URL
+├─ Foto de perfil
+├─ Categoría (cliente/proveedor/amigo/familia)
+├─ Etiquetas personalizadas
+├─ Notas
+├─ Fecha de cumpleaños
+├─ Aniversario
+└─ Campos personalizados
+
+CARACTERÍSTICAS ESPECIALES:
+✓ Duplicar contacto
+✓ Fusionar duplicados
+✓ Vincular a notas/tareas/eventos
+✓ Historial de última interacción
+✓ Foto automática de Gravatar
+✓ Sincronización (próximamente)
+
+ESTADÍSTICAS:
+├─ Total contactos: 156
+├─ Favoritos: 8
+├─ Últimos 30 días agregados: 12
+├─ Con email: 145
+├─ Con teléfono: 138
+└─ Empresas únicas: 42
+
+ATAJOS DE TECLADO:
+├─ Ctrl+N - Nuevo contacto
+├─ Ctrl+I - Importar
+├─ Ctrl+E - Exportar
+├─ Ctrl+D - Duplicar
+├─ Ctrl+F - Buscar
+├─ A - Agregar etiqueta
+├─ E - Editar
+├─ X - Marcar/desmarcar favorito
+└─ Del - Eliminar
+
+═══════════════════════════════════════════════════════════════════
+Última actualización: 30/01/2026
+Versión: PIM 2.1.0

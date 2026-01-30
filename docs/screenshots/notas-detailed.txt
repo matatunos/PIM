@@ -1,0 +1,138 @@
+📝 PIM - Módulo de Notas
+═══════════════════════════════════════════════════════════════════
+
+DESCRIPCIÓN:
+Sistema completo de notas con soporte Markdown, colores, etiquetas y búsqueda avanzada.
+Perfecta para capturar ideas, documentación y tareas rápidas.
+
+ELEMENTOS PRINCIPALES:
+
+1️⃣ CONTROLES SUPERIORES
+   ├─ 🔍 Búsqueda por título/contenido
+   ├─ 🏷️ Filtrar por etiquetas
+   ├─ 🎨 Filtrar por color
+   ├─ 📋 Vista (Grid/Lista)
+   └─ ➕ Nueva Nota
+
+2️⃣ BARRA DE ETIQUETAS
+   Etiquetas disponibles (clickeables):
+   ├─ [todos] - Mostrar todas (38)
+   ├─ [trabajo] - Notas de trabajo (12)
+   ├─ [personal] - Notas personales (8)
+   ├─ [urgente] - Tareas urgentes (3)
+   ├─ [ideas] - Brainstorming (5)
+   ├─ [server] - Infraestructura (2)
+   └─ [...] - Más etiquetas
+
+3️⃣ NOTAS EN GRID (3x3)
+
+   TARJETA 1: "Lista de compras"
+   ├─ Color: 🟡 Amarillo (personal)
+   ├─ Contenido: "• Leche, • Pan, • Huevos, • Café, • Fruta"
+   ├─ Etiquetas: personal
+   ├─ Fecha: Hoy
+   ├─ Fijada: 📌 Sí
+   └─ Acciones: ✏️ Editar | ⭐ Favorito | 🗑️ Eliminar
+
+   TARJETA 2: "Ideas proyecto"
+   ├─ Color: 🟢 Verde (trabajo)
+   ├─ Contenido: "## Nueva API\n- Endpoint REST\n- Auth con JWT"
+   ├─ Etiquetas: trabajo, proyecto
+   ├─ Fecha: Ayer
+   ├─ Fijada: No
+   └─ Acciones: ✏️ Editar | ⭐ Favorito | 🗑️ Eliminar
+
+   TARJETA 3: "Config servidor"
+   ├─ Color: 🔵 Azul (servidor)
+   ├─ Contenido: "```nginx\nserver {...}\n```"
+   ├─ Etiquetas: servidor, nginx
+   ├─ Fecha: 28/01
+   ├─ Fijada: No
+   └─ Acciones: ✏️ Editar | ⭐ Favorito | 🗑️ Eliminar
+
+   [5 notas más en grid...]
+
+4️⃣ EDITOR DE NOTAS (Al hacer clic)
+
+   ┌────────────────────────────────────────┐
+   │ 📝 Editar Nota                    ✕   │
+   ├────────────────────────────────────────┤
+   │ Título:                                │
+   │ [Lista de compras________________]    │
+   │                                        │
+   │ Color: 🟡 [Selector]  Etiquetas: [+] │
+   │ [personal][urgente][...]             │
+   │                                        │
+   │ Contenido (Markdown):                 │
+   │ ┌──────────────────────────────────┐  │
+   │ │ # Lista de compras               │  │
+   │ │                                  │  │
+   │ │ - [ ] Leche                      │  │
+   │ │ - [ ] Pan                        │  │
+   │ │ - [x] Huevos                     │  │
+   │ │ - [ ] Café                       │  │
+   │ │                                  │  │
+   │ │ Actualizado: Hoy 14:32          │  │
+   │ │                                  │  │
+   │ └──────────────────────────────────┘  │
+   │                                        │
+   │ [✓ Guardar]  [✕ Descartar]           │
+   └────────────────────────────────────────┘
+
+CARACTERÍSTICAS DEL EDITOR:
+✓ Markdown completo (H1-H6, listas, código, tablas)
+✓ Vista previa en tiempo real
+✓ Autoguardado cada 30 segundos
+✓ Historial de versiones
+✓ Menciones de contactos (@nombre)
+✓ Incrustación de imágenes
+✓ Blockquotes y separadores
+✓ Emojis (:smile:)
+
+OPCIONES DE NOTAS:
+├─ 📌 Fijar (aparece arriba siempre)
+├─ ⭐ Favorito (en favoritos primero)
+├─ 🎨 Cambiar color
+├─ 🏷️ Agregar/editar etiquetas
+├─ 📤 Exportar a PDF
+├─ 📋 Duplicar nota
+├─ 🗑️ Mover a papelera
+└─ 📝 Ver historial
+
+COLORES DISPONIBLES:
+├─ 🔵 Azul (por defecto)
+├─ 🟣 Púrpura
+├─ 🟢 Verde
+├─ 🟡 Amarillo
+├─ 🔴 Rojo
+├─ 🟠 Naranja
+├─ ⚪ Blanco
+└─ ⚫ Gris
+
+BÚSQUEDA Y FILTRADO:
+1. Por texto: "Buscar..." filtra títulos y contenido
+2. Por etiqueta: Haz clic en etiqueta para filtrar
+3. Por color: Icono de color filtra por ese color
+4. Por fecha: Botón "últimos X días"
+5. Favoritos: Estrella filtra favoritos
+
+TECLADO RÁPIDO:
+├─ Ctrl+N - Nueva nota
+├─ Ctrl+S - Guardar
+├─ Ctrl+E - Editar
+├─ Ctrl+/ - Ver atajos
+├─ Ctrl+B - Negrita
+├─ Ctrl+I - Cursiva
+├─ Ctrl+` - Código
+└─ Ctrl+H - Encabezado
+
+ESTADÍSTICAS:
+├─ 23 notas totales
+├─ 5 notas fijadas
+├─ 8 favoritas
+├─ 38 etiquetas únicas
+└─ 12,450 palabras
+
+═══════════════════════════════════════════════════════════════════
+Última actualización: 30/01/2026
+Versión: PIM 2.1.0

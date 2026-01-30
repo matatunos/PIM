@@ -1,0 +1,218 @@
+🔗 PIM - Gestor de Links / Marcadores
+═══════════════════════════════════════════════════════════════════
+
+DESCRIPCIÓN:
+Gestor de marcadores con categorización automática, iconos e integración
+con extensión Chrome para captura rápida desde navegador.
+
+INTERFAZ PRINCIPAL:
+
+1️⃣ BARRA LATERAL DE CATEGORÍAS
+
+   ┌─────────────────────────────┐
+   │ 🔗 Links                    │
+   ├─────────────────────────────┤
+   │ 🔍 Buscar links...          │
+   │ [➕ Nuevo Link]             │
+   │ [📥 Importar]              │
+   ├─────────────────────────────┤
+   │                             │
+   │ 📁 CATEGORÍAS               │
+   │ ├─ ⭐ Favoritos (8)         │
+   │ ├─ 🆕 Recientes (12)        │
+   │ │                           │
+   │ ├─ 💼 Trabajo (23)          │
+   │ │  ├─ 💻 Development (8)    │
+   │ │  ├─ 🛠️ Herramientas (10)  │
+   │ │  └─ 📊 Analytics (5)      │
+   │ │                           │
+   │ ├─ 📚 Aprendizaje (15)      │
+   │ │  ├─ 🎓 Cursos (6)         │
+   │ │  ├─ 📖 Documentación (7)  │
+   │ │  └─ 🎬 Tutoriales (2)     │
+   │ │                           │
+   │ ├─ 🎮 Entretenimiento (8)   │
+   │ │  ├─ 🎵 Música (3)         │
+   │ │  ├─ 🎬 Series (2)         │
+   │ │  └─ 🎮 Juegos (3)         │
+   │ │                           │
+   │ ├─ 🛒 Compras (12)          │
+   │ │  ├─ 👕 Ropa (4)           │
+   │ │  ├─ 🏠 Casa (5)           │
+   │ │  └─ 🔧 Herramientas (3)   │
+   │ │                           │
+   │ ├─ 🔧 Herramientas (20)     │
+   │ │                           │
+   │ ├─ 📰 Noticias (10)         │
+   │ │                           │
+   │ ├─ 🌐 Otros (5)             │
+   │ │                           │
+   │ └─ 🗑️ Papelera (2)          │
+   │                             │
+   └─────────────────────────────┘
+
+2️⃣ GRID DE LINKS (Vista Grid)
+
+   ┌──────────────────────┐ ┌──────────────────────┐
+   │                      │ │                      │
+   │   🧩 GitHub          │ │   💻 VSCode Docs     │
+   │   github.com          │ │   code.visualstudio  │
+   │                      │ │                      │
+   │ ⭐ [💬 2]  [🗑️]      │ │ ⭐ [💬 0]  [🗑️]      │
+   └──────────────────────┘ └──────────────────────┘
+
+   ┌──────────────────────┐ ┌──────────────────────┐
+   │                      │ │                      │
+   │   📚 MDN Web Docs    │ │   🔍 Stack Overflow  │
+   │   developer.mozilla   │ │   stackoverflow.com   │
+   │                      │ │                      │
+   │ ⭐ [💬 5]  [🗑️]      │ │ ⭐ [💬 1]  [🗑️]      │
+   └──────────────────────┘ └──────────────────────┘
+
+   ┌──────────────────────┐ ┌──────────────────────┐
+   │                      │ │                      │
+   │   🎵 Spotify          │ │   🎬 Netflix         │
+   │   open.spotify.com    │ │   www.netflix.com    │
+   │                      │ │                      │
+   │ ⭐ [💬 0]  [🗑️]      │ │ ⭐ [💬 3]  [🗑️]      │
+   └──────────────────────┘ └──────────────────────┘
+
+3️⃣ VISTA LISTA
+
+   ┌──────────────────────────────────────────────────┐
+   │ [➕] GitHub Development Platform        ⭐ ⏰    │
+   │     github.com                                   │
+   │     Repositorios, colaboración y control versión │
+   │     [💻] [Trabajo] [Development]                 │
+   │                                                  │
+   │ [➕] Visual Studio Code Documentation   ⭐ ⏰    │
+   │     code.visualstudio.com                        │
+   │     Documentación oficial de VSCode               │
+   │     [📖] [Trabajo] [Documentación]                │
+   │                                                  │
+   │ [➕] Mozilla Developer Network         ⭐ ⏰    │
+   │     developer.mozilla.org                        │
+   │     Referencia web para desarrolladores          │
+   │     [📚] [Aprendizaje] [Documentación]           │
+   │                                                  │
+   │ [➕] Stack Overflow - Q&A               ⭐ ⏰    │
+   │     stackoverflow.com                            │
+   │     Preguntas y respuestas de programación       │
+   │     [🔍] [Trabajo] [Ayuda]                       │
+   │                                                  │
+   └──────────────────────────────────────────────────┘
+
+CREAR NUEVO LINK:
+
+Modal "Nuevo Link":
+├─ URL (requerido)
+│  └─ Auto-detecta título y descripción
+├─ Título (editable)
+├─ Descripción (Markdown)
+├─ Categoría (selector jerárquico)
+│  ├─ Trabajo
+│  ├─ Aprendizaje
+│  ├─ Entretenimiento
+│  ├─ Compras
+│  ├─ Herramientas
+│  └─ [➕ Nueva categoría]
+├─ Icono (auto-detectado o personalizado)
+├─ Color de etiqueta (8 colores)
+├─ Etiquetas (multi-select)
+├─ Notas personales
+├─ Favorito (sí/no)
+└─ [✓ Guardar]
+
+CARACTERÍSTICAS:
+
+1. EXTENSIÓN CHROME
+   ├─ Descarga desde Perfil → Descargar Extensión
+   ├─ Se instala automáticamente
+   ├─ Preconfigura tu usuario
+   ├─ Captura: Clic derecho → "Guardar en PIM"
+   ├─ Modal rápido para editar
+   ├─ Sincronización automática
+   └─ Notificación de guardado
+
+2. CAPTURA RÁPIDA
+   ├─ Extensión Chrome: Clic derecho en página
+   ├─ O: Ctrl+L (abrir modal rápido en PIM)
+   ├─ O: Hacer clic en 🔗 del navegador
+   ├─ Auto-detect: título, descripción, icono
+   ├─ Edita antes de guardar
+   └─ Confirmación visual
+
+3. ORGANIZACIÓN
+   ├─ Categorías jerárquicas
+   ├─ Subcategorías ilimitadas
+   ├─ Etiquetas para clasificación cruzada
+   ├─ Favoritos para acceso rápido
+   ├─ Búsqueda por título/descripción
+   └─ Filtrar por categoría/etiqueta
+
+4. VISTA PREVIA
+   ├─ Miniatura del sitio web
+   ├─ Favicon automático
+   ├─ Descripción disponible al pasar mouse
+   ├─ Contador de comentarios
+   └─ Última visita mostrada
+
+5. COMENTARIOS Y NOTAS
+   ├─ Comentarios privados en el link
+   ├─ Historial de cambios
+   ├─ Reacciones con emoji
+   └─ Mención de contactos
+
+6. BÚSQUEDA Y FILTROS
+   ├─ Búsqueda rápida en barra superior
+   ├─ Filtrar por categoría
+   ├─ Filtrar por etiqueta
+   ├─ Ver solo favoritos
+   ├─ Mostrar links visitados recientemente
+   └─ Ordenar por (título/fecha/visitas)
+
+7. IMPORTACIÓN Y EXPORTACIÓN
+   ├─ Importar bookmarks de navegador (HTML)
+   ├─ Importar desde Pocket/Raindrop
+   ├─ Exportar a HTML (para navegador)
+   ├─ Exportar a JSON (copia seguridad)
+   ├─ Exportar a CSV (Excel)
+   └─ Compartir colecciones (próximamente)
+
+ESTADÍSTICAS:
+├─ Total links: 93
+├─ Favoritos: 12
+├─ Categorías: 10 (4 predefinidas + 6 personalizadas)
+├─ Etiquetas únicas: 24
+├─ Agregados este mes: 18
+├─ Visitados hoy: 5
+└─ Promedio visitas/semana: 12
+
+ATAJOS DE TECLADO:
+├─ Ctrl+L - Nuevo link (rápido)
+├─ Ctrl+F - Búsqueda
+├─ G - Ir a categoría (numérica)
+├─ S - Mostrar solo sitios
+├─ C - Mostrar comentarios
+├─ D - Duplicar link
+├─ E - Editar link
+├─ X - Marcar/desmarcar favorito
+├─ Del - Mover a papelera
+└─ ? - Atajos
+
+MANEJO DE DUPLICADOS:
+├─ Detección automática
+├─ Sugerencias de fusión
+├─ Opción de "no preguntar más"
+├─ Fusionar y mantener anotaciones
+└─ Papelera para recuperación
+
+INTEGRACIÓN:
+├─ Vincular a notas sobre links
+├─ Mostrar tareas relacionadas
+├─ Eventos de lectura (próximamente)
+└─ Análisis de tiempo de lectura
+
+═══════════════════════════════════════════════════════════════════
+Última actualización: 30/01/2026
+Versión: PIM 2.1.0

@@ -1,0 +1,143 @@
+✅ PIM - Tareas (Vista Kanban)
+═══════════════════════════════════════════════════════════════════
+
+DESCRIPCIÓN:
+Tablero Kanban tipo Trello para gestionar tareas con flujo visual.
+Arrastra tareas entre columnas para cambiar estado.
+
+COLUMNAS KANBAN:
+
+1️⃣ COLUMNA "📥 POR HACER" (4 tareas)
+
+   ┌─ TAREA 1: "Revisar docs seguridad"
+   │  ├─ Prioridad: 🔴 Urgente
+   │  ├─ Asignado: 👤 nacho
+   │  ├─ Vencimiento: Hoy
+   │  ├─ Etiquetas: [seguridad][urgente]
+   │  ├─ Comentarios: 2
+   │  ├─ Archivos: 1
+   │  └─ Progreso: ━━━━━━━━━░ 0%
+
+   ┌─ TAREA 2: "Implementar autenticación"
+   │  ├─ Prioridad: 🟠 Alta
+   │  ├─ Asignado: 👤 nacho
+   │  ├─ Vencimiento: 31/01/2026
+   │  ├─ Etiquetas: [auth][desarrollo]
+   │  ├─ Comentarios: 0
+   │  ├─ Archivos: 2
+   │  └─ Progreso: ━━━━━━━━░░ 0%
+
+   ┌─ TAREA 3: "Mejorar UI dashboard"
+   │  ├─ Prioridad: 🟡 Media
+   │  ├─ Asignado: 👤 nacho
+   │  ├─ Vencimiento: 02/02/2026
+   │  ├─ Etiquetas: [ui][diseño]
+   │  ├─ Comentarios: 1
+   │  ├─ Archivos: 0
+   │  └─ Progreso: ━━━━━░░░░░ 0%
+
+   └─ TAREA 4: "Documentar API"
+      ├─ Prioridad: 🟢 Baja
+      ├─ Asignado: 👤 nacho
+      ├─ Vencimiento: 05/02/2026
+      ├─ Etiquetas: [docs][api]
+      ├─ Comentarios: 0
+      ├─ Archivos: 1
+      └─ Progreso: ━━░░░░░░░ 0%
+
+2️⃣ COLUMNA "🔄 EN PROGRESO" (2 tareas)
+
+   ┌─ TAREA 1: "Desarrollo API usuarios"
+   │  ├─ Prioridad: 🟠 Alta
+   │  ├─ Asignado: 👤 nacho
+   │  ├─ Vencimiento: 30/01/2026
+   │  ├─ Etiquetas: [api][backend][progreso]
+   │  ├─ Comentarios: 3
+   │  ├─ Archivos: 3
+   │  └─ Progreso: ━━━━━━░░░ 60%
+
+   └─ TAREA 2: "Tests unitarios login"
+      ├─ Prioridad: 🟡 Media
+      ├─ Asignado: 👤 nacho
+      ├─ Vencimiento: 01/02/2026
+      ├─ Etiquetas: [testing][qa]
+      ├─ Comentarios: 1
+      ├─ Archivos: 2
+      └─ Progreso: ━━━━░░░░░░ 40%
+
+3️⃣ COLUMNA "✅ COMPLETADO" (6 tareas)
+
+   ├─ "Setup inicial del proyecto" (27/01)
+   ├─ "Diseño base de datos" (28/01)
+   ├─ "Configurar servidor web" (29/01)
+   ├─ "Instalar dependencias" (29/01)
+   ├─ "Estructura base de archivos" (29/01)
+   └─ "Primera iteración de UI" (30/01)
+
+LEGEND DE PRIORIDADES:
+├─ 🔴 Urgente (máximo 2 semanas)
+├─ 🟠 Alta (máximo 1 mes)
+├─ 🟡 Media (máximo 2 meses)
+└─ 🟢 Baja (sin límite específico)
+
+FUNCIONALIDADES:
+
+1. ARRASTRAR Y SOLTAR
+   - Arrastra entre columnas para cambiar estado
+   - Reordena dentro de la columna por prioridad
+   - Confirmación automática de cambios
+
+2. CREAR TAREA
+   Botón "➕ Nueva tarea" abre modal:
+   ├─ Título (requerido)
+   ├─ Descripción (Markdown)
+   ├─ Prioridad (urgente/alta/media/baja)
+   ├─ Vencimiento (date picker)
+   ├─ Asignado a (dropdown de usuarios)
+   ├─ Etiquetas (multi-select)
+   └─ [✓ Crear]
+
+3. EDITAR TAREA
+   Haz clic en tarjeta para expandir:
+   ├─ Título y descripción editables
+   ├─ Cambiar prioridad
+   ├─ Cambiar fecha
+   ├─ Reasignar
+   ├─ Agregar subtareas
+   ├─ Comentarios
+   ├─ Adjuntar archivos
+   └─ [✓ Guardar] [✕ Cerrar]
+
+4. FILTROS
+   ├─ Por prioridad (urgente, alta, media, baja)
+   ├─ Por asignado (usuario)
+   ├─ Por etiqueta
+   ├─ Por vencimiento (hoy, esta semana, próximo mes)
+   └─ Mostrar completados (sí/no)
+
+5. ESTADÍSTICAS
+   ├─ Total tareas: 12
+   ├─ Por hacer: 4
+   ├─ En progreso: 2
+   ├─ Completado: 6
+   ├─ % Completado: 50%
+   ├─ Vencidas: 0
+   └─ Vencidas próximamente: 2
+
+ATAJOS DE TECLADO:
+├─ Ctrl+T - Nueva tarea
+├─ A - Arrastra seleccionada
+├─ D - Duplicar tarea
+├─ E - Editar tarea
+├─ X - Marcar como completado
+├─ Del - Eliminar tarea
+└─ ? - Ver atajos
+
+VISTAS ALTERNATIVAS:
+├─ 📋 Lista (vista tradicional)
+├─ 📊 Gantt (cronograma)
+└─ 📈 Estadísticas (gráficos)
+
+═══════════════════════════════════════════════════════════════════
+Última actualización: 30/01/2026
+Versión: PIM 2.1.0

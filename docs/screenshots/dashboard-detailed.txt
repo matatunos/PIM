@@ -1,0 +1,99 @@
+📊 PIM - Dashboard Principal
+═══════════════════════════════════════════════════════════════════
+
+DESCRIPCIÓN:
+Panel de control que proporciona una visión general de toda tu información personal.
+Muestra resumen de estadísticas, actividad reciente y acceso rápido a módulos principales.
+
+ELEMENTOS PRINCIPALES:
+
+1️⃣ BARRA DE NAVEGACIÓN SUPERIOR
+   ├─ Logo "📋 PIM"
+   ├─ Barra de búsqueda global
+   ├─ Notificaciones (🔔 3)
+   ├─ Perfil de usuario (👤 nacho)
+   └─ Opciones (⚙️)
+
+2️⃣ MENÚ LATERAL IZQUIERDO
+   ├─ 🏠 Dashboard (activo)
+   ├─ 📝 Notas
+   ├─ 👥 Contactos
+   ├─ ✅ Tareas
+   ├─ 📅 Calendario
+   ├─ 🔗 Links
+   ├─ 📁 Archivos
+   ├─ 🤖 Asistente IA
+   ├─ ─────────────
+   ├─ ⚙️ Configuración
+   └─ 👤 Mi Perfil
+
+3️⃣ CONTENIDO PRINCIPAL
+   
+   📊 TARJETAS DE RESUMEN (4 columnas)
+   ┌─────────┬─────────┬─────────┬─────────┐
+   │   23    │  156    │   8     │   12    │
+   │ Notas   │Contact. │ Tareas  │ Events  │
+   └─────────┴─────────┴─────────┴─────────┘
+   
+   🎯 ACCESO RÁPIDO - Módulos
+   ┌─────────────┬─────────────┬─────────────┐
+   │ 📝 Notas    │ 👥 Contactos│ ✅ Tareas   │
+   │ recientes   │ favoritos   │ próximas    │
+   └─────────────┴─────────────┴─────────────┘
+   
+   📌 NOTAS DESTACADAS (3 tarjetas)
+   ├─ "Lista de compras" (🟡 personal)
+   ├─ "Ideas proyecto" (🟢 trabajo)
+   └─ "Config servidor" (🔵 servidor)
+   
+   📅 EVENTOS HROY
+   ├─ 09:00 - Standup diario
+   ├─ 14:00 - Review con cliente
+   └─ 17:00 - 1:1 con manager
+   
+   🔔 NOTIFICACIONES RECIENTES
+   ├─ Nueva tarea asignada
+   ├─ Recordatorio de evento
+   └─ Alguien comentó tu nota
+
+4️⃣ PIE DE PÁGINA
+   └─ © 2026 PIM v2.1.0
+
+ESTADÍSTICAS:
+├─ 23 notas creadas
+├─ 156 contactos importados
+├─ 8 tareas pendientes
+├─ 12 eventos planificados
+├─ 45 links guardados
+└─ 2.3 GB de almacenamiento
+
+ACCIONES DISPONIBLES:
+✓ Crear nueva nota (+ Nueva Nota)
+✓ Buscar en todo (🔍)
+✓ Ver notificaciones
+✓ Acceder a configuración
+✓ Ver perfil
+
+COLORES USADOS:
+├─ 🔵 Azul: Enlaces y elementos primarios
+├─ 🟣 Púrpura: Opciones destacadas
+├─ 🟢 Verde: Completado/Éxito
+├─ 🟡 Amarillo: En progreso/Advertencia
+└─ 🔴 Rojo: Urgente/Error
+
+DISPOSITIVOS SOPORTADOS:
+✓ Desktop (1920x1080 y superiores)
+✓ Tablet (768x1024)
+✓ Móvil (375x812+)
+
+NAVEGACIÓN RÁPIDA:
+- Pulsa [D] para Dashboard
+- Pulsa [N] para Notas
+- Pulsa [C] para Contactos
+- Pulsa [T] para Tareas
+- Pulsa [L] para Links
+- Pulsa [?] para ayuda
+
+═══════════════════════════════════════════════════════════════════
+Última actualización: 30/01/2026
+Versión: PIM 2.1.0 Completo

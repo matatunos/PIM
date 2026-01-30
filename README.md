@@ -119,7 +119,7 @@ PIM es una aplicación web **autoalojada** para gestionar tu información person
 ╠══════════════════════════════════════════════════════════════════════════════════════╣
 ║                                                                                      ║
 ║  ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓  ║
-║  ┃ 🏷️ Etiquetas:  [todos] [trabajo] [personal] [urgente] [ideas]                   ┃  ║
+║  ┃ 🏷️ Etiquetas:  [todos] [trabajo] [personal] [urgente] [ideas] [servidor]       ┃  ║
 ║  ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛  ║
 ║                                                                                      ║
 ║  ┏━━━━━━━━━━━━━━━━━━━━━━━┓  ┏━━━━━━━━━━━━━━━━━━━━━━━┓  ┏━━━━━━━━━━━━━━━━━━━━━━━┓    ║
@@ -524,16 +524,42 @@ cd PIM
 mysql -u root -p < db/schema.sql
 
 # 3. Configurar conexión
-cp config/config.example.php config/config.php
+cp config/database.php.example config/database.php
+nano config/database.php
+
+# 4. Configurar aplicación
+cp config/config.php.example config/config.php
 nano config/config.php
 
-# 4. Configurar permisos
+# 5. Configurar permisos
 chmod 755 -R .
 chmod 777 -R assets/uploads logs
 
-# 5. Acceder
+# 6. Acceder
 # http://tu-servidor/PIM
-# Usuario: admin / Contraseña: admin123
+# Usuario: admin / Contraseña: admin123 (CAMBIAR)
+```
+
+### Instalación con script de setup
+
+```bash
+# Script automático (recomendado)
+bash QUICKSTART.sh
+```
+
+### Configuración HTTPS con Let's Encrypt
+
+```bash
+# Obtener certificado (Nginx)
+certbot certonly --webroot -w /var/www/PIM -d tu-dominio.com
+
+# En nginx.conf
+listen 443 ssl http2;
+ssl_certificate /etc/letsencrypt/live/tu-dominio.com/fullchain.pem;
+ssl_certificate_key /etc/letsencrypt/live/tu-dominio.com/privkey.pem;
+
+# Renovación automática
+0 12 * * * certbot renew --quiet
 ```
 
 ### Con Docker (próximamente)
@@ -630,6 +656,41 @@ PIM/
 
 ---
 
+## 🎯 Características Avanzadas
+
+### 🤖 Asistente IA Inteligente
+- **Integración con Ollama/Open WebUI** - Usa modelos LLM locales
+- **Análisis contextual** - Resume tus notas y extrae información
+- **Búsqueda semántica** - Encuentra información por concepto, no solo por palabra clave
+- **Sugerencias** - Propone tareas y recordatorios basados en tus notas
+
+### 🔌 Extensión Chrome Integrada
+- **Captura rápida de enlaces** - Click derecho → "Guardar en PIM"
+- **Categorización automática** - Detecta el tipo de sitio web
+- **Sincronización en tiempo real** - Ve tus links agregados al instante
+- **Gestión de pestañas** - Guarda todas las pestañas abiertas a la vez
+
+### 🔐 Seguridad Empresarial
+- **2FA con TOTP/QR** - Códigos de un solo uso compatibles con Google Authenticator
+- **Tokens API** - Crea múltiples tokens con permisos específicos
+- **Rate limiting** - Protección contra ataques de fuerza bruta
+- **Logs de auditoría** - Historial completo de quién accede a qué
+- **Roles de usuario** - Admin, User, Read-only
+
+### 📊 API REST con Documentación
+- **Endpoints completos** - Para notas, contactos, tareas, eventos, links
+- **Autenticación por Bearer Token** - Compatible con postman/curl
+- **WebHooks** - Notificaciones en tiempo real
+- **CORS configurado** - Integración con aplicaciones externas
+
+### 💾 Base de datos confiable
+- **MariaDB 10.5+** - Transacciones ACID garantizadas
+- **Backups automatizados** - Scripts para respaldar toda la información
+- **Migraciones** - Control de versiones del esquema
+- **Búsqueda full-text** - En notas, contactos y documentos
+
+---
+
 ## ⌨️ CLI - Línea de Comandos
 
 PIM incluye herramientas de línea de comandos para automatización.
@@ -689,49 +750,153 @@ php bin/reset-password.php admin nueva_contraseña
 ### Requisitos de desarrollo
 
 ```bash
-# Instalar dependencias (si usas composer)
+# Instalar dependencias
 composer install
 
 # Ejecutar tests
 php vendor/bin/phpunit
 
-# Validar código
+# Validar código PHP
 php dev-tools/validate-simple.php
+
+# Ver logs
+tail -f logs/app.log
 ```
 
-### Variables de entorno
+### Entorno de desarrollo local
 
 ```bash
-# .env
-DB_HOST=localhost
-DB_NAME=pim_db
-DB_USER=pim_user
-DB_PASS=tu_contraseña
+# Crear base de datos de test
+mysql -u root -p < db/schema.sql --skip-create
 
-APP_DEBUG=false
-APP_URL=https://tu-dominio.com/PIM
+# Ejecutar servidor PHP built-in
+php -S localhost:8000
 
-# Opcional: IA
-OLLAMA_URL=http://localhost:11434
-OPENWEBUI_API_KEY=sk-xxxxx
+# O con Docker
+docker run -p 8000:80 -v $(pwd):/var/www/html php:8.0-apache
 ```
+
+### Estructura de archivos importante
+
+| Archivo | Propósito |
+|---------|-----------|
+| `config/database.php` | Credenciales de BD |
+| `config/config.php` | Configuración global |
+| `includes/auth_check.php` | Validación de sesiones |
+| `includes/antibot.php` | Protección anti-bot |
+| `.htaccess` | Reescritura de URLs |
+
+### Trabajar con la API
+
+```bash
+# Obtener token
+ENDPOINT="https://tu-pim.com/api"
+TOKEN=$(curl -X POST $ENDPOINT/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"usuario":"admin","contraseña":"admin123"}' | jq -r '.token')
+
+# Crear nota
+curl -X POST $ENDPOINT/notes \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"titulo":"Test","contenido":"Desde API"}'
+
+# Listar notas
+curl -X GET $ENDPOINT/notes \
+  -H "Authorization: Bearer $TOKEN"
+
+# Buscar
+curl -X GET "$ENDPOINT/search?q=proyecto" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+---
+
+## 📚 Documentación Completa
+
+Documentación detallada y guías disponibles en:
+
+| Documento | Contenido |
+|-----------|-----------|
+| [📖 Manual de Usuario](docs/manual-usuario.html) | Guía completa con screenshots |
+| [🚀 Inicio Rápido](QUICK_START.md) | Empezar en 5 minutos |
+| [🧩 Extensión Chrome](CHROME_EXTENSION_SETUP.md) | Instalación y configuración |
+| [🤖 Integración IA](docs/OPENWEBUI_INTEGRATION.md) | Configurar Ollama/Open WebUI |
+| [🔐 Autenticación 2FA](TESTING_2FA.md) | Configurar dos factores |
+| [🐛 Diagnóstico 2FA](2FA_DIAGNOSTICS.md) | Troubleshooting |
+| [🤖 Protección Anti-Bot](ANTIBOT_PROTECTION.md) | Seguridad avanzada |
+| [⚙️ Checklist](SETUP_CHECKLIST.sh) | Verificar instalación |
+
+---
+
+## 🎓 Guías de Uso
+
+### Primeros pasos
+
+1. **Crear tu primer usuario**
+   - Accede con admin/admin123
+   - Ve a Admin → Usuarios
+   - Crea un nuevo usuario
+
+2. **Configurar 2FA**
+   - Perfil → Seguridad
+   - Genera código QR
+   - Escanea con Google Authenticator
+
+3. **Instalar extensión Chrome**
+   - Descarga desde Perfil
+   - Instala en tu navegador
+   - ¡Empieza a guardar links!
+
+### Casos de uso comunes
+
+**📝 Capturar una idea rápida**
+```bash
+php bin/crear-nota.php -t "Mi idea" --stdin
+```
+
+**📅 Crear evento desde terminal**
+```bash
+# Desde la interfaz web: Calendario → Nuevo evento
+# O via API REST
+```
+
+**👥 Importar contactos**
+1. Ve a Contactos → Importar
+2. Selecciona archivo .vcf
+3. Los contactos se importan automáticamente
 
 ---
 
 ## 🤝 Contribuir
 
-¡Las contribuciones son bienvenidas!
+¡Las contribuciones son bienvenidas! Ya sea reportar errores, sugerir features o mejorar código.
 
-1. Fork el proyecto
-2. Crea una rama (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit tus cambios (`git commit -am 'Añade nueva funcionalidad'`)
-4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
-5. Abre un Pull Request
+### Cómo contribuir
+
+1. **Fork** el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/mi-feature`)
+3. Commit tus cambios (`git commit -am 'Añade mi feature'`)
+4. Push a la rama (`git push origin feature/mi-feature`)
+5. Abre un **Pull Request** describiendo los cambios
+
+### Reportar errores
+
+Usa la sección de [Issues](https://github.com/matatunos/PIM/issues) con:
+- Descripción clara del error
+- Pasos para reproducir
+- Información del sistema (OS, PHP version, navegador)
+- Logs relevantes de `/logs`
+
+### Código de conducta
+
+Se espera profesionalismo y respeto en todas las interacciones.
 
 ---
 
-## 📋 Roadmap
+## 📋 Roadmap (Planificación)
 
+### ✅ Completado
 - [x] Módulo de notas con Markdown
 - [x] Gestión de contactos (importar VCF)
 - [x] Tareas con vista Kanban
@@ -739,17 +904,45 @@ OPENWEBUI_API_KEY=sk-xxxxx
 - [x] Gestor de links con extensión Chrome
 - [x] Autenticación 2FA
 - [x] Integración con Ollama/Open WebUI
-- [x] API con autenticación por token
-- [ ] App móvil (PWA)
-- [ ] Docker compose
+- [x] API REST con autenticación por token
+- [x] Protección anti-bot
+
+### 🔄 En desarrollo
+- [ ] App móvil responsiva (PWA)
+- [ ] Docker Compose para deploy rápido
 - [ ] Sincronización CalDAV/CardDAV
-- [ ] Plugins/extensiones
+- [ ] Exportación a PDF/CSV
+- [ ] Backups automáticos en cloud
+
+### 🎯 Planificado
+- [ ] Sistema de plugins/extensiones
+- [ ] Búsqueda avanzada con filtros
+- [ ] Versionado de notas (historial)
+- [ ] Compartir notas/contactos con otros usuarios
+- [ ] Integración con Nextcloud
+- [ ] Modo offline
 
 ---
 
 ## 📄 Licencia
 
-Este proyecto está bajo la licencia MIT. Ver [LICENSE](LICENSE) para más detalles.
+Este proyecto está bajo la licencia **MIT**. Ver [LICENSE](LICENSE) para más detalles.
+
+Eres libre de:
+- ✅ Usar comercialmente
+- ✅ Modificar y distribuir
+- ✅ Usar privadamente
+- ℹ️ Pero debes incluir la licencia y aviso de copyright
+
+---
+
+## 🙋 Soporte
+
+¿Preguntas o problemas?
+
+- 📖 Lee la [Documentación completa](docs/)
+- 💬 Abre un [Issue](https://github.com/matatunos/PIM/issues)
+- 📧 Contacta al autor
 
 ---
 
@@ -758,9 +951,9 @@ Este proyecto está bajo la licencia MIT. Ver [LICENSE](LICENSE) para más detal
 </p>
 
 <p align="center">
-  Made with ❤️ by <a href="https://github.com/matatunos">matatunos</a>
+  ❤️ Hecho con pasión por <a href="https://github.com/matatunos">matatunos</a>
 </p>
 
 <p align="center">
-  <a href="#-pim">⬆️ Volver arriba</a>
+  <a href="#-pim">⬆️ Volver al inicio</a>
 </p>
