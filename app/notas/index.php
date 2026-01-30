@@ -2,6 +2,7 @@
 require_once '../../config/config.php';
 require_once '../../includes/auth_check.php';
 require_once '../../includes/audit_logger.php';
+require_once '../../includes/event_dispatcher.php';
 
 $usuario_id = $_SESSION['user_id'];
 $mensaje = '';
@@ -19,6 +20,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         
         // Registrar en auditoría
         logAction('crear', 'nota', 'Nota creada: ' . substr($titulo ?: $contenido, 0, 50), true);
+        
+        // Disparar evento de webhook/automatización
+        trigger_event('nota_creada', $usuario_id, [
+            'id' => $nota_id,
+            'titulo' => $titulo,
+            'contenido' => substr($contenido, 0, 200),
+            'color' => $color
+        ]);
         
         // Agregar etiquetas
         if (!empty($_POST['etiquetas'])) {
