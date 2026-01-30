@@ -85,6 +85,7 @@ if (function_exists('opcache_get_status')) {
     <title>Performance - PIM</title>
     <link rel="stylesheet" href="../../assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="../../assets/css/styles.css">
+    <link rel="stylesheet" href="../../assets/fonts/fontawesome/css/all.min.css">
 </head>
 <body>
     <div class="app-container">
