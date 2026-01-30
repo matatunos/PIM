@@ -66,35 +66,6 @@ foreach ($eventos as $evento) {
     <title>Webhooks - PIM</title>
     <link rel="stylesheet" href="../../assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="../../assets/css/styles.css">
-    <style>
-        .webhook-card {
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 15px;
-            background: white;
-        }
-        .webhook-card.inactive {
-            opacity: 0.6;
-            background: #f8f9fa;
-        }
-        .webhook-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .webhook-stats {
-            display: flex;
-            gap: 20px;
-            font-size: 0.85em;
-            color: #6c757d;
-        }
-        .badge-evento {
-            font-size: 0.75em;
-            padding: 4px 8px;
-        }
-    </style>
 </head>
 <body>
     <div class="app-container">
@@ -253,7 +224,7 @@ foreach ($eventos as $evento) {
     </div>
 
     <!-- Form hidden para eliminar -->
-    <form id="formEliminar" method="post" style="display:none;">
+    <form id="formEliminar" method="post" class="d-none">
         <input type="hidden" name="action" value="eliminar_webhook">
         <input type="hidden" name="id" id="eliminarId">
     </form>

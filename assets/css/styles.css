@@ -1240,3 +1240,56 @@ body {
 .btn-group-inline form:first-child {
     margin-left: 0;
 }
+
+/* ==========================================
+   Webhooks & Automatizaciones
+   ========================================== */
+
+.webhook-card, .auto-card {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    background: var(--bg-primary);
+    transition: box-shadow var(--transition-base);
+}
+
+.webhook-card:hover, .auto-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.webhook-card.inactive, .auto-card.inactive {
+    opacity: 0.6;
+    background: var(--bg-secondary);
+}
+
+.webhook-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-sm);
+}
+
+.webhook-stats {
+    display: flex;
+    gap: var(--spacing-lg);
+    font-size: 0.85em;
+    color: var(--text-secondary);
+}
+
+.badge-evento {
+    font-size: 0.75em;
+    padding: 4px 8px;
+}
+
+.condicion-item, .accion-item {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-xs);
+    border-left: 3px solid var(--primary);
+}
+
+.accion-item {
+    border-left-color: var(--success);
+}

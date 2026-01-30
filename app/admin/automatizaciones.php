@@ -41,29 +41,6 @@ $eventos = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>Automatizaciones - PIM</title>
     <link rel="stylesheet" href="../../assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="../../assets/css/styles.css">
-    <style>
-        .auto-card {
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 15px;
-            background: white;
-        }
-        .auto-card.inactive {
-            opacity: 0.6;
-            background: #f8f9fa;
-        }
-        .condicion-item, .accion-item {
-            background: #f8f9fa;
-            border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 8px;
-            border-left: 3px solid #007bff;
-        }
-        .accion-item {
-            border-left-color: #28a745;
-        }
-    </style>
 </head>
 <body>
     <div class="app-container">
