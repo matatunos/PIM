@@ -1,4 +1,5 @@
 <?php
+require_once '../../config/config.php';
 require_once '../../includes/auth_check.php';
 require_once '../../includes/cache.php';
 require_once '../../config/database.php';
