@@ -91,11 +91,13 @@ if (function_exists('opcache_get_status')) {
         <?php include '../../includes/sidebar.php'; ?>
         
         <div class="main-content">
-            <main class="px-md-4">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2">⚡ Performance y Optimización</h1>
+            <div class="top-bar">
+                <div class="top-bar-left">
+                    <h1 class="page-title"><i class="fas fa-tachometer-alt"></i> Performance y Optimización</h1>
                 </div>
-                
+            </div>
+            
+            <div class="content-area">
                 <?php if (isset($mensaje)): ?>
                     <div class="alert alert-success"><?= $mensaje ?></div>
                 <?php endif; ?>
@@ -313,7 +315,7 @@ if (function_exists('opcache_get_status')) {
                         </div>
                     </div>
                 </div>
-            </main>
+            </div>
         </div>
     </div>
     
