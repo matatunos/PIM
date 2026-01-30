@@ -136,35 +136,6 @@ require_once "../../app/idiomas/{$lang}.php";
     <link rel="stylesheet" href="/assets/css/styles.css">
     <link rel="stylesheet" href="/assets/fonts/fontawesome/css/all.min.css">
     <style>
-        .stat-card {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            border-radius: var(--radius-lg);
-            padding: var(--spacing-lg);
-            margin-bottom: 15px;
-            box-shadow: var(--shadow-md);
-            transition: transform var(--transition-base);
-        }
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-        }
-        .stat-card.danger {
-            background: linear-gradient(135deg, #f8a5c2, #f7d1dc);
-        }
-        .stat-card.warning {
-            background: linear-gradient(135deg, #fed9a8, #fff3cd);
-        }
-        .stat-card.success {
-            background: linear-gradient(135deg, #a8dfc2, #d4f5e2);
-        }
-        .stat-card.info {
-            background: linear-gradient(135deg, var(--info), #d5c7f0);
-        }
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-        }
         .event-badge {
             padding: 3px 8px;
             border-radius: 4px;
